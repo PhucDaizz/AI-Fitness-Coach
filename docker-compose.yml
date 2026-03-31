@@ -1,0 +1,69 @@
+version: '3.8'
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: fitnesscoach_mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: phucdai011
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - fitnesscoach-network
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: fitnesscoach_rabbitmq
+    restart: always
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: ADMIN
+      RABBITMQ_DEFAULT_PASS: ADMIN
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    networks:
+      - fitnesscoach-network
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  auth_service:
+    build:
+      context: ./AuthService
+      dockerfile: Dockerfile
+    container_name: fitnesscoach_auth_service
+    restart: on-failure
+    depends_on:
+      mysql:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    ports:
+      - "7001:8080"
+    env_file:
+      - .env.auth
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+    networks:
+      - fitnesscoach-network
+
+  
+networks:
+  fitnesscoach-network:
+    driver: bridge
+
+volumes:
+  mysql_data:
+  rabbitmq_data:

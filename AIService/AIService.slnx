@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="src/API/AIService.API.csproj" />
+  <Project Path="src/Application/AIService.Application.csproj" />
+  <Project Path="src/Domain/AIService.Domain.csproj" />
+  <Project Path="src/Infrastructure/AIService.Infrastructure.csproj" />
+</Solution>
