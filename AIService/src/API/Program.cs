@@ -4,6 +4,7 @@ using AIService.API.Extensions;
 using AIService.API.StartUp;
 using AIService.Application;
 using AIService.Infrastructure;
+using AIService.Infrastructure.Data.Seeders;
 using Microsoft.AspNetCore.Http.Features;
 using Nexus.BuildingBlocks.Extensions;
 using System.Diagnostics;
@@ -12,7 +13,7 @@ namespace AIService.API
 {
     public class Program
     {
-        public static void Main(string[] args)
+        public static async Task Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
 
@@ -51,7 +52,42 @@ namespace AIService.API
             app.UseAuthorization();
 
 
-            app.MapControllers();
+            using (var scope = app.Services.CreateScope())
+            {
+                var services = scope.ServiceProvider;
+                var logger = services.GetRequiredService<ILogger<Program>>();
+
+                try
+                {
+                    int maxRetries = 5;
+                    for (int retry = 1; retry <= maxRetries; retry++)
+                    {
+                        try
+                        {
+                            logger.LogInformation($"[Lần {retry}/{maxRetries}] Đang kết nối DB và điều phối bơm dữ liệu...");
+
+                            var coordinator = services.GetRequiredService<DataSeederCoordinator>();
+
+                            await coordinator.ExecuteAsync();
+
+                            break; 
+                        }
+                        catch (Exception ex)
+                        {
+                            if (retry == maxRetries) throw;
+
+                            logger.LogWarning($"⏳ Database chưa sẵn sàng. Đợi 5 giây rồi thử lại... (Lỗi: {ex.Message})");
+
+                            await Task.Delay(5000);
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    logger.LogCritical(ex, "FATAL ERROR: Không thể khởi tạo Database!");
+                }
+            }
+
 
             app.Run();
         }

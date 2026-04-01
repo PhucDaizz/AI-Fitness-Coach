@@ -1,4 +1,5 @@
 ﻿using AIService.Application.Common.Interfaces;
+using AIService.Infrastructure.Data.Seeders;
 using AIService.Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -15,6 +16,14 @@ namespace AIService.Infrastructure
                    configuration.GetConnectionString("DefaultConnection"),
                    new MySqlServerVersion(new Version(8, 0, 21)),
                    b => b.MigrationsAssembly(typeof(ApplicationDbContext).Assembly.FullName)));
+
+            services.Scan(scan => scan
+                .FromAssembliesOf(typeof(IDataSeeder))
+                .AddClasses(classes => classes.AssignableTo<IDataSeeder>())
+                .AsImplementedInterfaces()
+                .WithScopedLifetime());
+
+            services.AddScoped<DataSeederCoordinator>();
 
             services.AddScoped<IApplicationDbContext>(provider => provider.GetRequiredService<ApplicationDbContext>());
 

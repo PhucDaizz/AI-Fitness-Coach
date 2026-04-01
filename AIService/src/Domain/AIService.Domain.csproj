@@ -7,8 +7,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Entities\" />
-    <Folder Include="Enum\" />
     <Folder Include="Events\" />
     <Folder Include="ValueObject\" />
     <Folder Include="Specifications\" />

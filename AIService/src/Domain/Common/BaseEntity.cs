@@ -1,8 +1,8 @@
 ﻿namespace AIService.Domain.Common
 {
-    public abstract class BaseEntity
+    public abstract class BaseEntity<TId>
     {
-        public Guid Id { get; set; } = Guid.NewGuid();
+        public TId Id { get; set; } = default!;
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime? UpdatedAt { get; set; }
         public string? CreatedBy { get; set; }
@@ -25,6 +25,14 @@
         public void ClearDomainEvents()
         {
             _domainEvents.Clear();
+        }
+    }
+
+    public abstract class BaseEntity : BaseEntity<Guid>
+    {
+        protected BaseEntity()
+        {
+            Id = Guid.NewGuid();
         }
     }
 
