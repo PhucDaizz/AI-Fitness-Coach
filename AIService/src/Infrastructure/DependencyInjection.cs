@@ -1,9 +1,14 @@
 ﻿using AIService.Application.Common.Interfaces;
+using AIService.Application.Common.Models;
 using AIService.Infrastructure.Data.Seeders;
 using AIService.Infrastructure.Services;
+using AIService.Infrastructure.Settings;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.VectorData;
+using Microsoft.SemanticKernel;
+using Qdrant.Client;
 
 namespace AIService.Infrastructure
 {
@@ -11,6 +16,10 @@ namespace AIService.Infrastructure
     {
         public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
         {
+            services.Configure<QdrantSettings>(configuration.GetSection("Qdrant"));
+            services.Configure<OllamaSettings>(configuration.GetSection("Ollama"));
+            services.Configure<OpenAiSettings>(configuration.GetSection("OpenAI"));
+
             services.AddDbContext<ApplicationDbContext>(options =>
                options.UseMySql(
                    configuration.GetConnectionString("DefaultConnection"),
@@ -23,10 +32,57 @@ namespace AIService.Infrastructure
                 .AsImplementedInterfaces()
                 .WithScopedLifetime());
 
-            services.AddScoped<DataSeederCoordinator>();
+            // CẤU HÌNH SEMANTIC KERNEL & AI PROVIDER
+            var kernelBuilder = services.AddKernel();
+            var aiProvider = configuration["AI_Provider"] ?? "Ollama";
+            if (aiProvider.Equals("OpenAI", StringComparison.OrdinalIgnoreCase))
+            {
+                var openAiConfig = configuration.GetSection("OpenAI").Get<OpenAiSettings>()!;
+                kernelBuilder.AddOpenAITextEmbeddingGeneration(
+                    modelId: openAiConfig.EmbeddingModel,
+                    apiKey: openAiConfig.ApiKey);
+            }
+            else
+            {
+                var ollamaConfig = configuration.GetSection("Ollama").Get<OllamaSettings>()!;
+                kernelBuilder.AddOllamaEmbeddingGenerator(
+                    modelId: ollamaConfig.Model,
+                    endpoint: new Uri(ollamaConfig.Url));
+
+                kernelBuilder.AddOllamaChatCompletion(
+                    modelId: "qwen2.5:1.5b",
+                    endpoint: new Uri(ollamaConfig.Url));
+            }
+
+            // CẤU HÌNH QDRANT & VECTOR STORE
+            services.AddSingleton<IQdrantService, QdrantService>();
+
+            services.AddSingleton<QdrantClient>(sp =>
+            {
+                var s = configuration.GetSection("Qdrant").Get<QdrantSettings>()!;
+                return new QdrantClient(host: s.Host, port: s.Port, https: s.Https, apiKey: string.IsNullOrEmpty(s.ApiKey) ? null : s.ApiKey);
+            });
+
+            services.AddQdrantVectorStore();
+
+            // Đăng ký Collection Món ăn
+            services.AddTransient<VectorStoreCollection<Guid, MealVectorRecord>>(sp =>
+            {
+                var vectorStore = sp.GetRequiredService<VectorStore>();
+                return vectorStore.GetCollection<Guid, MealVectorRecord>("meals"); 
+            });
+
+            // Đăng ký Collection Bài tập
+            services.AddTransient<VectorStoreCollection<Guid, ExerciseVectorRecord>>(sp =>
+            {
+                var vectorStore = sp.GetRequiredService<VectorStore>();
+                return vectorStore.GetCollection<Guid, ExerciseVectorRecord>("exercises"); 
+            });
+
 
             services.AddScoped<IApplicationDbContext>(provider => provider.GetRequiredService<ApplicationDbContext>());
 
+            services.AddScoped<DataSeederCoordinator>();
             services.AddScoped<IUnitOfWork, UnitOfWork>();
 
 

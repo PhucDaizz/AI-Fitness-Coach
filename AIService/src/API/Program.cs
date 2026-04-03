@@ -3,8 +3,11 @@ using AIService.API.ExceptionHandling;
 using AIService.API.Extensions;
 using AIService.API.StartUp;
 using AIService.Application;
+using AIService.Application.Common.Interfaces;
 using AIService.Infrastructure;
+using AIService.Infrastructure.BackgroundJobs.Consumer;
 using AIService.Infrastructure.Data.Seeders;
+using AIService.Infrastructure.Services;
 using Microsoft.AspNetCore.Http.Features;
 using Nexus.BuildingBlocks.Extensions;
 using System.Diagnostics;
@@ -39,19 +42,34 @@ namespace AIService.API
             builder.AddDependencies();
             builder.Services.AddInfrastructure(builder.Configuration);
             builder.Services.AddApplication();
+
+            var aiProvider = builder.Configuration["AI_Provider"] ?? "Ollama";
+
+            if (aiProvider.Equals("OpenAI", StringComparison.OrdinalIgnoreCase))
+            {
+                builder.Services.AddSingleton<IEmbeddingService, OpenAiEmbeddingService>();
+            }
+            else
+            {
+                builder.Services.AddHttpClient<OllamaEmbeddingService>();
+                builder.Services.AddSingleton<IEmbeddingService, OllamaEmbeddingService>();
+            }
+
+            builder.Services.AddHostedService<EmbeddingConsumer>();
+
             var app = builder.Build();
 
             app.UseExceptionHandler();
 
             app.UseSwaggerConfiguration();
 
-            app.UseHttpsRedirection();
+            //app.UseHttpsRedirection();
 
             app.MapHealthChecks("/health");
 
             app.UseAuthorization();
 
-
+            app.MapControllers();
             using (var scope = app.Services.CreateScope())
             {
                 var services = scope.ServiceProvider;
