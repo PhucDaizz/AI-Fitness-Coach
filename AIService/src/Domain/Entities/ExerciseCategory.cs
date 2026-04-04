@@ -1,4 +1,4 @@
-﻿using AIService.Domain.Common;
+using AIService.Domain.Common;
 using AIService.Domain.Exceptions;
 
 namespace AIService.Domain.Entities
@@ -23,6 +23,15 @@ namespace AIService.Domain.Entities
         public static ExerciseCategory Create(int id, string name, string? nameVn)
         {
             return new ExerciseCategory(id, name, nameVn);
+        }
+
+        public void Update(string name, string? nameVn)
+        {
+            if (string.IsNullOrEmpty(name))
+                throw new DomainException("Tên danh mục không được để trống");
+
+            Name = name;
+            NameVN = nameVn;
         }
     }
 }

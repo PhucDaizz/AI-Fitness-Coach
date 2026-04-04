@@ -1,4 +1,4 @@
-﻿using AIService.Domain.Repositories;
+using AIService.Domain.Repositories;
 using Microsoft.EntityFrameworkCore;
 
 namespace AIService.Infrastructure.Data.Repositories
@@ -39,9 +39,14 @@ namespace AIService.Infrastructure.Data.Repositories
             return await _dbSet.ToListAsync(cancellationToken);
         }
 
-        public virtual async Task<TEntity?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
+        public virtual async Task<TEntity?> GetByIdAsync(object id, CancellationToken cancellationToken = default)
         {
             return await _dbSet.FindAsync(new object[] { id }, cancellationToken);
+        }
+
+        public virtual async Task<TEntity?> GetByKeysAsync(object[] keys, CancellationToken cancellationToken = default)
+        {
+            return await _dbSet.FindAsync(keys, cancellationToken);
         }
 
         public virtual void Update(TEntity entity)

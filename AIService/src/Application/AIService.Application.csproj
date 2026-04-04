@@ -20,6 +20,7 @@
 
   <ItemGroup>
     <Folder Include="DTOs\" />
+    <Folder Include="Features\Equipment\Queries\" />
     <Folder Include="Mappings\" />
     <Folder Include="Contracts\" />
   </ItemGroup>

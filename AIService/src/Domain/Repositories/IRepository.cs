@@ -1,9 +1,10 @@
-﻿namespace AIService.Domain.Repositories
+namespace AIService.Domain.Repositories
 {
     public interface IRepository<TEntity> where TEntity : class
     {
         // 1. READ (Lấy dữ liệu)
-        Task<TEntity?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
+        Task<TEntity?> GetByIdAsync(object id, CancellationToken cancellationToken = default);
+        Task<TEntity?> GetByKeysAsync(object[] keys, CancellationToken cancellationToken = default);
         Task<IEnumerable<TEntity>> GetAllAsync(CancellationToken cancellationToken = default);
 
         // 2. CREATE (Thêm mới)

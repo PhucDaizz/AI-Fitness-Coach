@@ -1,4 +1,4 @@
-﻿namespace AIService.Domain.Entities
+namespace AIService.Domain.Entities
 {
     public class ExerciseMuscle
     {
@@ -16,6 +16,16 @@
         {
             ExerciseId = exerciseId;
             MuscleId = muscleId;
+            IsPrimary = isPrimary;
+        }
+
+        public static ExerciseMuscle Create(int exerciseId, int muscleId, bool isPrimary)
+        {
+            return new ExerciseMuscle(exerciseId, muscleId, isPrimary);
+        }
+
+        public void Update(bool isPrimary)
+        {
             IsPrimary = isPrimary;
         }
     }

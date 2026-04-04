@@ -1,4 +1,4 @@
-﻿using AIService.Domain.Common;
+using AIService.Domain.Common;
 using AIService.Domain.Enum;
 using AIService.Domain.Exceptions;
 
@@ -51,6 +51,15 @@ namespace AIService.Domain.Entities
         public static Exercise Create(int id, Guid? uuId, string name, string? description = null, DescriptionSource source = DescriptionSource.wger)
         {
             return new Exercise(id, uuId, name, description, source);
+        }
+
+        public void Update(string name, string? description, DescriptionSource source)
+        {
+            if (string.IsNullOrWhiteSpace(name)) throw new DomainException("Tên bài tập không được để trống");
+
+            Name = name;
+            Description = description;
+            DescriptionSource = source;
         }
 
 

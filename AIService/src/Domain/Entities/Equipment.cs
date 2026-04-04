@@ -1,4 +1,4 @@
-﻿using AIService.Domain.Common;
+using AIService.Domain.Common;
 using AIService.Domain.Exceptions;
 
 namespace AIService.Domain.Entities
@@ -23,6 +23,15 @@ namespace AIService.Domain.Entities
         public static Equipment Create(int id, string name, string? nameVn)
         {
             return new Equipment(id, name, nameVn);
+        }
+
+        public void Update(string name, string? nameVn)
+        {
+            if (string.IsNullOrEmpty(name))
+                throw new DomainException("Tên thiết bị không được để trống");
+
+            Name = name;
+            NameVN = nameVn;
         }
     }
 }

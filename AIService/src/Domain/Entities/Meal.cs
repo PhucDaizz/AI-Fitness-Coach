@@ -1,4 +1,4 @@
-﻿using AIService.Domain.Common;
+using AIService.Domain.Common;
 using AIService.Domain.Enum;
 using AIService.Domain.Exceptions;
 
@@ -42,6 +42,19 @@ namespace AIService.Domain.Entities
         public static Meal Create(string name, int calories, float protein, float carbs, float fat)
         {
             return new Meal(name, calories, protein, carbs, fat);
+        }
+
+        public void Update(string name, int calories, float protein, float carbs, float fat)
+        {
+            if (string.IsNullOrWhiteSpace(name)) throw new DomainException("Tên món ăn không được để trống");
+            if (calories < 0 || protein < 0 || carbs < 0 || fat < 0)
+                throw new DomainException("Chỉ số dinh dưỡng không được âm");
+
+            Name = name;
+            Calories = calories;
+            Protein = protein;
+            Carbs = carbs;
+            Fat = fat;
         }
 
         public void SetDetails(string? description, string? cuisineType, string? imageUrl)
