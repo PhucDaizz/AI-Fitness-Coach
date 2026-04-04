@@ -40,7 +40,6 @@
 
   <ItemGroup>
     <Folder Include="Data\SeedFiles\" />
-    <Folder Include="Data\Repositories\" />
   </ItemGroup>
 
 </Project>

@@ -1,7 +1,16 @@
-﻿namespace AIService.Application.Common.Interfaces
+﻿using AIService.Domain.Repositories;
+
+namespace AIService.Application.Common.Interfaces
 {
     public interface IUnitOfWork : IDisposable
     {
+        IEquipmentRepository EquipmentRepository { get; }
+        IExerciseCategoryRepository ExerciseCategoryRepository { get; }
+        IExerciseMuscleRepository ExerciseMuscleRepository { get; }
+        IExerciseRepository ExerciseRepository { get; }
+        IMealRepository MealRepository { get; }
+        IMuscleGroupRepository MuscleGroupRepository { get; }
+
 
         Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
         Task BeginTransactionAsync();

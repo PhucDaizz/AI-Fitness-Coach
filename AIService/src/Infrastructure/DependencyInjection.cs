@@ -1,5 +1,7 @@
 ﻿using AIService.Application.Common.Interfaces;
 using AIService.Application.Common.Models;
+using AIService.Domain.Repositories;
+using AIService.Infrastructure.Data.Repositories;
 using AIService.Infrastructure.Data.Seeders;
 using AIService.Infrastructure.Services;
 using AIService.Infrastructure.Settings;
@@ -19,6 +21,7 @@ namespace AIService.Infrastructure
             services.Configure<QdrantSettings>(configuration.GetSection("Qdrant"));
             services.Configure<OllamaSettings>(configuration.GetSection("Ollama"));
             services.Configure<OpenAiSettings>(configuration.GetSection("OpenAI"));
+            services.Configure<OpenRouterSettings>(configuration.GetSection("OpenRouter"));
 
             services.AddDbContext<ApplicationDbContext>(options =>
                options.UseMySql(
@@ -45,13 +48,25 @@ namespace AIService.Infrastructure
             else
             {
                 var ollamaConfig = configuration.GetSection("Ollama").Get<OllamaSettings>()!;
-                kernelBuilder.AddOllamaEmbeddingGenerator(
+                kernelBuilder.AddOllamaTextEmbeddingGeneration(
                     modelId: ollamaConfig.Model,
                     endpoint: new Uri(ollamaConfig.Url));
 
-                kernelBuilder.AddOllamaChatCompletion(
-                    modelId: "qwen2.5:1.5b",
-                    endpoint: new Uri(ollamaConfig.Url));
+                // dùng openroute 
+                var openRouterConfig = configuration.GetSection("OpenRouter").Get<OpenRouterSettings>()!;
+                var openRouterClient = new HttpClient();
+                openRouterClient.DefaultRequestHeaders.Add("HTTP-Referer", "http://localhost:5000");
+                openRouterClient.DefaultRequestHeaders.Add("X-Title", "AI Fitness System");
+
+                kernelBuilder.AddOpenAIChatCompletion(
+                    modelId: openRouterConfig.Model, 
+                    apiKey: openRouterConfig.ApiKey,
+                    endpoint: new Uri("https://openrouter.ai/api/v1"), 
+                    httpClient: openRouterClient);
+
+                /*kernelBuilder.AddOllamaChatCompletion(
+                    modelId: "qwen3:1.7b",
+                    endpoint: new Uri(ollamaConfig.Url));*/
             }
 
             // CẤU HÌNH QDRANT & VECTOR STORE
@@ -60,12 +75,16 @@ namespace AIService.Infrastructure
             services.AddSingleton<QdrantClient>(sp =>
             {
                 var s = configuration.GetSection("Qdrant").Get<QdrantSettings>()!;
-                return new QdrantClient(host: s.Host, port: s.Port, https: s.Https, apiKey: string.IsNullOrEmpty(s.ApiKey) ? null : s.ApiKey);
+                return new QdrantClient(
+                    host: s.Host,
+                    port: s.Port,
+                    https: s.Https,
+                    apiKey: string.IsNullOrEmpty(s.ApiKey) ? null : s.ApiKey);
             });
-
             services.AddQdrantVectorStore();
 
             // Đăng ký Collection Món ăn
+
             services.AddTransient<VectorStoreCollection<Guid, MealVectorRecord>>(sp =>
             {
                 var vectorStore = sp.GetRequiredService<VectorStore>();
@@ -85,7 +104,14 @@ namespace AIService.Infrastructure
             services.AddScoped<DataSeederCoordinator>();
             services.AddScoped<IUnitOfWork, UnitOfWork>();
 
+            services.AddScoped<IEquipmentRepository, EquipmentRepository>();
+            services.AddScoped<IExerciseCategoryRepository, ExerciseCategoryRepository>();
+            services.AddScoped<IExerciseMuscleRepository, ExerciseMuscleRepository>();
+            services.AddScoped<IExerciseRepository, ExerciseRepository>();
+            services.AddScoped<IMealRepository, MealRepository>();
+            services.AddScoped<IMuscleGroupRepository, MuscleGroupRepository>();
 
+            services.AddScoped<ICurrentUserService, CurrentUserService>();
             services.AddScoped<IDomainEventService, DomainEventService>();
             services.AddScoped<IIntegrationEventService, IntegrationEventService>();
 
