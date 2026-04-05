@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { ZodError } from 'zod';
 import { isDev } from '../config/env';
-import { HTTP_STATUS, MESSAGES } from '@/constants';
+import { HTTP_STATUS, MESSAGES } from '../constants';
 
 // ─── Custom AppError ────────────────────────────────────────────────────────────
 export class AppError extends Error {

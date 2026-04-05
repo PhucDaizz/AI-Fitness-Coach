@@ -5,10 +5,10 @@ import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import swaggerUi from 'swagger-ui-express';
 
-import { env, isDev } from './config/env.ts';
-import { swaggerSpec } from './config/swagger.ts';
-import routes from './routes/index';
-import { errorHandler, notFoundHandler } from './middlewares/error.middleware';
+import { env, isDev } from './src/config/env';
+import { swaggerSpec } from './src/config/swagger';
+import routes from './src/routes/index';
+import { errorHandler, notFoundHandler } from './src/middlewares/error.middleware';
 
 export function createApp(): Application {
   const app = express();
