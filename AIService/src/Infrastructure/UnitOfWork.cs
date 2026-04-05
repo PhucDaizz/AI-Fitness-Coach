@@ -9,7 +9,6 @@ namespace AIService.Infrastructure
         private readonly ApplicationDbContext _context;
         private IDbContextTransaction? _transaction;
         public IExerciseCategoryRepository ExerciseCategoryRepository { get; }
-        public IExerciseMuscleRepository ExerciseMuscleRepository { get; }
         public IExerciseRepository ExerciseRepository { get; }
         public IMealRepository MealRepository { get; }
         public IMuscleGroupRepository MuscleGroupRepository { get; }
@@ -19,7 +18,6 @@ namespace AIService.Infrastructure
             ApplicationDbContext context,
             IEquipmentRepository equipmentRepository,
             IExerciseCategoryRepository exerciseCategoryRepository,
-            IExerciseMuscleRepository exerciseMuscleRepository,
             IExerciseRepository exerciseRepository,
             IMealRepository mealRepository,
             IMuscleGroupRepository muscleGroupRepository
@@ -27,7 +25,6 @@ namespace AIService.Infrastructure
         {
             _context = context;
             ExerciseCategoryRepository = exerciseCategoryRepository;
-            ExerciseMuscleRepository = exerciseMuscleRepository;
             ExerciseRepository = exerciseRepository;
             MealRepository = mealRepository;
             MuscleGroupRepository = muscleGroupRepository;

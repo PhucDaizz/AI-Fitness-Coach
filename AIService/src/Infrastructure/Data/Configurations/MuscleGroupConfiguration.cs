@@ -16,7 +16,7 @@ namespace AIService.Infrastructure.Data.Configurations
             builder.Property(e => e.Id)
                 .HasColumnName("id")
                 .IsRequired()
-                .ValueGeneratedNever(); ;
+                .ValueGeneratedOnAdd(); ;
 
             builder.Property(m => m.NameEN)
                    .HasColumnName("name_en")

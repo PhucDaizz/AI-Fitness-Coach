@@ -15,7 +15,7 @@ namespace AIService.Application.Features.ExerciseCategory.Commands.CreateExercis
 
         public async Task<Result<bool>> Handle(CreateExerciseCategoryCommand request, CancellationToken cancellationToken)
         {
-            var category = Domain.Entities.ExerciseCategory.Create(request.Id, request.Name, request.NameVN);
+            var category = Domain.Entities.ExerciseCategory.CreateManual(request.Name, request.NameVN);
             
             await _unitOfWork.ExerciseCategoryRepository.AddAsync(category, cancellationToken);
             await _unitOfWork.SaveChangesAsync(cancellationToken);

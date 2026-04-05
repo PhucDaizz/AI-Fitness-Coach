@@ -15,7 +15,7 @@ namespace AIService.Infrastructure.Data.Configurations
             builder.Property(e => e.Id)
                 .HasColumnName("id")
                 .IsRequired()
-                .ValueGeneratedNever();
+                .ValueGeneratedOnAdd();
 
             builder.Property(e => e.UUId).HasColumnName("uuid").IsRequired();
             builder.Property(e => e.Name).HasMaxLength(200).IsRequired();

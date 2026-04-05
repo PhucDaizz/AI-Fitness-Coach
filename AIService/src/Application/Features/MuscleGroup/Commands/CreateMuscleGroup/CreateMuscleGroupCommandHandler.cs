@@ -15,7 +15,7 @@ namespace AIService.Application.Features.MuscleGroup.Commands.CreateMuscleGroup
 
         public async Task<Result<bool>> Handle(CreateMuscleGroupCommand request, CancellationToken cancellationToken)
         {
-            var muscleGroup = Domain.Entities.MuscleGroup.Create(request.Id, request.NameEN, request.IsFront, request.NameVN);
+            var muscleGroup = Domain.Entities.MuscleGroup.CreateManual(request.NameEN, request.IsFront, request.NameVN);
             
             await _unitOfWork.MuscleGroupRepository.AddAsync(muscleGroup, cancellationToken);
             await _unitOfWork.SaveChangesAsync(cancellationToken);

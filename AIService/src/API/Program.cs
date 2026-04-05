@@ -54,6 +54,7 @@ namespace AIService.API
                 builder.Services.AddHttpClient<OllamaEmbeddingService>();
                 builder.Services.AddSingleton<IEmbeddingService, OllamaEmbeddingService>();
             }
+            builder.Services.AddHttpContextAccessor();
 
             builder.Services.AddHostedService<EmbeddingConsumer>();
 

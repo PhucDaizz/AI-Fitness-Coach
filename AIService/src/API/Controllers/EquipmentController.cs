@@ -1,3 +1,4 @@
+using AIService.Application.DTOs.Equipment;
 using AIService.Application.Features.Equipment.Commands.CreateEquipment;
 using AIService.Application.Features.Equipment.Commands.DeleteEquipment;
 using AIService.Application.Features.Equipment.Commands.UpdateEquipment;
@@ -51,16 +52,16 @@ namespace AIService.API.Controllers
         /// <param name="id">Id của thiết bị</param>
         /// <returns>Thông tin thiết bị</returns>
         [HttpGet("{id}")]
-        public async Task<ActionResult<ApiResponse<Domain.Entities.Equipment>>> GetEquipment(int id)
+        public async Task<ActionResult<ApiResponse<Equipment>>> GetEquipment(int id)
         {
             var result = await _mediator.Send(new GetEquipmentByIdQuery(id));
 
             if (result.IsFailure)
             {
-                return NotFound(ApiResponse<Domain.Entities.Equipment>.ErrorResponse(result.Error.Message));
+                return NotFound(ApiResponse<Equipment>.ErrorResponse(result.Error.Message));
             }
 
-            return Ok(ApiResponse<Domain.Entities.Equipment>.SuccessResponse(result.Value!));
+            return Ok(ApiResponse<Equipment>.SuccessResponse(result.Value!));
         }
 
         /// <summary>
@@ -88,14 +89,16 @@ namespace AIService.API.Controllers
         /// <param name="command">Dữ liệu thiết bị cập nhật</param>
         /// <returns>Thông báo kết quả cập nhật</returns>
         [HttpPut("{id}")]
-        public async Task<ActionResult<ApiResponse<string>>> UpdateEquipment(int id, [FromBody] UpdateEquipmentCommand command)
+        public async Task<ActionResult<ApiResponse<string>>> UpdateEquipment(int id, [FromBody] UpdateEquipmentDto command)
         {
-            if (id != command.Id)
+            var updateCommand = new UpdateEquipmentCommand
             {
-                return BadRequest(ApiResponse<string>.ErrorResponse("Id trong đường dẫn không khớp với Id trong dữ liệu"));
-            }
+                Id = id,
+                Name = command.Name,
+                NameVN = command.NameVN
+            };
 
-            var result = await _mediator.Send(command);
+            var result = await _mediator.Send(updateCommand);
             
             if (result.IsFailure)
             {

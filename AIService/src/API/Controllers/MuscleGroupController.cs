@@ -1,3 +1,4 @@
+using AIService.Application.DTOs.MuscleGroup;
 using AIService.Application.Features.MuscleGroup.Commands.CreateMuscleGroup;
 using AIService.Application.Features.MuscleGroup.Commands.DeleteMuscleGroup;
 using AIService.Application.Features.MuscleGroup.Commands.UpdateMuscleGroup;
@@ -88,14 +89,17 @@ namespace AIService.API.Controllers
         /// <param name="command">Dữ liệu nhóm cơ cập nhật</param>
         /// <returns>Thông báo kết quả cập nhật</returns>
         [HttpPut("{id}")]
-        public async Task<ActionResult<ApiResponse<string>>> UpdateMuscleGroup(int id, [FromBody] UpdateMuscleGroupCommand command)
+        public async Task<ActionResult<ApiResponse<string>>> UpdateMuscleGroup(int id, [FromBody] UpdateMuscleGroupDto command)
         {
-            if (id != command.Id)
+            var updateCommand = new UpdateMuscleGroupCommand
             {
-                return BadRequest(ApiResponse<string>.ErrorResponse("Id trong đường dẫn không khớp với Id trong dữ liệu"));
-            }
+                Id = id,
+                NameEN = command.NameEN,
+                NameVN = command.NameVN,
+                IsFront = command.IsFront
+            };
 
-            var result = await _mediator.Send(command);
+            var result = await _mediator.Send(updateCommand);
             
             if (result.IsFailure)
             {

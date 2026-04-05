@@ -92,7 +92,7 @@ namespace AIService.Application.Features.Embeddings.Handlers
             }
         }
 
-        private string GenerateTextForAI(Meal meal)
+        private string GenerateTextForAI(Domain.Entities.Meal meal)
         {
             var sb = new StringBuilder();
 

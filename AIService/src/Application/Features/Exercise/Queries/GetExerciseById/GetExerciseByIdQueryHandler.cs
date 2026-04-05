@@ -17,6 +17,10 @@ namespace AIService.Application.Features.Exercise.Queries.GetExerciseById
         public async Task<Result<Domain.Entities.Exercise>> Handle(GetExerciseByIdQuery request, CancellationToken cancellationToken)
         {
             var exercise = await _context.Exercises
+                .Include(x => x.Category)
+                .Include(x => x.ExerciseMuscles)
+                    .ThenInclude(em => em.MuscleGroup)
+                .Include(x => x.Equipments)
                 .AsNoTracking()
                 .FirstOrDefaultAsync(x => x.Id == request.Id, cancellationToken);
 

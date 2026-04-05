@@ -1,3 +1,4 @@
+using AIService.Application.DTOs.Meal;
 using AIService.Application.Features.Meal.Commands.CreateMeal;
 using AIService.Application.Features.Meal.Commands.DeleteMeal;
 using AIService.Application.Features.Meal.Commands.UpdateMeal;
@@ -88,14 +89,23 @@ namespace AIService.API.Controllers
         /// <param name="command">Dữ liệu món ăn cập nhật</param>
         /// <returns>Thông báo kết quả cập nhật</returns>
         [HttpPut("{id}")]
-        public async Task<ActionResult<ApiResponse<string>>> UpdateMeal(int id, [FromBody] UpdateMealCommand command)
+        public async Task<ActionResult<ApiResponse<string>>> UpdateMeal(int id, [FromBody] UpdateMealDto command)
         {
-            if (id != command.Id)
+            var updateCommand = new UpdateMealCommand
             {
-                return BadRequest(ApiResponse<string>.ErrorResponse("Id trong đường dẫn không khớp với Id trong dữ liệu"));
-            }
+                Id = id,
+                Name = command.Name,
+                Description = command.Description,
+                Calories = command.Calories,
+                Protein = command.Protein,
+                Carbs = command.Carbs,
+                Fat = command.Fat,
+                CuisineType = command.CuisineType,
+                DietTags = command.DietTags,
+                ImageUrl = command.ImageUrl
+            };
 
-            var result = await _mediator.Send(command);
+            var result = await _mediator.Send(updateCommand);
             
             if (result.IsFailure)
             {

@@ -1,7 +1,6 @@
 ﻿using AIService.Application.Common.Interfaces;
 using AIService.Application.Common.Models;
 using AIService.Application.Features.Embeddings.Events;
-using AIService.Domain.Entities;
 using AIService.Domain.Enum;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -106,7 +105,7 @@ namespace AIService.Application.Features.Embeddings.Handlers
             }
         }
 
-        private string GenerateTextForAI(Exercise exercise)
+        private string GenerateTextForAI(Domain.Entities.Exercise exercise)
         {
             var primaryMuscles = exercise.ExerciseMuscles
                 .Where(m => m.IsPrimary)

@@ -1,8 +1,7 @@
+using AIService.Application.DTOs.MuscleGroup;
 using AIService.Domain.Enum;
 using Domain.Common.Response;
 using MediatR;
-using System;
-using System.Collections.Generic;
 
 namespace AIService.Application.Features.Exercise.Commands.UpdateExercise
 {
@@ -17,5 +16,8 @@ namespace AIService.Application.Features.Exercise.Commands.UpdateExercise
         public string? ImageUrl { get; set; }
         public string? ImageThumbnailUrl { get; set; }
         public bool IsFrontImage { get; set; } = true;
+
+        public List<UpdateMuscleInputDto> Muscles { get; set; } = new();
+        public List<int> EquipmentIds { get; set; } = new();
     }
 }

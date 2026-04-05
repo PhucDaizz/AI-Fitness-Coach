@@ -106,7 +106,6 @@ namespace AIService.Infrastructure
 
             services.AddScoped<IEquipmentRepository, EquipmentRepository>();
             services.AddScoped<IExerciseCategoryRepository, ExerciseCategoryRepository>();
-            services.AddScoped<IExerciseMuscleRepository, ExerciseMuscleRepository>();
             services.AddScoped<IExerciseRepository, ExerciseRepository>();
             services.AddScoped<IMealRepository, MealRepository>();
             services.AddScoped<IMuscleGroupRepository, MuscleGroupRepository>();

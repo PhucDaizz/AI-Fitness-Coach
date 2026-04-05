@@ -25,6 +25,11 @@ namespace AIService.Domain.Entities
             return new ExerciseCategory(id, name, nameVn);
         }
 
+        public static ExerciseCategory CreateManual(string name, string? nameVn)
+        {
+            return new ExerciseCategory(0, name, nameVn);
+        }
+
         public void Update(string name, string? nameVn)
         {
             if (string.IsNullOrEmpty(name))

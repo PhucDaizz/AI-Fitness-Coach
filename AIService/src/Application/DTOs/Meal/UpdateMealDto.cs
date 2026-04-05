@@ -1,11 +1,7 @@
-using Domain.Common.Response;
-using MediatR;
-
-namespace AIService.Application.Features.Meal.Commands.UpdateMeal
+﻿namespace AIService.Application.DTOs.Meal
 {
-    public class UpdateMealCommand : IRequest<Result<bool>>
+    public class UpdateMealDto
     {
-        public int Id { get; set; }
         public string Name { get; set; } = default!;
         public string? Description { get; set; }
         public int Calories { get; set; }

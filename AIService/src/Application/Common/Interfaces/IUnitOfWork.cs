@@ -6,7 +6,6 @@ namespace AIService.Application.Common.Interfaces
     {
         IEquipmentRepository EquipmentRepository { get; }
         IExerciseCategoryRepository ExerciseCategoryRepository { get; }
-        IExerciseMuscleRepository ExerciseMuscleRepository { get; }
         IExerciseRepository ExerciseRepository { get; }
         IMealRepository MealRepository { get; }
         IMuscleGroupRepository MuscleGroupRepository { get; }

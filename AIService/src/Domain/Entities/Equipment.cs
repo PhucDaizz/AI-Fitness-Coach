@@ -25,6 +25,11 @@ namespace AIService.Domain.Entities
             return new Equipment(id, name, nameVn);
         }
 
+        public static Equipment CreateManual(string name, string? nameVn)
+        {
+            return new Equipment(0, name, nameVn);
+        }
+
         public void Update(string name, string? nameVn)
         {
             if (string.IsNullOrEmpty(name))

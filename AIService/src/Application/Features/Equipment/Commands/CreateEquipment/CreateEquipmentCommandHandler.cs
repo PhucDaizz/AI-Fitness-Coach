@@ -15,8 +15,8 @@ namespace AIService.Application.Features.Equipment.Commands.CreateEquipment
 
         public async Task<Result<bool>> Handle(CreateEquipmentCommand request, CancellationToken cancellationToken)
         {
-            var equipment = Domain.Entities.Equipment.Create(request.Id, request.Name, request.NameVN);
-            
+            var equipment = Domain.Entities.Equipment.CreateManual(request.Name, request.NameVN);
+
             await _unitOfWork.EquipmentRepository.AddAsync(equipment, cancellationToken);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 

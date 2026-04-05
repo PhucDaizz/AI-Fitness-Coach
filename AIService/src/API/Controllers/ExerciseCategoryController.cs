@@ -1,3 +1,4 @@
+using AIService.Application.DTOs.ExerciseCategory;
 using AIService.Application.Features.ExerciseCategory.Commands.CreateExerciseCategory;
 using AIService.Application.Features.ExerciseCategory.Commands.DeleteExerciseCategory;
 using AIService.Application.Features.ExerciseCategory.Commands.UpdateExerciseCategory;
@@ -88,14 +89,17 @@ namespace AIService.API.Controllers
         /// <param name="command">Dữ liệu danh mục cập nhật</param>
         /// <returns>Thông báo kết quả cập nhật</returns>
         [HttpPut("{id}")]
-        public async Task<ActionResult<ApiResponse<string>>> UpdateExerciseCategory(int id, [FromBody] UpdateExerciseCategoryCommand command)
+        public async Task<ActionResult<ApiResponse<string>>> UpdateExerciseCategory(int id, [FromBody] UpdateExerciseCategoryDto command)
         {
-            if (id != command.Id)
+            
+            var updateCommand = new UpdateExerciseCategoryCommand
             {
-                return BadRequest(ApiResponse<string>.ErrorResponse("Id trong đường dẫn không khớp với Id trong dữ liệu"));
-            }
+                Id = id,
+                Name = command.Name,
+                NameVN = command.NameVN
+            };
 
-            var result = await _mediator.Send(command);
+            var result = await _mediator.Send(updateCommand);
             
             if (result.IsFailure)
             {

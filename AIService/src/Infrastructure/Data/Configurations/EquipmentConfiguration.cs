@@ -15,7 +15,7 @@ namespace AIService.Infrastructure.Data.Configurations
             builder.Property(e => e.Id)
                 .HasColumnName("id")
                 .IsRequired()
-                .ValueGeneratedNever();
+                .ValueGeneratedOnAdd();
 
             builder.Property(e => e.Name).HasColumnName("name").HasMaxLength(100).IsRequired();
             builder.Property(e => e.NameVN).HasColumnName("name_vn").HasMaxLength(100);

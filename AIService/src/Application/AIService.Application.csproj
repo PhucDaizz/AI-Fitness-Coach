@@ -19,8 +19,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="DTOs\" />
     <Folder Include="Features\Equipment\Queries\" />
+    <Folder Include="Features\Exercise\Commands\AddMuscleToExercise\" />
     <Folder Include="Mappings\" />
     <Folder Include="Contracts\" />
   </ItemGroup>

@@ -27,6 +27,11 @@ namespace AIService.Domain.Entities
             return new MuscleGroup(id, nameEn, isFront, nameVn);
         }
 
+        public static MuscleGroup CreateManual(string nameEn, bool isFront, string? nameVn)
+        {
+            return new MuscleGroup(0, nameEn, isFront, nameVn);
+        }
+
         public void Update(string nameEn, bool isFront, string? nameVn)
         {
             if (string.IsNullOrEmpty(nameEn))
