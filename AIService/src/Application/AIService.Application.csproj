@@ -19,10 +19,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Contracts\" />
     <Folder Include="Features\Equipment\Queries\" />
     <Folder Include="Features\Exercise\Commands\AddMuscleToExercise\" />
     <Folder Include="Mappings\" />
-    <Folder Include="Contracts\" />
   </ItemGroup>
 
 </Project>

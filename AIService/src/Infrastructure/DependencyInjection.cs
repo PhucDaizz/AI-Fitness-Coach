@@ -1,6 +1,7 @@
 ﻿using AIService.Application.Common.Interfaces;
 using AIService.Application.Common.Models;
 using AIService.Domain.Repositories;
+using AIService.Infrastructure.AI.Plugins;
 using AIService.Infrastructure.Data.Repositories;
 using AIService.Infrastructure.Data.Seeders;
 using AIService.Infrastructure.Services;
@@ -39,6 +40,15 @@ namespace AIService.Infrastructure
             // CẤU HÌNH SEMANTIC KERNEL & AI PROVIDER
             var kernelBuilder = services.AddKernel();
             var aiProvider = configuration["AI_Provider"] ?? "Ollama";
+
+            services.AddScoped<ExercisePlugin>();
+            services.AddScoped<NutritionPlugin>();
+            services.AddScoped<FitnessCalculatorPlugin>();
+
+            kernelBuilder.Plugins.AddFromType<ExercisePlugin>("exercise");
+            kernelBuilder.Plugins.AddFromType<NutritionPlugin>("nutrition");
+            kernelBuilder.Plugins.AddFromType<FitnessCalculatorPlugin>("calculator");
+
             if (aiProvider.Equals("OpenAI", StringComparison.OrdinalIgnoreCase))
             {
                 var openAiConfig = configuration.GetSection("OpenAI").Get<OpenAiSettings>()!;
