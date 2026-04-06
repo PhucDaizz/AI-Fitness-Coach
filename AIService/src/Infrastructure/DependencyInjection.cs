@@ -37,13 +37,17 @@ namespace AIService.Infrastructure
                 .AsImplementedInterfaces()
                 .WithScopedLifetime());
 
-            // CẤU HÌNH SEMANTIC KERNEL & AI PROVIDER
-            var kernelBuilder = services.AddKernel();
-            var aiProvider = configuration["AI_Provider"] ?? "Ollama";
+            services.AddScoped<INutritionSearchService, NutritionSearchService>();
+            services.AddScoped<IExerciseSearchService, ExerciseSearchService>();
 
             services.AddScoped<ExercisePlugin>();
             services.AddScoped<NutritionPlugin>();
             services.AddScoped<FitnessCalculatorPlugin>();
+
+
+            // CẤU HÌNH SEMANTIC KERNEL & AI PROVIDER
+            var kernelBuilder = services.AddKernel();
+            var aiProvider = configuration["AI_Provider"] ?? "Ollama";
 
             kernelBuilder.Plugins.AddFromType<ExercisePlugin>("exercise");
             kernelBuilder.Plugins.AddFromType<NutritionPlugin>("nutrition");
