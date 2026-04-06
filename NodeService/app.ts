@@ -34,17 +34,22 @@ export function createApp(): Application {
   app.use(morgan(isDev ? 'dev' : 'combined'));
 
   // ─── Rate limiting ─────────────────────────────────────────────────────────────
-  const limiter = rateLimit({
-    windowMs: env.RATE_LIMIT_WINDOW_MS,
-    max: env.RATE_LIMIT_MAX,
-    standardHeaders: true,
-    legacyHeaders: false,
-    message: {
-      success: false,
-      message: 'Quá nhiều yêu cầu — vui lòng thử lại sau 15 phút',
-    },
-  });
-  app.use(env.API_PREFIX, limiter);
+  if (env.RATE_LIMIT_ENABLED) {
+    const limiter = rateLimit({
+      windowMs: env.RATE_LIMIT_WINDOW_MS,
+      max: env.RATE_LIMIT_MAX,
+      standardHeaders: true,
+      legacyHeaders: false,
+      message: {
+        success: false,
+        message: 'Quá nhiều yêu cầu — vui lòng thử lại sau 15 phút',
+      },
+    });
+    app.use(env.API_PREFIX, limiter);
+    console.log(`🛡️   Rate limit: ${env.RATE_LIMIT_MAX} req / ${env.RATE_LIMIT_WINDOW_MS / 60_000} phút`);
+  } else {
+    console.log('⏭️   Rate limit disabled (RATE_LIMIT_ENABLED=false) — bỏ qua');
+  }
 
   // ─── Swagger UI (chỉ trên dev) ─────────────────────────────────────────────────
   if (isDev) {

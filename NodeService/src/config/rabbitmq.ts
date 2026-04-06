@@ -1,7 +1,6 @@
 import amqplib from 'amqplib';
 import { env } from './env';
 
-// amqplib v0.10+ trả về ChannelModel (không còn Connection riêng biệt)
 type ChannelModel = Awaited<ReturnType<typeof amqplib.connect>>;
 type Channel = Awaited<ReturnType<ChannelModel['createChannel']>>;
 
@@ -16,6 +15,11 @@ const QUEUES = [
 ];
 
 export async function connectRabbitMQ(): Promise<void> {
+  if (!env.RABBITMQ_ENABLED) {
+    console.log('⏭️   RabbitMQ disabled (RABBITMQ_ENABLED=false) — bỏ qua kết nối');
+    return;
+  }
+
   if (isConnecting) return;
   isConnecting = true;
 
@@ -48,6 +52,8 @@ export async function connectRabbitMQ(): Promise<void> {
 
 let reconnectAttempts = 0;
 function scheduleReconnect(): void {
+  if (!env.RABBITMQ_ENABLED) return;
+
   connection = null;
   channel = null;
   reconnectAttempts++;
@@ -57,6 +63,7 @@ function scheduleReconnect(): void {
 }
 
 export async function disconnectRabbitMQ(): Promise<void> {
+  if (!env.RABBITMQ_ENABLED) return;
   try {
     await channel?.close();
     await connection?.close();
