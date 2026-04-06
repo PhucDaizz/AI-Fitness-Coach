@@ -59,7 +59,44 @@ services:
     networks:
       - fitnesscoach-network
 
-  
+  qdrant:
+    image: qdrant/qdrant:latest
+    container_name: fitnesscoach_qdrant
+    restart: always
+    ports:
+      - "6334:6334" # gRPC
+      - "6333:6333" # REST
+    volumes:
+      - qdrant_data:/qdrant/storage
+    networks:
+      - fitnesscoach-network
+
+  ai_service:
+    build:
+      context: ./AIService
+      dockerfile: Dockerfile
+    container_name: fitnesscoach_ai_service
+    restart: on-failure
+    depends_on:
+      mysql:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      qdrant:
+        condition: service_started
+    ports:
+      - "7002:8080" # Exposed on port 7002 to avoid conflict with auth_service
+    env_file:
+      - ./AIService/.env.example.ai
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Server=mysql;Port=3306;Database=AI.Fitness.Coach.Service;user=root;password=phucdai011;
+      - RabbitMQ__HostName=rabbitmq
+      - Qdrant__Host=qdrant
+      - Ollama__Url=http://host.docker.internal:11434
+    networks:
+      - fitnesscoach-network
+
 networks:
   fitnesscoach-network:
     driver: bridge
@@ -67,3 +104,4 @@ networks:
 volumes:
   mysql_data:
   rabbitmq_data:
+  qdrant_data:
