@@ -1,4 +1,5 @@
-﻿using AIService.Application.Common.Interfaces; 
+﻿using Microsoft.Extensions.AI;
+using AIService.Application.Common.Interfaces; 
 using AIService.Application.Common.Models;
 using MediatR;
 using Microsoft.EntityFrameworkCore; 
@@ -6,7 +7,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
-using Microsoft.SemanticKernel.Embeddings;
 using System.Text;
 
 namespace AIService.Application.Features.Search.Queries
@@ -17,28 +17,50 @@ namespace AIService.Application.Features.Search.Queries
     {
         private readonly VectorStoreCollection<Guid, ExerciseVectorRecord> _exerciseVectors;
         private readonly ILogger<AskExerciseQueryHandler> _logger;
-        private readonly ITextEmbeddingGenerationService _embeddingService;
-        private readonly IChatCompletionService _chatService;
-
         private readonly IApplicationDbContext _context;
+
+        private readonly IEmbeddingGenerator<string, Embedding<float>> _embeddingService;
+        private readonly IChatCompletionService _translatorAi;
+        private readonly IChatCompletionService _ptAi;
 
         public AskExerciseQueryHandler(
             VectorStoreCollection<Guid, ExerciseVectorRecord> exerciseVectors,
-            Kernel kernel,
+            Kernel kernel, 
             ILogger<AskExerciseQueryHandler> logger,
-            IApplicationDbContext context)
+            IApplicationDbContext context,
+            IEmbeddingGenerator<string, Embedding<float>> embeddingService)
         {
             _exerciseVectors = exerciseVectors;
             _logger = logger;
-            _embeddingService = kernel.GetRequiredService<ITextEmbeddingGenerationService>();
-            _chatService = kernel.GetRequiredService<IChatCompletionService>();
             _context = context;
+            _embeddingService = embeddingService;
+            _translatorAi = kernel.GetRequiredService<IChatCompletionService>("fast_translator");
+            _ptAi = kernel.GetRequiredService<IChatCompletionService>("pt_brain");
         }
 
         public async Task<string> Handle(AskExerciseQuery request, CancellationToken cancellationToken)
         {
-            var queryVector = await _embeddingService.GenerateEmbeddingAsync(
-                request.Question, cancellationToken: cancellationToken);
+            var translateHistory = new ChatHistory(
+                "You are an expert translator. Translate the following fitness/anatomy query from Vietnamese to English. " +
+                "CRITICAL RULES: ONLY output the translated English text. DO NOT add explanations, notes, or quotes."
+            );
+            translateHistory.AddUserMessage(request.Question);
+
+            var executionSettings = new PromptExecutionSettings
+            {
+                ExtensionData = new Dictionary<string, object> { { "max_tokens", 30 } }
+            };
+
+            var translatedResult = await _translatorAi.GetChatMessageContentAsync(
+                translateHistory,
+                executionSettings, 
+                cancellationToken: cancellationToken);
+
+            var translatedQuery = translatedResult.Content?.Trim() ?? request.Question;
+            _logger.LogInformation($"[AI Translator] Gốc: {request.Question} -> Dịch: {translatedQuery}");
+
+            var queryVector = await _embeddingService.GenerateVectorAsync(
+                translatedQuery, cancellationToken: cancellationToken);
 
             var searchResults = _exerciseVectors.SearchAsync(
                 queryVector,
@@ -50,10 +72,10 @@ namespace AIService.Application.Features.Search.Queries
                 cancellationToken: cancellationToken);
 
             var contextBuilder = new StringBuilder();
-            contextBuilder.AppendLine("DANH SÁCH BÀI TẬP TÌM THẤY TRONG CƠ SỞ DỮ LIỆU:");
+            contextBuilder.AppendLine("RETRIEVED EXERCISES CONTEXT:");
             contextBuilder.AppendLine("---");
 
-            await foreach (var result in searchResults) 
+            await foreach (var result in searchResults)
             {
                 if (result.Score < 0.4) continue;
 
@@ -63,35 +85,34 @@ namespace AIService.Application.Features.Search.Queries
                     .AsNoTracking()
                     .FirstOrDefaultAsync(e => e.Id == item.ExerciseId, cancellationToken);
 
-                var description = dbExercise?.Description ?? "Không có mô tả chi tiết.";
+                var description = dbExercise?.Description ?? "No description.";
 
-                contextBuilder.AppendLine($"### Tên bài tập: {item.Name}");
-
-                contextBuilder.AppendLine($"- Mô tả cách tập: {description}");
+                contextBuilder.AppendLine($"### Exercise Name: {item.Name}");
+                contextBuilder.AppendLine($"- Description: {description}");
 
                 var categoryStr = string.IsNullOrEmpty(item.CategoryVN) ? item.Category : $"{item.CategoryVN} ({item.Category})";
-                contextBuilder.AppendLine($"- Phân loại: {categoryStr}");
+                contextBuilder.AppendLine($"- Category: {categoryStr}");
 
-                contextBuilder.AppendLine($"- Cơ tác động chính: {string.Join(", ", item.PrimaryMuscles)}");
+                contextBuilder.AppendLine($"- Primary Muscles: {string.Join(", ", item.PrimaryMuscles)}");
 
                 if (item.SecondaryMuscles.Any())
                 {
-                    contextBuilder.AppendLine($"- Cơ tham gia phụ: {string.Join(", ", item.SecondaryMuscles)}");
+                    contextBuilder.AppendLine($"- Secondary Muscles: {string.Join(", ", item.SecondaryMuscles)}");
                 }
 
-                contextBuilder.AppendLine($"- Dụng cụ yêu cầu: {(item.IsBodyweight ? "Không cần (Bodyweight)" : string.Join(", ", item.Equipments))}");
+                contextBuilder.AppendLine($"- Equipment: {(item.IsBodyweight ? "Bodyweight only" : string.Join(", ", item.Equipments))}");
 
                 if (item.LocationTypes.Any())
                 {
-                    contextBuilder.AppendLine($"- Môi trường phù hợp: {string.Join(", ", item.LocationTypes)}");
+                    contextBuilder.AppendLine($"- Location: {string.Join(", ", item.LocationTypes)}");
                 }
 
                 if (item.HasImage && !string.IsNullOrEmpty(item.ImageUrl))
                 {
-                    contextBuilder.AppendLine($"- Link ảnh minh họa: {item.ImageUrl}");
+                    contextBuilder.AppendLine($"- Image URL: {item.ImageUrl}");
                 }
 
-                contextBuilder.AppendLine($"*(Độ tương thích: {result.Score:F2})*");
+                contextBuilder.AppendLine($"*(Match Score: {result.Score:F2})*");
                 contextBuilder.AppendLine("---");
             }
 
@@ -100,16 +121,18 @@ namespace AIService.Application.Features.Search.Queries
 
 
             var chatHistory = new ChatHistory(
-            @"Bạn là PT chuyên nghiệp. Dựa vào Context (danh sách bài tập) để trả lời:
+            @"You are a professional Personal Trainer. Based STRICTLY on the provided Context, answer the user's query.
 
-            - Chỉ đề xuất bài tập có trong Context, không tự bịa thêm.
-            - Nếu học viên nói về đau/ chấn thương/ bệnh lý → khuyên tham khảo bác sĩ.
-            - Trình bày bằng Markdown (đậm, nghiêng, gạch đầu dòng).
-            - Nếu có 'Link ảnh minh họa' → chèn ảnh: ![tên bài tập](link)");
+            CRITICAL RULES:
+            1. ONLY recommend exercises present in the Context. Do NOT invent or hallucinate exercises.
+            2. If the user mentions pain, injury, or medical conditions, advise them to consult a doctor.
+            3. Format using Markdown (bold, italics, bullet points).
+            4. If an 'Image URL' is provided, embed it using Markdown: ![exercise name](Image URL).
+            5. YOU MUST REPLY ENTIRELY IN VIETNAMESE in a friendly, encouraging tone.");
 
-            chatHistory.AddUserMessage($"{contextBuilder}\n\nCâu hỏi của học viên: {request.Question}");
+            chatHistory.AddUserMessage($"{contextBuilder}\n\nUser's Question: {request.Question}");
 
-            var response = await _chatService.GetChatMessageContentAsync(
+            var response = await _ptAi.GetChatMessageContentAsync(
                 chatHistory, cancellationToken: cancellationToken);
 
             return response.Content ?? "Có lỗi xảy ra khi gọi AI.";

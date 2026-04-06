@@ -22,6 +22,7 @@ namespace AIService.Infrastructure
             services.Configure<OllamaSettings>(configuration.GetSection("Ollama"));
             services.Configure<OpenAiSettings>(configuration.GetSection("OpenAI"));
             services.Configure<OpenRouterSettings>(configuration.GetSection("OpenRouter"));
+            services.Configure<GoogleSettings>(configuration.GetSection("GoogleAI"));
 
             services.AddDbContext<ApplicationDbContext>(options =>
                options.UseMySql(
@@ -41,32 +42,56 @@ namespace AIService.Infrastructure
             if (aiProvider.Equals("OpenAI", StringComparison.OrdinalIgnoreCase))
             {
                 var openAiConfig = configuration.GetSection("OpenAI").Get<OpenAiSettings>()!;
-                kernelBuilder.AddOpenAITextEmbeddingGeneration(
+                kernelBuilder.AddOpenAIChatCompletion(
                     modelId: openAiConfig.EmbeddingModel,
                     apiKey: openAiConfig.ApiKey);
             }
             else
             {
                 var ollamaConfig = configuration.GetSection("Ollama").Get<OllamaSettings>()!;
-                kernelBuilder.AddOllamaTextEmbeddingGeneration(
+                kernelBuilder.AddOllamaEmbeddingGenerator(
                     modelId: ollamaConfig.Model,
                     endpoint: new Uri(ollamaConfig.Url));
 
-                // dùng openroute 
-                var openRouterConfig = configuration.GetSection("OpenRouter").Get<OpenRouterSettings>()!;
+                // ĐĂNG KÝ AI LÀM PHIÊN DỊCH (Ollama - qwen2.5:0.5b)
+                kernelBuilder.AddOllamaChatCompletion(
+                    modelId: "qwen2.5:0.5b",       
+                    endpoint: new Uri(ollamaConfig.Url),
+                    serviceId: "fast_translator"); 
+
+                #region Google
+
+                var googleConfig = configuration.GetSection("GoogleAI").Get<GoogleSettings>()!;
+                kernelBuilder.AddGoogleAIGeminiChatCompletion(
+                    modelId: googleConfig.Model,
+                    apiKey: googleConfig.ApiKey,
+                    serviceId: "pt_brain");
+
+                #endregion
+
+
+                #region OpenRouter
+
+                /*var openRouterConfig = configuration.GetSection("OpenRouter").Get<OpenRouterSettings>()!;
                 var openRouterClient = new HttpClient();
                 openRouterClient.DefaultRequestHeaders.Add("HTTP-Referer", "http://localhost:5000");
                 openRouterClient.DefaultRequestHeaders.Add("X-Title", "AI Fitness System");
 
                 kernelBuilder.AddOpenAIChatCompletion(
-                    modelId: openRouterConfig.Model, 
+                    modelId: openRouterConfig.Model,
                     apiKey: openRouterConfig.ApiKey,
-                    endpoint: new Uri("https://openrouter.ai/api/v1"), 
-                    httpClient: openRouterClient);
+                    endpoint: new Uri("https://openrouter.ai/api/v1"),
+                    httpClient: openRouterClient);*/
+
+                #endregion
+
+                #region Ollama
 
                 /*kernelBuilder.AddOllamaChatCompletion(
                     modelId: "qwen3:1.7b",
                     endpoint: new Uri(ollamaConfig.Url));*/
+
+                #endregion
             }
 
             // CẤU HÌNH QDRANT & VECTOR STORE
