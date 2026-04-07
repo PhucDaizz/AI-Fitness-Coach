@@ -10,6 +10,8 @@ namespace AIService.Application.Common.Interfaces
         public IQueryable<ExerciseMuscle> ExerciseMuscles { get; }
         public IQueryable<MuscleGroup> MuscleGroups { get; }
         public IQueryable<Meal> Meals { get; }
+        public IQueryable<Message> Messages { get; }
+        public IQueryable<Session> Sessions { get; }
         Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
     }
 }

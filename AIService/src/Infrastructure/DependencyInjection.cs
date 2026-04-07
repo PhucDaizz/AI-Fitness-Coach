@@ -25,6 +25,8 @@ namespace AIService.Infrastructure
             services.Configure<OpenRouterSettings>(configuration.GetSection("OpenRouter"));
             services.Configure<GoogleSettings>(configuration.GetSection("GoogleAI"));
 
+            services.AddSignalR();
+
             services.AddDbContext<ApplicationDbContext>(options =>
                options.UseMySql(
                    configuration.GetConnectionString("DefaultConnection"),
@@ -149,6 +151,8 @@ namespace AIService.Infrastructure
             services.AddScoped<IMealRepository, MealRepository>();
             services.AddScoped<IMuscleGroupRepository, MuscleGroupRepository>();
 
+            services.AddTransient<IChatNotifier, SignalRChatNotifier>();
+            services.AddScoped<IAITranslationService, AITranslationService>();
             services.AddScoped<ICurrentUserService, CurrentUserService>();
             services.AddScoped<IDomainEventService, DomainEventService>();
             services.AddScoped<IIntegrationEventService, IntegrationEventService>();

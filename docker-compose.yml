@@ -34,7 +34,7 @@ services:
     networks:
       - fitnesscoach-network
     healthcheck:
-      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      test: [ "CMD", "rabbitmq-diagnostics", "-q", "ping" ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -87,7 +87,7 @@ services:
     ports:
       - "7002:8080" # Exposed on port 7002 to avoid conflict with auth_service
     env_file:
-      - ./AIService/.env.example.ai
+      - .env.example.ai
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ConnectionStrings__DefaultConnection=Server=mysql;Port=3306;Database=AI.Fitness.Coach.Service;user=root;password=phucdai011;

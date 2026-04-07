@@ -19,6 +19,8 @@ namespace AIService.Infrastructure
         public DbSet<ExerciseMuscle> ExerciseMuscleDbSet { get; set; }
         public DbSet<MuscleGroup> MuscleGroupDbSet { get; set; }
         public DbSet<Meal> MealDbSet { get; set; }
+        public DbSet<Message> MessageDbSet { get; set; }
+        public DbSet<Session> SessionDbSet { get; set; }
 
         public IQueryable<Equipment> Equipments => EquipmentDbSet;
         public IQueryable<Exercise> Exercises => ExerciseDbSet;
@@ -26,6 +28,8 @@ namespace AIService.Infrastructure
         public IQueryable<ExerciseMuscle> ExerciseMuscles => ExerciseMuscleDbSet;
         public IQueryable<MuscleGroup> MuscleGroups => MuscleGroupDbSet;
         public IQueryable<Meal> Meals => MealDbSet;
+        public IQueryable<Message> Messages => MessageDbSet;
+        public IQueryable<Session> Sessions => SessionDbSet;
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

@@ -7,6 +7,7 @@ using AIService.Application.Common.Interfaces;
 using AIService.Infrastructure;
 using AIService.Infrastructure.BackgroundJobs.Consumer;
 using AIService.Infrastructure.Data.Seeders;
+using AIService.Infrastructure.Hubs;
 using AIService.Infrastructure.Services;
 using Microsoft.AspNetCore.Http.Features;
 using Nexus.BuildingBlocks.Extensions;
@@ -68,7 +69,10 @@ namespace AIService.API
 
             app.MapHealthChecks("/health");
 
+            app.UseAuthentication();
             app.UseAuthorization();
+
+            app.MapHub<ChatHub>("/hubs/chat");
 
             app.MapControllers();
             using (var scope = app.Services.CreateScope())
