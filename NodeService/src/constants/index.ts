@@ -62,6 +62,19 @@ export const GENDER = {
   OTHER: 'other',
 } as const;
 
+// ─── Day of Week ────────────────────────────────────────────────────────────────
+export const DAY_OF_WEEK = {
+  MONDAY: 'Monday',
+  TUESDAY: 'Tuesday',
+  WEDNESDAY: 'Wednesday',
+  THURSDAY: 'Thursday',
+  FRIDAY: 'Friday',
+  SATURDAY: 'Saturday',
+  SUNDAY: 'Sunday',
+} as const;
+ 
+export type DayOfWeek = (typeof DAY_OF_WEEK)[keyof typeof DAY_OF_WEEK];
+
 // ─── Workout Plan Status ────────────────────────────────────────────────────────
 export const PLAN_STATUS = {
   ACTIVE: 'active',
