@@ -1,4 +1,4 @@
-﻿using AIService.Application.Common.Interfaces;
+using AIService.Application.Common.Interfaces;
 using AIService.Domain.Common;
 using AIService.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
@@ -41,14 +41,8 @@ namespace AIService.Infrastructure
 
         public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
         {
-            await DispatchDomainEventsAsync(cancellationToken);
-            return await base.SaveChangesAsync(cancellationToken);
-        }
-
-        private async Task DispatchDomainEventsAsync(CancellationToken cancellationToken = default)
-        {
             var domainEntities = ChangeTracker
-                .Entries<BaseEntity>()
+                .Entries<IHasDomainEvent>()
                 .Where(x => x.Entity.DomainEvents.Any())
                 .Select(x => x.Entity)
                 .ToList();
@@ -59,10 +53,14 @@ namespace AIService.Infrastructure
 
             domainEntities.ForEach(entity => entity.ClearDomainEvents());
 
+            var result = await base.SaveChangesAsync(cancellationToken);
+
             foreach (var domainEvent in domainEvents)
             {
                 await _domainEventService.PublishAsync(domainEvent, cancellationToken);
             }
+
+            return result;
         }
     }
 }

@@ -13,6 +13,10 @@ namespace AIService.Infrastructure.Data.Configurations
 
             builder.ToTable("sessions");
 
+            builder.Property(e => e.Id)
+                .IsRequired()
+                .ValueGeneratedNever();
+
             builder.Property(s => s.Title)
                 .HasMaxLength(255)
                 .IsRequired(false);

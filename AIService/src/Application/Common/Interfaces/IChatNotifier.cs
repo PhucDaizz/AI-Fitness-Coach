@@ -16,5 +16,7 @@
 
         // 4. Bắn lỗi về cho client nếu AI API sập hoặc hết quota
         Task SendErrorAsync(string userId, string errorMessage);
+
+        Task SendTitleUpdatedAsync(string userId, Guid sessionId, string newTitle);
     }
 }

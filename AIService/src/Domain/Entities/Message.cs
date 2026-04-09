@@ -15,15 +15,17 @@ namespace AIService.Domain.Entities
 
         private Message() { }
 
-        private Message(Guid sessionId, MessageRole role, string content)
+        private Message(Guid id, Guid sessionId, MessageRole role, string content)
         {
+            Id = id;
             SessionId = sessionId;
             Role = role;
             Content = content;
         }
 
-        private Message(Guid sessionId, MessageRole role, string content, int promptTokens, int completionTokens)
+        private Message(Guid id, Guid sessionId, MessageRole role, string content, int promptTokens, int completionTokens)
         {
+            Id = id;
             SessionId = sessionId;
             Role = role;
             Content = content;
@@ -33,19 +35,19 @@ namespace AIService.Domain.Entities
         }
 
 
-        internal static Message CreateUserMessage(Guid sessionId, string content)
+        internal static Message CreateUserMessage(Guid id, Guid sessionId, string content)
         {
-            return new Message(sessionId, MessageRole.User, content);
+            return new Message(id, sessionId, MessageRole.User, content);
         }
 
-        internal static Message CreateAssistantMessage(Guid sessionId, string content, int promptTokens, int completionTokens)
+        internal static Message CreateAssistantMessage(Guid id, Guid sessionId, string content, int promptTokens, int completionTokens)
         {
-            return new Message(sessionId, MessageRole.Assistant, content, promptTokens, completionTokens);
+            return new Message(id, sessionId, MessageRole.Assistant, content, promptTokens, completionTokens);
         }
 
-        internal static Message CreateSystemMessage(Guid sessionId, string content)
+        internal static Message CreateSystemMessage(Guid id, Guid sessionId, string content)
         {
-            return new Message(sessionId, MessageRole.System, content);
+            return new Message(id, sessionId, MessageRole.System, content);
         }
     }
 }

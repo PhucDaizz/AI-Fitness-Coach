@@ -58,6 +58,18 @@ namespace AIService.API
             builder.Services.AddHttpContextAccessor();
 
             builder.Services.AddHostedService<EmbeddingConsumer>();
+            builder.Services.AddHostedService<ChatConsumer>();
+
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy("AllowAll", policy =>
+                {
+                    policy.SetIsOriginAllowed(_ => true) // Cho phép test từ file HTML Local
+                          .AllowAnyMethod()
+                          .AllowAnyHeader()
+                          .AllowCredentials(); // Bắt buộc cho tính năng SignalR Negotiate
+                });
+            });
 
             var app = builder.Build();
 
@@ -71,6 +83,8 @@ namespace AIService.API
 
             app.UseAuthentication();
             app.UseAuthorization();
+
+            app.UseCors("AllowAll");
 
             app.MapHub<ChatHub>("/hubs/chat");
 

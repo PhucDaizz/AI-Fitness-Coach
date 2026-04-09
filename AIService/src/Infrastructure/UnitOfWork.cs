@@ -13,6 +13,7 @@ namespace AIService.Infrastructure
         public IMealRepository MealRepository { get; }
         public IMuscleGroupRepository MuscleGroupRepository { get; }
         public IEquipmentRepository EquipmentRepository { get; }
+        public ISessionRepository SessionRepository { get; }
 
         public UnitOfWork(
             ApplicationDbContext context,
@@ -20,7 +21,8 @@ namespace AIService.Infrastructure
             IExerciseCategoryRepository exerciseCategoryRepository,
             IExerciseRepository exerciseRepository,
             IMealRepository mealRepository,
-            IMuscleGroupRepository muscleGroupRepository
+            IMuscleGroupRepository muscleGroupRepository,
+            ISessionRepository sessionRepository
         )
         {
             _context = context;
@@ -28,6 +30,7 @@ namespace AIService.Infrastructure
             ExerciseRepository = exerciseRepository;
             MealRepository = mealRepository;
             MuscleGroupRepository = muscleGroupRepository;
+            SessionRepository = sessionRepository;
             EquipmentRepository = equipmentRepository;
         }
         public async Task BeginTransactionAsync()

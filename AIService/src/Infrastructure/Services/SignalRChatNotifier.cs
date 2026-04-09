@@ -1,4 +1,4 @@
-﻿using AIService.Application.Common.Interfaces;
+using AIService.Application.Common.Interfaces;
 using AIService.Infrastructure.Hubs;
 using Microsoft.AspNetCore.SignalR;
 
@@ -31,6 +31,11 @@ namespace AIService.Infrastructure.Services
         public async Task SendErrorAsync(string userId, string errorMessage)
         {
             await _hubContext.Clients.User(userId).ReceiveError(errorMessage);
+        }
+
+        public async Task SendTitleUpdatedAsync(string userId, Guid sessionId, string newTitle)
+        {
+            await _hubContext.Clients.User(userId).SessionTitleUpdated(sessionId, newTitle);
         }
     }
 }

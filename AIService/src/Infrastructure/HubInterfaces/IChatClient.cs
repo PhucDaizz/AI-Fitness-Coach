@@ -16,5 +16,7 @@
 
         // 4. Bắn lỗi về cho client nếu AI API sập hoặc hết quota
         Task ReceiveError(string errorMessage);
+
+        Task SessionTitleUpdated(Guid sessionId, string title); 
     }
 }

@@ -406,7 +406,7 @@ namespace AIService.Infrastructure.Migrations
 
                     b.HasIndex("exercise_id");
 
-                    b.ToTable("exercise_equipment");
+                    b.ToTable("exercise_equipment", (string)null);
                 });
 
             modelBuilder.Entity("AIService.Domain.Entities.Exercise", b =>

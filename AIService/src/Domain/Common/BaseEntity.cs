@@ -1,6 +1,12 @@
-﻿namespace AIService.Domain.Common
+namespace AIService.Domain.Common
 {
-    public abstract class BaseEntity<TId>
+    public interface IHasDomainEvent
+    {
+        IReadOnlyCollection<IDomainEvent> DomainEvents { get; }
+        void ClearDomainEvents();
+    }
+
+    public abstract class BaseEntity<TId> : IHasDomainEvent
     {
         public TId Id { get; set; } = default!;
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;

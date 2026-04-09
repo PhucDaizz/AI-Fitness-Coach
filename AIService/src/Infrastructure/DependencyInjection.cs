@@ -150,9 +150,11 @@ namespace AIService.Infrastructure
             services.AddScoped<IExerciseRepository, ExerciseRepository>();
             services.AddScoped<IMealRepository, MealRepository>();
             services.AddScoped<IMuscleGroupRepository, MuscleGroupRepository>();
+            services.AddScoped<ISessionRepository, SessionRepository>();
 
             services.AddTransient<IChatNotifier, SignalRChatNotifier>();
             services.AddScoped<IAITranslationService, AITranslationService>();
+            services.AddScoped<ITitleGeneratorAiService, AITitleGeneratorService>();
             services.AddScoped<ICurrentUserService, CurrentUserService>();
             services.AddScoped<IDomainEventService, DomainEventService>();
             services.AddScoped<IIntegrationEventService, IntegrationEventService>();

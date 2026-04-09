@@ -9,6 +9,7 @@ namespace AIService.Application.Common.Interfaces
         IExerciseRepository ExerciseRepository { get; }
         IMealRepository MealRepository { get; }
         IMuscleGroupRepository MuscleGroupRepository { get; }
+        ISessionRepository SessionRepository { get; }
 
 
         Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);

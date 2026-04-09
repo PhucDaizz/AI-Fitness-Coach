@@ -13,6 +13,10 @@ namespace AIService.Infrastructure.Data.Configurations
 
             builder.ToTable("messages");
 
+            builder.Property(m => m.Id)
+                .IsRequired()
+                .ValueGeneratedNever();
+
             builder.Property(m => m.SessionId)
                 .IsRequired();
 
