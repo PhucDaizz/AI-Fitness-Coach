@@ -71,13 +71,10 @@ export async function getProfile(
  *               dateOfBirth:
  *                 type: string
  *                 format: date
- *                 example: "1995-08-15"
  *               weightKg:
  *                 type: number
- *                 example: 70
  *               heightCm:
  *                 type: number
- *                 example: 175
  *               environment:
  *                 type: string
  *                 enum: [gym, home, outdoor]
@@ -89,21 +86,17 @@ export async function getProfile(
  *                 enum: [beginner, intermediate, advanced]
  *               sessionMinutes:
  *                 type: integer
- *                 example: 60
  *               equipment:
  *                 type: array
  *                 items:
  *                   type: string
- *                 example: ["Dumbbell", "Pull-up bar"]
  *               injuries:
  *                 type: string
- *                 example: "Đau đầu gối trái"
  *               availableDays:
  *                 type: array
  *                 items:
  *                   type: string
  *                   enum: [Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday]
- *                 example: ["Monday", "Wednesday", "Friday"]
  *     responses:
  *       201:
  *         description: Tạo hồ sơ thành công
@@ -119,7 +112,6 @@ export async function createProfile(
 ): Promise<void> {
   try {
     const userId = (req as AuthRequest).user.sub;
-    // Zod parse — nếu lỗi sẽ throw ZodError → errorHandler bắt tự động
     const dto = createProfileSchema.parse(req.body);
     const data = await profileService.createProfile(userId, dto);
     sendCreated(res, data, 'Tạo hồ sơ thành công');
@@ -145,17 +137,38 @@ export async function createProfile(
  *             type: object
  *             description: Gửi bất kỳ field nào cần cập nhật
  *             properties:
+ *               gender:
+ *                 type: string
+ *                 enum: [male, female, other]
+ *               dateOfBirth:
+ *                 type: string
+ *                 format: date
  *               weightKg:
  *                 type: number
  *               heightCm:
  *                 type: number
+ *               environment:
+ *                 type: string
+ *                 enum: [gym, home, outdoor]
  *               fitnessGoal:
  *                 type: string
  *                 enum: [weight_loss, muscle_gain, endurance, flexibility, maintenance]
+ *               fitnessLevel:
+ *                 type: string
+ *                 enum: [beginner, intermediate, advanced]
+ *               sessionMinutes:
+ *                 type: integer
+ *               equipment:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *               injuries:
+ *                 type: string
  *               availableDays:
  *                 type: array
  *                 items:
  *                   type: string
+ *                   enum: [Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday]
  *     responses:
  *       200:
  *         description: Cập nhật thành công
