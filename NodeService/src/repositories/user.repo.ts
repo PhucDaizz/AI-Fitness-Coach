@@ -1,44 +1,97 @@
-import { UserProfileModel, IUserProfile } from '../models/user.model';
+import { type ClientSession, Types } from 'mongoose';
+import { UserProfileModel } from '../models/user.model';
 import { AvailableDayModel, IAvailableDay } from '../models/available.model';
 
-export class UserProfileRepository {
+const WEEK_ORDER = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 
+export type UserProfileLean = {
+  _id: Types.ObjectId;
+  userId: string;
+  gender: string;
+  dateOfBirth: Date;
+  weightKg: number;
+  heightCm: number;
+  environment: string;
+  fitnessGoal: string;
+  fitnessLevel: string;
+  sessionMinutes: number;
+  equipment: string[];
+  injuries?: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+const PROFILE_SELECT = '-__v';
+export class UserProfileRepository {
   // ─── Profile CRUD ─────────────────────────────────────────────────────────────
 
-  async findByUserId(userId: string): Promise<IUserProfile | null> {
-    return UserProfileModel.findOne({ userId });
+  async findByUserId(
+    userId: string, 
+    session?: ClientSession
+  ): Promise<UserProfileLean | null> {
+    return UserProfileModel
+      .findOne({ userId })
+      .select(PROFILE_SELECT)
+      .lean<UserProfileLean>()
+      .session(session ?? null);
   }
 
-  async create(data: Partial<IUserProfile>): Promise<IUserProfile> {
-    return UserProfileModel.create(data);
+  async create(
+    data: Partial<UserProfileLean>,
+    session: ClientSession,
+  ): Promise<UserProfileLean> {
+    const [doc] = await UserProfileModel.create([data], { session });
+    return doc.toObject() as UserProfileLean;
   }
 
   async update(
     userId: string,
-    data: Partial<IUserProfile>,
-  ): Promise<IUserProfile | null> {
+    data: Partial<UserProfileLean>,
+    session: ClientSession,
+  ): Promise<UserProfileLean | null> {
     return UserProfileModel.findOneAndUpdate(
       { userId },
       { $set: data },
-      { new: true, runValidators: true },
-    );
+      { new: true, runValidators: true, session },
+    )
+    .select(PROFILE_SELECT)
+    .lean<UserProfileLean>();
+    ;
   }
 
   // ─── AvailableDay CRUD ────────────────────────────────────────────────────────
-
-  async findAvailableDays(userId: string): Promise<IAvailableDay[]> {
-    // Sắp xếp theo thứ tự trong tuần (Monday → Sunday)
-    const ORDER = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-    const days = await AvailableDayModel.find({ userId });
-    return days.sort((a, b) => ORDER.indexOf(a.dayOfWeek) - ORDER.indexOf(b.dayOfWeek));
+ 
+  async findAvailableDays(
+    userId: string,
+    session?: ClientSession
+  ): Promise<string[]> {
+    const docs = await AvailableDayModel
+      .find({ userId })
+      .select('dayOfWeek -_id')
+      .lean<{ dayOfWeek: string }[]>()
+      .session(session ?? null);
+    return docs
+      .map(doc => doc.dayOfWeek)
+      .sort((a, b) => WEEK_ORDER.indexOf(a) - WEEK_ORDER.indexOf(b));
   }
 
   /**
    * Xoá toàn bộ available_days cũ rồi insert mới — đơn giản hơn upsert nhiều records
    */
-  async replaceAvailableDays(userId: string, days: string[]): Promise<IAvailableDay[]> {
-    await AvailableDayModel.deleteMany({ userId });
+  async replaceAvailableDays(
+    userId: string, 
+    days: string[], 
+    session: ClientSession
+  ): Promise<string[]> {
+    await AvailableDayModel
+      .deleteMany({ userId, }, { session });
+    
+    if (days.length === 0) return [];
+    
     const docs = days.map((dayOfWeek) => ({ userId, dayOfWeek }));
-    return AvailableDayModel.insertMany(docs) as unknown as IAvailableDay[];
+    await AvailableDayModel.insertMany(docs, { session });
+    return [...days].sort((a, b) => WEEK_ORDER.indexOf(a) - WEEK_ORDER.indexOf(b));
   }
 }
+
+export const userProfileRepository = new UserProfileRepository();

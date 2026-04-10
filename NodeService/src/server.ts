@@ -1,9 +1,9 @@
 import http from "http";
 import { createApp } from "./app";
-import { env } from "./src/config/env";
-import { connectDatabase, disconnectDatabase } from "./src/config/database";
-import { connectRedis, disconnectRedis } from "./src/config/redis";
-import { connectRabbitMQ, disconnectRabbitMQ } from "./src/config/rabbitmq";
+import { env } from "./config/env";
+import { connectDatabase, disconnectDatabase } from "./config/database";
+import { connectRedis, disconnectRedis } from "./config/redis";
+import { connectRabbitMQ, disconnectRabbitMQ } from "./config/rabbitmq";
 
 async function bootstrap(): Promise<void> {
   // ─── Kết nối các service bên ngoài ──────────────────────────────────────────

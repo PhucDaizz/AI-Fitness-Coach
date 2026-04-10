@@ -1,5 +1,8 @@
 import swaggerJsdoc from 'swagger-jsdoc';
 import { env } from './env';
+import path from 'path';
+
+const ext = __filename.endsWith('.js') ? 'js' : 'ts';
 
 // ─── Swagger definition ─────────────────────────────────────────────────────────
 const options: swaggerJsdoc.Options = {
@@ -72,7 +75,10 @@ const options: swaggerJsdoc.Options = {
     ],
   },
   // Quét JSDoc trong tất cả route files
-  apis: ['./src/routes/*.ts', './src/controllers/*.ts'],
+  apis: [
+    path.join(__dirname, `../routes/*.${ext}`),
+    path.join(__dirname, `../controllers/*.${ext}`),
+  ],
 };
 
 export const swaggerSpec = swaggerJsdoc(options);
