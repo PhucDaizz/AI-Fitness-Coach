@@ -47,7 +47,17 @@
             <button id="btnConnect" onclick="connectHub()" style="width: 100%; margin-bottom: 20px;">Kết nối SignalR</button>
             <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
 
-            <h3>2. Gửi câu hỏi</h3>
+            <h3>2. Lịch sử phiên Chat</h3>
+            <button type="button" onclick="loadSessions()" style="width: 100%; background-color: #ff9800; margin-bottom: 10px;">⬇️ Lấy danh sách phiên (Cần Token)</button>
+            <div class="form-group">
+                <label>Chọn phiên Chat hiện có:</label>
+                <select id="sessionList" onchange="selectSession(this.value)" style="width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #ccc;">
+                    <option value="">-- Mục mới / Chọn phiên --</option>
+                </select>
+            </div>
+            <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
+
+            <h3>3. Gửi câu hỏi</h3>
             <div class="form-group">
                 <label>User ID (Hiện Backend ưu tiên lấy từ Token đã đăng nhập)</label>
                 <input type="text" id="userId" value="user-123">
@@ -161,6 +171,86 @@
                 statusDiv.className = "status disconnected";
                 btnConnect.disabled = false;
                 btnConnect.textContent = "Kết nối lại";
+            }
+        }
+
+        async function loadSessions() {
+            const baseUrl = document.getElementById("baseUrl").value.replace(/\/$/, "");
+            const token = document.getElementById("jwtToken").value.trim();
+            if (!token) {
+                alert("Vui lòng nhập Access Token (JWT) trước khi tải danh sách phiên.");
+                return;
+            }
+
+            try {
+                const response = await fetch(`${baseUrl}/api/Session`, {
+                    headers: {
+                        "Accept": "*/*",
+                        "Authorization": `Bearer ${token}`
+                    }
+                });
+
+                if (response.ok) {
+                    const res = await response.json();
+                    const sessions = res.data || [];
+                    const select = document.getElementById("sessionList");
+                    select.innerHTML = '<option value="">-- Chọn hoặc tạo phiên mới --</option>';
+                    sessions.forEach(s => {
+                        const opt = document.createElement("option");
+                        opt.value = s.id;
+                        opt.textContent = `${s.title || 'Chưa có tiêu đề'} (${s.id.substring(0,8)}...)`;
+                        select.appendChild(opt);
+                    });
+                    appendMessage(`[Hệ thống]: Đã tải báo cáo ${sessions.length} phiên chat.`, "status connected");
+                } else {
+                    const errText = await response.text();
+                    appendMessage(`Call API Lỗi: ${response.status} - ${errText}`, "error-msg");
+                }
+            } catch (err) {
+                appendMessage(`Network Error: ${err.message}`, "error-msg");
+            }
+        }
+
+        async function selectSession(sessionId) {
+            if (!sessionId) {
+                createNewSession();
+                return;
+            }
+
+            // Gán sessionId vào textbox hiện có
+            document.getElementById("sessionId").value = sessionId;
+            document.getElementById("chat-box").innerHTML = ""; // Clear khung chat cũ
+            appendMessage(`[Hệ thống]: Đang chuyển sang phiên chat: ${sessionId}...`, "status connected");
+
+            const baseUrl = document.getElementById("baseUrl").value.replace(/\/$/, "");
+            const token = document.getElementById("jwtToken").value.trim();
+            if (!token) return;
+
+            try {
+                const response = await fetch(`${baseUrl}/api/Session/messages?sessionId=${sessionId}&pageSize=20`, {
+                    headers: {
+                        "Accept": "*/*",
+                        "Authorization": `Bearer ${token}`
+                    }
+                });
+
+                if (response.ok) {
+                    const res = await response.json();
+                    const messages = res.data?.items || [];
+                    
+                    // Sắp xếp lại danh sách message từ cũ đến mới (nếu Server đang trả từ mới đến cũ)
+                    const sortedMessages = messages.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+                    
+                    sortedMessages.forEach(m => {
+                        const roleLabel = m.role === "User" ? "user-msg" : "ai-msg";
+                        appendMessage(`[${m.role}]: ${m.content}`, roleLabel);
+                    });
+                    appendMessage(`[Hệ thống]: Đã tải lịch sử phiên chat hoàn tất.`, "status connected");
+                } else {
+                    appendMessage(`[Hệ thống]: Lỗi khi tải lịch sử.`, "error-msg");
+                }
+            } catch(e) {
+                appendMessage(`[Hệ thống]: Lỗi tham chiếu lịch sử: ${e.message}`, "error-msg");
             }
         }
 

@@ -32,7 +32,9 @@ namespace AIService.Infrastructure.Services
 
             var jsonContent = new StringContent(JsonSerializer.Serialize(requestBody), Encoding.UTF8, "application/json");
 
-            var response = await _httpClient.PostAsync(_settings.Url, jsonContent, cancellationToken);
+            string endpointUrl = _settings.Url.TrimEnd('/') + "/api/embeddings";
+
+            var response = await _httpClient.PostAsync(endpointUrl, jsonContent, cancellationToken);
             response.EnsureSuccessStatusCode();
 
             var responseString = await response.Content.ReadAsStringAsync(cancellationToken);

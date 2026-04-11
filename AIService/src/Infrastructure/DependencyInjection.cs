@@ -12,6 +12,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.VectorData;
 using Microsoft.SemanticKernel;
 using Qdrant.Client;
+using StackExchange.Redis;
 
 namespace AIService.Infrastructure
 {
@@ -32,6 +33,9 @@ namespace AIService.Infrastructure
                    configuration.GetConnectionString("DefaultConnection"),
                    new MySqlServerVersion(new Version(8, 0, 21)),
                    b => b.MigrationsAssembly(typeof(ApplicationDbContext).Assembly.FullName)));
+
+            var redisConnectionString = configuration.GetConnectionString("Redis") ?? "localhost:6379";
+            services.AddSingleton<IConnectionMultiplexer>(ConnectionMultiplexer.Connect(redisConnectionString));
 
             services.Scan(scan => scan
                 .FromAssembliesOf(typeof(IDataSeeder))
@@ -125,7 +129,6 @@ namespace AIService.Infrastructure
             services.AddQdrantVectorStore();
 
             // Đăng ký Collection Món ăn
-
             services.AddTransient<VectorStoreCollection<Guid, MealVectorRecord>>(sp =>
             {
                 var vectorStore = sp.GetRequiredService<VectorStore>();
@@ -139,6 +142,18 @@ namespace AIService.Infrastructure
                 return vectorStore.GetCollection<Guid, ExerciseVectorRecord>("exercises"); 
             });
 
+            // Đăng ký Collection Tin nhắn chat
+            services.AddTransient<VectorStoreCollection<Guid, ChatMessageVectorRecord>>(sp =>
+            {
+                var vectorStore = sp.GetRequiredService<VectorStore>();
+                return vectorStore.GetCollection<Guid, ChatMessageVectorRecord>("chat_messages"); 
+            });
+
+            services.AddTransient<IDatabase>(sp =>
+            {
+                var multiplexer = sp.GetRequiredService<IConnectionMultiplexer>();
+                return multiplexer.GetDatabase();
+            });
 
             services.AddScoped<IApplicationDbContext>(provider => provider.GetRequiredService<ApplicationDbContext>());
 
@@ -152,6 +167,8 @@ namespace AIService.Infrastructure
             services.AddScoped<IMuscleGroupRepository, MuscleGroupRepository>();
             services.AddScoped<ISessionRepository, SessionRepository>();
 
+            services.AddScoped<ICacheService, RedisCacheService>();
+            services.AddTransient<IChatMemoryService, VectorChatMemoryService>();
             services.AddTransient<IChatNotifier, SignalRChatNotifier>();
             services.AddScoped<IAITranslationService, AITranslationService>();
             services.AddScoped<ITitleGeneratorAiService, AITitleGeneratorService>();

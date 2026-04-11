@@ -1,6 +1,8 @@
 ﻿using AIService.Application.Common.Interfaces;
+using AIService.Application.DTOs.ChatMessage;
 using AIService.Application.Features.AI.Utils;
 using AIService.Domain.Entities;
+using AIService.Domain.Enum;
 using MediatR;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
@@ -15,7 +17,10 @@ namespace AIService.Application.Features.AI.Commands.StreamFitnessChat
         private readonly Kernel _kernel;
         private readonly IChatNotifier _notifier;
         private readonly IAITranslationService _translator;
+        private readonly IChatMemoryService _chatMemoryService;
         private readonly IUnitOfWork _unitOfWork;
+        private readonly ICacheService _cacheService;
+        private readonly IIntegrationEventService _integrationEventService;
         private readonly ILogger<StreamFitnessChatCommandHandler> _logger;
         private readonly IChatCompletionService _ptAi;
 
@@ -23,13 +28,19 @@ namespace AIService.Application.Features.AI.Commands.StreamFitnessChat
             Kernel kernel,
             IChatNotifier notifier,
             IAITranslationService translator,
+            IChatMemoryService chatMemoryService,
             IUnitOfWork unitOfWork,
+            ICacheService cacheService,
+            IIntegrationEventService integrationEventService,
             ILogger<StreamFitnessChatCommandHandler> logger)
         {
             _kernel = kernel;
             _notifier = notifier;
             _translator = translator;
+            _chatMemoryService = chatMemoryService;
             _unitOfWork = unitOfWork;
+            _cacheService = cacheService;
+            _integrationEventService = integrationEventService;
             _logger = logger;
             _ptAi = kernel.GetRequiredService<IChatCompletionService>("pt_brain");
         }
@@ -56,6 +67,21 @@ namespace AIService.Application.Features.AI.Commands.StreamFitnessChat
 
                 await _unitOfWork.SaveChangesAsync(cancellationToken);
 
+                var recentChats = await _cacheService.GetRecentChatHistoryAsync<ChatMessageDto>(sessionGuid, 6);
+
+                var userMsgCache = new { Role = MessageRole.User.ToString(), Content = request.Question, CreatedAt = DateTime.UtcNow };
+                await _cacheService.AppendToChatHistoryAsync(sessionGuid, userMsgCache, TimeSpan.FromHours(24));
+
+                await _integrationEventService.PublishToQueueAsync<MessageEmbeddingRequested>("ai-service-message-embedding-queue", 
+                    new MessageEmbeddingRequested
+                    {
+                        MessageId = userMessageId,
+                        SessionId = sessionGuid,
+                        UserId = request.UserId,
+                        Role = MessageRole.User.ToString(),
+                        Content = request.Question,
+                        CreatedAt = DateTime.UtcNow
+                    }, cancellationToken);
 
                 // ── Bước 1: Dịch ────────────────────────────────────
                 var englishQuestion = await _translator.TranslateVietnameseToEnglishAsync(
@@ -65,8 +91,18 @@ namespace AIService.Application.Features.AI.Commands.StreamFitnessChat
                     "[StreamChat] VI: {VI} → EN: {EN}",
                     request.Question, englishQuestion);
 
+                var longTermContext = await _chatMemoryService.GetRelevantContextAsync(
+                    request.UserId,
+                    request.Question,
+                    limit: 3,
+                    cancellationToken);
+
                 // ── Bước 2: Build history ────────────────────────────
-                var chatHistory = FitnessPromptFactory.CreatePTContext(request.Question, englishQuestion);
+                var chatHistory = FitnessPromptFactory.CreatePTContext(
+                    request.Question,
+                    englishQuestion,
+                    recentChats,       
+                    longTermContext);  
 
                 var settings = new PromptExecutionSettings
                 {
@@ -130,9 +166,22 @@ namespace AIService.Application.Features.AI.Commands.StreamFitnessChat
 
                 session.AddAssistantMessage(request.MessageId, fullResponse.ToString(), promptTokens, completionTokens);
 
-                _logger.LogInformation("[StreamChat] Token thu được -> Prompt: {P}, Completion: {C}", promptTokens, completionTokens);
-
                 await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+                var aiMsgCache = new { Role = MessageRole.Assistant.ToString(), Content = fullResponse.ToString(), CreatedAt = DateTime.UtcNow };
+                await _cacheService.AppendToChatHistoryAsync(sessionGuid, aiMsgCache, TimeSpan.FromHours(24));
+
+                await _integrationEventService.PublishToQueueAsync<MessageEmbeddingRequested>(
+                    "ai-service-message-embedding-queue",
+                    new MessageEmbeddingRequested
+                    {
+                        MessageId = request.MessageId,
+                        SessionId = sessionGuid,
+                        UserId = request.UserId,
+                        Role = MessageRole.Assistant.ToString(),
+                        Content = fullResponse.ToString(),
+                        CreatedAt = DateTime.UtcNow
+                    }, cancellationToken);
 
                 _logger.LogInformation("[StreamChat] Done. MsgId: {Id}, Len: {Len}", request.MessageId, fullResponse.Length);
             }

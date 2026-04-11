@@ -38,6 +38,13 @@ namespace AIService.Infrastructure.BackgroundJobs.Consumer
                 routingKey: "meal.embedding.requested",
                 queueName: "ai-service-meal-embedding-queue",
                 handler: (msg) => ProcessMessage(msg, stoppingToken));
+
+            await _consumer.Subscribe<MessageEmbeddingRequestedEvent>(
+                exchange: "fitness-catalog.events",
+                exchangeType: "topic",
+                routingKey: "message.embedding.requested",
+                queueName: "ai-service-message-embedding-queue",
+                handler: (msg) => ProcessMessage(msg, stoppingToken));
         }
 
         private async Task ProcessMessage<TMessage>(TMessage message, CancellationToken token) where TMessage : class

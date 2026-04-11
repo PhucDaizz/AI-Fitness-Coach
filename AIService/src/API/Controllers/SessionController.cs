@@ -1,7 +1,10 @@
 ﻿using AIService.Application.Common.Interfaces;
+using AIService.Application.DTOs.ChatMessage;
 using AIService.Application.DTOs.Session;
 using AIService.Application.Features.Sessions.Commands.ChangeTitle;
 using AIService.Application.Features.Sessions.Queries.GetAllSession;
+using AIService.Application.Features.Sessions.Queries.GetSessionMessages;
+using AIService.Domain.Common.Models;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -54,6 +57,26 @@ namespace AIService.API.Controllers
                 return BadRequest(ApiResponse<string>.ErrorResponse(result.Error.Message));
             }
             return Ok(ApiResponse<string>.SuccessResponse("Title changed successfully"));
+        }
+
+        [HttpGet("messages")]
+        [Authorize]
+        public async Task<IActionResult> GetSessionMessages(Guid sessionId, DateTime? before, int pageSize = 20)
+        {
+            var userId = _currentUser.UserId;
+            var query = new GetSessionMessagesQuery
+            (
+                sessionId,
+                userId!,
+                before,
+                pageSize
+            );
+            var result = await _mediator.Send(query);
+            if (result.IsFailure)
+            {
+                return BadRequest(ApiResponse<string>.ErrorResponse(result.Error.Message));
+            }
+            return Ok(ApiResponse<CursorPagedResult<ChatMessageDto>>.SuccessResponse(result.Value));
         }
     }
 }

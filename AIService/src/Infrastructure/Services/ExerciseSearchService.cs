@@ -1,6 +1,6 @@
 ﻿using AIService.Application.Common.Interfaces;
 using AIService.Application.Common.Models;
-using AIService.Application.DTOs.Exercise; // 🚀 Chỉ giữ using Exercise
+using AIService.Application.DTOs.Exercise;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Logging;

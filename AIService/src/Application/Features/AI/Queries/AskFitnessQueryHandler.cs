@@ -1,5 +1,4 @@
 ﻿using AIService.Application.Common.Interfaces;
-using AIService.Application.Features.AI.Utils;
 using MediatR;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
@@ -28,7 +27,7 @@ namespace AIService.Application.Features.AI.Queries
         public async Task<string> Handle(AskFitnessQuery request, CancellationToken cancellationToken)
         {
             // Dịch câu hỏi sang tiếng Anh
-            var englishQuestion = await _translator.TranslateVietnameseToEnglishAsync(
+            /*var englishQuestion = await _translator.TranslateVietnameseToEnglishAsync(
                 request.Question, cancellationToken);
 
             _logger.LogInformation(
@@ -51,7 +50,8 @@ namespace AIService.Application.Features.AI.Queries
 
             _logger.LogInformation("[AskFitness] Done. Length: {Len}", response.Content?.Length);
 
-            return response.Content ?? "Có lỗi xảy ra, vui lòng thử lại.";
+            return response.Content ?? "Có lỗi xảy ra, vui lòng thử lại.";*/
+            return "Có lỗi xảy ra, vui lòng thử lại.";
         }
     }
 }
