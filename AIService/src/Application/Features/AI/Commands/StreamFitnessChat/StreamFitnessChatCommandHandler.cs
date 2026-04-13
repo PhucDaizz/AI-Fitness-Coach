@@ -212,20 +212,52 @@ namespace AIService.Application.Features.AI.Commands.StreamFitnessChat
             }
         }
 
-        private static (int Prompt, int Completion) ParseUsage(
-            StreamingChatMessageContent? chunk)
+        private static (int Prompt, int Completion) ParseUsage(StreamingChatMessageContent? chunk)
         {
             if (chunk?.Metadata == null) return (0, 0);
 
-            if (chunk.Metadata.TryGetValue("Usage", out var usageObj) &&
-                usageObj is System.Text.Json.JsonElement json)
+            int promptTokens = 0;
+            int completionTokens = 0;
+
+            // Google Gemini
+            if (chunk.Metadata.TryGetValue("PromptTokenCount", out var gPt) && gPt is int gPtInt)
             {
-                var prompt = json.TryGetProperty("PromptTokens", out var p) ? p.GetInt32() : 0;
-                var completion = json.TryGetProperty("CompletionTokens", out var c) ? c.GetInt32() : 0;
-                return (prompt, completion);
+                promptTokens = gPtInt;
+            }
+            if (chunk.Metadata.TryGetValue("CandidatesTokenCount", out var gCt) && gCt is int gCtInt)
+            {
+                completionTokens = gCtInt;
             }
 
-            return (0, 0);
+            if (promptTokens > 0 || completionTokens > 0)
+            {
+                return (promptTokens, completionTokens);
+            }
+
+            // OpenAI / Ollama
+            if (chunk.Metadata.TryGetValue("Usage", out var usageObj) && usageObj != null)
+            {
+                if (usageObj is System.Text.Json.JsonElement jsonElement)
+                {
+                    if (jsonElement.TryGetProperty("PromptTokens", out var pt))
+                        promptTokens = pt.GetInt32();
+                    if (jsonElement.TryGetProperty("CompletionTokens", out var ct))
+                        completionTokens = ct.GetInt32();
+                }
+                else
+                {
+                    var type = usageObj.GetType();
+                    var pProp = type.GetProperty("PromptTokens");
+                    var cProp = type.GetProperty("CompletionTokens");
+
+                    if (pProp != null)
+                        promptTokens = (int)(pProp.GetValue(usageObj) ?? 0);
+                    if (cProp != null)
+                        completionTokens = (int)(cProp.GetValue(usageObj) ?? 0);
+                }
+            }
+
+            return (promptTokens, completionTokens);
         }
     }
 }
