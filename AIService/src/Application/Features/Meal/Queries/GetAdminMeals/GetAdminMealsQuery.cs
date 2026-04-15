@@ -1,11 +1,11 @@
-using AIService.Application.DTOs.ExerciseCategory;
+﻿using AIService.Application.DTOs.Meal;
 using AIService.Domain.Common.Models;
 using Domain.Common.Response;
 using MediatR;
 
-namespace AIService.Application.Features.ExerciseCategory.Queries.GetExerciseCategories
+namespace AIService.Application.Features.Meal.Queries.GetAdminMeals
 {
-    public class GetExerciseCategoriesQuery : IRequest<Result<PagedResult<ExerciseCategoryDto>>>
+    public class GetAdminMealsQuery: IRequest<Result<PagedResult<AdminMealDto>>>
     {
         public int PageNumber { get; set; } = 1;
         public int PageSize { get; set; } = 20;

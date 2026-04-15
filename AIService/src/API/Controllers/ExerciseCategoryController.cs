@@ -4,8 +4,10 @@ using AIService.Application.Features.ExerciseCategory.Commands.DeleteExerciseCat
 using AIService.Application.Features.ExerciseCategory.Commands.UpdateExerciseCategory;
 using AIService.Application.Features.ExerciseCategory.Queries.GetExerciseCategories;
 using AIService.Application.Features.ExerciseCategory.Queries.GetExerciseCategoryById;
+using AIService.Domain.Common;
 using AIService.Domain.Entities;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Nexus.BuildingBlocks.Model;
 
@@ -30,7 +32,7 @@ namespace AIService.API.Controllers
         /// <param name="searchTerm">Từ khóa tìm kiếm theo tên danh mục (tùy chọn)</param>
         /// <returns>Danh sách danh mục phân trang</returns>
         [HttpGet]
-        public async Task<ActionResult<ApiResponse<Domain.Common.Models.PagedResult<ExerciseCategory>>>> GetExerciseCategories(
+        public async Task<ActionResult<ApiResponse<Domain.Common.Models.PagedResult<ExerciseCategoryDto>>>> GetExerciseCategories(
             [FromQuery] int pageNumber = 1, 
             [FromQuery] int pageSize = 20,
             [FromQuery] string? searchTerm = null)
@@ -43,7 +45,7 @@ namespace AIService.API.Controllers
             };
             
             var result = await _mediator.Send(query);
-            return Ok(ApiResponse<Domain.Common.Models.PagedResult<ExerciseCategory>>.SuccessResponse(result.Value!));
+            return Ok(ApiResponse<Domain.Common.Models.PagedResult<ExerciseCategoryDto>>.SuccessResponse(result.Value!));
         }
 
         /// <summary>
@@ -52,16 +54,16 @@ namespace AIService.API.Controllers
         /// <param name="id">Id của danh mục</param>
         /// <returns>Thông tin danh mục</returns>
         [HttpGet("{id}")]
-        public async Task<ActionResult<ApiResponse<ExerciseCategory>>> GetExerciseCategory(int id)
+        public async Task<ActionResult<ApiResponse<ExerciseCategoryDetailDto>>> GetExerciseCategory(int id)
         {
             var result = await _mediator.Send(new GetExerciseCategoryByIdQuery(id));
 
             if (result.IsFailure)
             {
-                return NotFound(ApiResponse<ExerciseCategory>.ErrorResponse(result.Error.Message));
+                return NotFound(ApiResponse<ExerciseCategoryDetailDto>.ErrorResponse(result.Error.Message));
             }
 
-            return Ok(ApiResponse<ExerciseCategory>.SuccessResponse(result.Value!));
+            return Ok(ApiResponse<ExerciseCategoryDetailDto>.SuccessResponse(result.Value!));
         }
 
         /// <summary>
@@ -70,6 +72,7 @@ namespace AIService.API.Controllers
         /// <param name="command">Dữ liệu danh mục cần thêm</param>
         /// <returns>Thông báo kết quả tạo</returns>
         [HttpPost]
+        [Authorize(Roles = $"{AppRoles.SysAdmin}")]
         public async Task<ActionResult<ApiResponse<string>>> CreateExerciseCategory([FromBody] CreateExerciseCategoryCommand command)
         {
             var result = await _mediator.Send(command);
@@ -89,6 +92,7 @@ namespace AIService.API.Controllers
         /// <param name="command">Dữ liệu danh mục cập nhật</param>
         /// <returns>Thông báo kết quả cập nhật</returns>
         [HttpPut("{id}")]
+        [Authorize(Roles = $"{AppRoles.SysAdmin}")]
         public async Task<ActionResult<ApiResponse<string>>> UpdateExerciseCategory(int id, [FromBody] UpdateExerciseCategoryDto command)
         {
             
@@ -115,6 +119,7 @@ namespace AIService.API.Controllers
         /// <param name="id">Id của danh mục cần xóa</param>
         /// <returns>Thông báo kết quả xóa</returns>
         [HttpDelete("{id}")]
+        [Authorize(Roles = $"{AppRoles.SysAdmin}")]
         public async Task<ActionResult<ApiResponse<string>>> DeleteExerciseCategory(int id)
         {
             var result = await _mediator.Send(new DeleteExerciseCategoryCommand { Id = id });

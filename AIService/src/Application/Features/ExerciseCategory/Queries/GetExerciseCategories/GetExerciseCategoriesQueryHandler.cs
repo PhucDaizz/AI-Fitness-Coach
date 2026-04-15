@@ -1,4 +1,5 @@
 using AIService.Application.Common.Interfaces;
+using AIService.Application.DTOs.ExerciseCategory;
 using AIService.Domain.Common.Models;
 using Domain.Common.Response;
 using MediatR;
@@ -6,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace AIService.Application.Features.ExerciseCategory.Queries.GetExerciseCategories
 {
-    public class GetExerciseCategoriesQueryHandler : IRequestHandler<GetExerciseCategoriesQuery, Result<PagedResult<Domain.Entities.ExerciseCategory>>>
+    public class GetExerciseCategoriesQueryHandler : IRequestHandler<GetExerciseCategoriesQuery, Result<PagedResult<ExerciseCategoryDto>>>
     {
         private readonly IApplicationDbContext _context;
 
@@ -15,7 +16,7 @@ namespace AIService.Application.Features.ExerciseCategory.Queries.GetExerciseCat
             _context = context;
         }
 
-        public async Task<Result<PagedResult<Domain.Entities.ExerciseCategory>>> Handle(GetExerciseCategoriesQuery request, CancellationToken cancellationToken)
+        public async Task<Result<PagedResult<ExerciseCategoryDto>>> Handle(GetExerciseCategoriesQuery request, CancellationToken cancellationToken)
         {
             var query = _context.ExerciseCategories.AsNoTracking();
 
@@ -28,11 +29,12 @@ namespace AIService.Application.Features.ExerciseCategory.Queries.GetExerciseCat
 
             var items = await query
                 .OrderByDescending(x => x.CreatedAt)
+                .Select(x => new ExerciseCategoryDto(x.Id, x.Name, x.NameVN))
                 .Skip((request.PageNumber - 1) * request.PageSize)
                 .Take(request.PageSize)
                 .ToListAsync(cancellationToken);
 
-            var pagedResult = PagedResult<Domain.Entities.ExerciseCategory>.Create(items, totalCount, request.PageNumber, request.PageSize);
+            var pagedResult = PagedResult<ExerciseCategoryDto>.Create(items, totalCount, request.PageNumber, request.PageSize);
 
             return Result.Success(pagedResult);
         }

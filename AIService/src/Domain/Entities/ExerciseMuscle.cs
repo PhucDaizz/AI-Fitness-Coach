@@ -3,8 +3,6 @@ namespace AIService.Domain.Entities
     public class ExerciseMuscle
     {
         public int ExerciseId { get; private set; }
-        public Exercise Exercise { get; private set; }
-
         public int MuscleId { get; private set; }
         public MuscleGroup MuscleGroup { get; private set; }
 

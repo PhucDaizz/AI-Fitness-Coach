@@ -4,8 +4,10 @@ using AIService.Application.Features.MuscleGroup.Commands.DeleteMuscleGroup;
 using AIService.Application.Features.MuscleGroup.Commands.UpdateMuscleGroup;
 using AIService.Application.Features.MuscleGroup.Queries.GetMuscleGroupById;
 using AIService.Application.Features.MuscleGroup.Queries.GetMuscleGroups;
+using AIService.Domain.Common;
 using AIService.Domain.Entities;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Nexus.BuildingBlocks.Model;
 
@@ -70,6 +72,7 @@ namespace AIService.API.Controllers
         /// <param name="command">Dữ liệu nhóm cơ cần thêm</param>
         /// <returns>Thông báo kết quả tạo</returns>
         [HttpPost]
+        [Authorize(Roles = $"{AppRoles.SysAdmin}")]
         public async Task<ActionResult<ApiResponse<string>>> CreateMuscleGroup([FromBody] CreateMuscleGroupCommand command)
         {
             var result = await _mediator.Send(command);
@@ -89,6 +92,7 @@ namespace AIService.API.Controllers
         /// <param name="command">Dữ liệu nhóm cơ cập nhật</param>
         /// <returns>Thông báo kết quả cập nhật</returns>
         [HttpPut("{id}")]
+        [Authorize(Roles = $"{AppRoles.SysAdmin}")]
         public async Task<ActionResult<ApiResponse<string>>> UpdateMuscleGroup(int id, [FromBody] UpdateMuscleGroupDto command)
         {
             var updateCommand = new UpdateMuscleGroupCommand
@@ -115,6 +119,7 @@ namespace AIService.API.Controllers
         /// <param name="id">Id của nhóm cơ cần xóa</param>
         /// <returns>Thông báo kết quả xóa</returns>
         [HttpDelete("{id}")]
+        [Authorize(Roles = $"{AppRoles.SysAdmin}")]
         public async Task<ActionResult<ApiResponse<string>>> DeleteMuscleGroup(int id)
         {
             var result = await _mediator.Send(new DeleteMuscleGroupCommand { Id = id });

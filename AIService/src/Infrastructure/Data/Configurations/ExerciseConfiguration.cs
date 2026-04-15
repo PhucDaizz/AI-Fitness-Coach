@@ -44,7 +44,7 @@ namespace AIService.Infrastructure.Data.Configurations
             builder.Navigation(e => e.Equipments).HasField("_equipments");
 
             builder.HasMany(e => e.ExerciseMuscles)
-                 .WithOne(em => em.Exercise)
+                 .WithOne()
                  .HasForeignKey(em => em.ExerciseId)
                  .OnDelete(DeleteBehavior.Cascade);
             builder.Navigation(e => e.ExerciseMuscles).HasField("_exerciseMuscles");

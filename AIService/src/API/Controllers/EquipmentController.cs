@@ -4,8 +4,10 @@ using AIService.Application.Features.Equipment.Commands.DeleteEquipment;
 using AIService.Application.Features.Equipment.Commands.UpdateEquipment;
 using AIService.Application.Features.Equipment.Queries.GetEquipmentById;
 using AIService.Application.Features.Equipment.Queries.GetEquipments;
+using AIService.Domain.Common;
 using AIService.Domain.Entities;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Nexus.BuildingBlocks.Model;
 
@@ -30,7 +32,7 @@ namespace AIService.API.Controllers
         /// <param name="searchTerm">Từ khóa tìm kiếm theo tên thiết bị (tùy chọn)</param>
         /// <returns>Danh sách thiết bị phân trang</returns>
         [HttpGet]
-        public async Task<ActionResult<ApiResponse<Domain.Common.Models.PagedResult<Equipment>>>> GetEquipments(
+        public async Task<ActionResult<ApiResponse<Domain.Common.Models.PagedResult<EquipmentDto>>>> GetEquipments(
             [FromQuery] int pageNumber = 1, 
             [FromQuery] int pageSize = 20,
             [FromQuery] string? searchTerm = null)
@@ -43,7 +45,7 @@ namespace AIService.API.Controllers
             };
             
             var result = await _mediator.Send(query);
-            return Ok(ApiResponse<Domain.Common.Models.PagedResult<Equipment>>.SuccessResponse(result.Value!));
+            return Ok(ApiResponse<Domain.Common.Models.PagedResult<EquipmentDto>>.SuccessResponse(result.Value!));
         }
 
         /// <summary>
@@ -52,16 +54,16 @@ namespace AIService.API.Controllers
         /// <param name="id">Id của thiết bị</param>
         /// <returns>Thông tin thiết bị</returns>
         [HttpGet("{id}")]
-        public async Task<ActionResult<ApiResponse<Equipment>>> GetEquipment(int id)
+        public async Task<ActionResult<ApiResponse<EquipmentDetailDto>>> GetEquipment(int id)
         {
             var result = await _mediator.Send(new GetEquipmentByIdQuery(id));
 
             if (result.IsFailure)
             {
-                return NotFound(ApiResponse<Equipment>.ErrorResponse(result.Error.Message));
+                return NotFound(ApiResponse<EquipmentDetailDto>.ErrorResponse(result.Error.Message));
             }
 
-            return Ok(ApiResponse<Equipment>.SuccessResponse(result.Value!));
+            return Ok(ApiResponse<EquipmentDetailDto>.SuccessResponse(result.Value!));
         }
 
         /// <summary>
@@ -70,6 +72,7 @@ namespace AIService.API.Controllers
         /// <param name="command">Dữ liệu thiết bị cần thêm</param>
         /// <returns>Thông báo kết quả tạo</returns>
         [HttpPost]
+        [Authorize(Roles = $"{AppRoles.SysAdmin}")]
         public async Task<ActionResult<ApiResponse<string>>> CreateEquipment([FromBody] CreateEquipmentCommand command)
         {
             var result = await _mediator.Send(command);
@@ -89,6 +92,7 @@ namespace AIService.API.Controllers
         /// <param name="command">Dữ liệu thiết bị cập nhật</param>
         /// <returns>Thông báo kết quả cập nhật</returns>
         [HttpPut("{id}")]
+        [Authorize(Roles = $"{AppRoles.SysAdmin}")]
         public async Task<ActionResult<ApiResponse<string>>> UpdateEquipment(int id, [FromBody] UpdateEquipmentDto command)
         {
             var updateCommand = new UpdateEquipmentCommand
@@ -114,6 +118,7 @@ namespace AIService.API.Controllers
         /// <param name="id">Id của thiết bị cần xóa</param>
         /// <returns>Thông báo kết quả xóa</returns>
         [HttpDelete("{id}")]
+        [Authorize(Roles = $"{AppRoles.SysAdmin}")]
         public async Task<ActionResult<ApiResponse<string>>> DeleteEquipment(int id)
         {
             var result = await _mediator.Send(new DeleteEquipmentCommand { Id = id });

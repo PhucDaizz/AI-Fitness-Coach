@@ -1,8 +1,8 @@
-﻿using AIService.Application.Features.Maintenance.Commands;
-using AIService.Application.Features.Maintenance.Commands.ExerciseEmbedding;
+﻿using AIService.Application.Features.Maintenance.Commands.ExerciseEmbedding;
 using AIService.Application.Features.Maintenance.Commands.MealEmbedding;
+using AIService.Domain.Common;
 using MediatR;
-using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AIService.API.Controllers
@@ -19,6 +19,7 @@ namespace AIService.API.Controllers
         }
 
         [HttpPost("requeue-exercises")]
+        [Authorize(Roles = $"{AppRoles.SysAdmin}")]
         public async Task<IActionResult> RequeueExercises()
         {
             var count = await _mediator.Send(new RequeueExerciseEmbeddingCommand());
@@ -26,6 +27,7 @@ namespace AIService.API.Controllers
         }
 
         [HttpPost("requeue-meals")]
+        [Authorize(Roles = $"{AppRoles.SysAdmin}")]
         public async Task<IActionResult> RequeueMeals()
         {
             var count = await _mediator.Send(new RequeueMealEmbeddingCommand());

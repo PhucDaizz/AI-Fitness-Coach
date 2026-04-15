@@ -25,6 +25,10 @@ namespace AIService.API.Controllers
             _currentUser = currentUser;
         }
 
+        /// <summary>
+        /// Lấy danh sách tất cả các session của người dùng hiện tại
+        /// </summary>
+        /// <returns></returns>
         [HttpGet]
         [Authorize]
         public async Task<IActionResult> GetAllSestions()
@@ -38,6 +42,15 @@ namespace AIService.API.Controllers
             return Ok(ApiResponse<List<SessionDto>>.SuccessResponse(result.Value));
         }
 
+        /// <summary>
+        /// Changes the title of an existing session identified by the specified session ID.    
+        /// </summary>
+        /// <remarks>This method requires the user to be authenticated. The operation will fail and return
+        /// a bad request response if the input is invalid or if the session cannot be updated.</remarks>
+        /// <param name="sessionId">The unique identifier of the session whose title is to be updated.</param>
+        /// <param name="newTitle">The new title to assign to the session. This value cannot be null or empty.</param>
+        /// <returns>An IActionResult that indicates the result of the operation. Returns a success response if the title is
+        /// changed successfully; otherwise, returns a bad request response with an error message.</returns>
         [HttpPost]
         [Authorize]
         public async Task<IActionResult> ChangeTitle(Guid sessionId, string newTitle)
