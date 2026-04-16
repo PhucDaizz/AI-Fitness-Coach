@@ -1,16 +1,33 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+@layer components {
+  .kinetic-gradient-text {
+    background: linear-gradient(to right, #b1ff24, #6a9cff);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  
+  .glass-panel {
+    background: rgba(26, 25, 25, 0.6);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+  }
+}
+
 @layer base {
   body {
-    @apply bg-background text-white font-sans antialiased;
+    background-color: theme('colors.background');
+    color: theme('colors.on-background');
+    @apply font-body antialiased;
   }
+}
 
-  /* KINETIC NOIR CUSTOMS */
-  h1, h2, h3, h4, h5, h6 {
-    @apply font-bold tracking-tight;
-  }
+::selection {
+  background-color: theme('colors.primary');
+  color: theme('colors.on-primary');
 }

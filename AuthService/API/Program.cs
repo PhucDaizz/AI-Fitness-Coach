@@ -67,6 +67,18 @@ namespace API
                 };
             });
 
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy("AllowReactApp",
+                    policy =>
+                    {
+                        policy.WithOrigins("http://localhost:5173") 
+                              .AllowAnyHeader()
+                              .AllowAnyMethod();
+                    });
+            });
+
+
             builder.Services.AddAuthenticationAndAuthorization(builder.Configuration);
 
             builder.Services.AddInfrastructure(builder.Configuration);
@@ -101,9 +113,11 @@ namespace API
             app.UseForwardedHeaders();
             app.UseSwaggerConfiguration();
 
+            app.UseCors("AllowReactApp");
+
             // app.UseHttpsRedirection();
 
-            app.Use((context, next) =>
+            /*app.Use((context, next) =>
             {
                 context.Request.Scheme = "http";
                 // Đổi thành "localhost" và "7000" (Cổng của Ocelot)
@@ -111,7 +125,7 @@ namespace API
                 // Mốt deploy lên server thật thì đổi chỗ này thành Domain của server nhé!
                 context.Request.Host = new HostString("localhost", 7000); 
                 return next();
-            });
+            });*/
 
             app.MapHealthChecks("/health"); 
 
