@@ -10,6 +10,7 @@ export type DailySessionEntry = {
 };
 
 export type MuscleVolumeEntry = {
+  exerciseId: any;
   muscleGroup: string;
   totalVolume: number;  // kg · reps
 };
@@ -17,6 +18,9 @@ export type MuscleVolumeEntry = {
 // ─── AnalyticsRepository ─────────────────────────────────────────────────────────
 
 export class AnalyticsRepository {
+  async getVolumeByExercise(userId: string): Promise<MuscleVolumeEntry[]> {
+    return this.getMuscleVolume(userId);
+  }
   /**
    * Đếm số buổi tập trong khoảng [from, to]
    * Dùng cho: sessionsThisWeek trong summary

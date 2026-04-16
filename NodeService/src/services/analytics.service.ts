@@ -1,8 +1,7 @@
 import { analyticsRepository, MuscleVolumeEntry } from '../repositories/analytics.repo';
 import { streakService } from './streak.service';
 import { workoutPlanRepository } from '../repositories/workout-plan.repo';
-
-// ─── Result types ─────────────────────────────────────────────────────────────────
+import { exerciseClient } from '../utils/exercise.client';
 
 export type SummaryResult = {
   currentStreak: number;
@@ -10,13 +9,13 @@ export type SummaryResult = {
   sessionsThisWeek: number;
   totalVolumeKg: number;
   completionRate: number;        // 0–100
-  activePlanId: string | null;   // null nếu user chưa có plan active
+  activePlanId: string | null;
 };
 
 export type WeeklySessionsResult = {
-  weekStart: string;   // "YYYY-MM-DD" — thứ Hai của tuần
-  weekEnd: string;     // "YYYY-MM-DD" — Chủ nhật của tuần
-  weekLabel: string;   // "W1"…"W4" — FE dùng làm X-axis label
+  weekStart: string;   // "YYYY-MM-DD"
+  weekEnd: string;     // "YYYY-MM-DD"
+  weekLabel: string;   // "W1"…"W4"
   sessions: number;
 };
 
@@ -25,14 +24,9 @@ export type WeeklySessionsResult = {
 export class AnalyticsService {
   /**
    * GET /analytics/summary
-   * 4 metric tổng quan: streak, buổi tập tuần này, tổng volume, completion rate
    *
-   * Thiết kế cho cache sau: service trả về pure data.
-   * Phase 6 chỉ cần wrap thêm Redis layer ở controller, không sửa logic ở đây.
-   *
-   * Parallel calls:
-   *   streak + sessionsThisWeek + muscleVolumes + activePlan (song song)
-   *   → completionRate (phụ thuộc activePlan → chạy tiếp theo)
+   * Thiết kế cho cache sau:
+   * Phase 6 chỉ cần wrap Redis ở controller, không sửa logic ở đây.
    */
   async getSummary(userId: string): Promise<SummaryResult> {
     const weekStart = getWeekStart();
@@ -41,16 +35,14 @@ export class AnalyticsService {
     const [streakData, sessionsThisWeek, muscleVolumes, activePlan] = await Promise.all([
       streakService.getStreak(userId),
       analyticsRepository.countSessions(userId, weekStart, weekEnd),
-      analyticsRepository.getMuscleVolume(userId),
+      this.getMuscleVolume(userId),
       workoutPlanRepository.findActiveByUserId(userId),
     ]);
 
-    // Tổng volume = sum tất cả nhóm cơ (tránh thêm aggregation riêng)
     const totalVolumeKg = Math.round(
       muscleVolumes.reduce((sum, m) => sum + m.totalVolume, 0),
     );
 
-    // Completion rate chỉ tính khi có plan active; trả 0 nếu không có
     let completionRate = 0;
     if (activePlan) {
       const planId = String(activePlan._id);
@@ -74,12 +66,6 @@ export class AnalyticsService {
 
   /**
    * GET /analytics/weekly
-   * Số buổi tập trong 4 tuần gần nhất (cho line chart)
-   *
-   * Luồng:
-   *   1. Tính 4 khoảng tuần [Mon, Sun]
-   *   2. Lấy daily sessions trong khoảng đó bằng 1 query duy nhất
-   *   3. Bin daily data vào từng tuần trong service
    */
   async getWeeklySessions(userId: string): Promise<WeeklySessionsResult[]> {
     const weeks = getLast4Weeks();
@@ -99,7 +85,7 @@ export class AnalyticsService {
       return {
         weekStart: toDateStr(week.start),
         weekEnd: toDateStr(week.end),
-        weekLabel: `W${idx + 1}`, // W1 = cũ nhất, W4 = tuần hiện tại
+        weekLabel: `W${idx + 1}`,
         sessions,
       };
     });
@@ -107,19 +93,54 @@ export class AnalyticsService {
 
   /**
    * GET /analytics/muscle-volume
-   * Volume theo nhóm cơ (cho bar chart)
-   * Kết quả đã sort theo totalVolume giảm dần (repo đảm bảo)
+   *
+   * Luồng:
+   *   1. MongoDB aggregation → volume theo từng exerciseId  (repo, pure DB)
+   *   2. Unique exerciseIds → gọi .NET song song qua ExerciseClient (utils)
+   *   3. Merge: map exerciseId → muscleGroup, cộng dồn volume cùng nhóm cơ
+   *
+   * Tách trách nhiệm rõ ràng:
+   *   - Repo   : chỉ làm MongoDB, không biết .NET tồn tại
+   *   - Client : chỉ làm HTTP + in-memory cache, không biết MongoDB
+   *   - Service: orchestrate + merge kết quả từ 2 nguồn
+   *
+   * Phase 6 TODO: thay in-memory cache trong ExerciseClient bằng Redis TTL 1h
+   * → chỉ sửa exercise.client.ts, không đụng service này
    */
   async getMuscleVolume(userId: string): Promise<MuscleVolumeEntry[]> {
-    return analyticsRepository.getMuscleVolume(userId);
+    // Step 1: volume per exerciseId từ MongoDB
+    const volumeByExercise = await analyticsRepository.getVolumeByExercise(userId);
+    if (volumeByExercise.length === 0) return [];
+
+    // Step 2: gọi .NET song song cho tất cả unique exerciseIds
+    // Cache hit sẽ resolve ngay, chỉ ID mới mới thực sự gọi HTTP
+    const exerciseIds = volumeByExercise.map((v) => v.exerciseId);
+    const muscleInfoList = await exerciseClient.getMuscleInfoBatch(exerciseIds);
+
+    // Step 3: build lookup map exerciseId → primaryMuscle
+    const muscleMap = new Map<string, string>(
+      muscleInfoList.map(({ exerciseId, primaryMuscle }) => [exerciseId, primaryMuscle]),
+    );
+
+    // Step 4: gom volume theo muscleGroup
+    // (nhiều exerciseId có thể cùng nhóm cơ → cộng dồn)
+    const volumeByMuscle = new Map<string, number>();
+    for (const { exerciseId, totalVolume } of volumeByExercise) {
+      const muscle = muscleMap.get(exerciseId) ?? 'unknown';
+      volumeByMuscle.set(muscle, (volumeByMuscle.get(muscle) ?? 0) + totalVolume);
+    }
+
+    // Step 5: format + sort nhiều volume nhất lên đầu
+    return Array.from(volumeByMuscle.entries())
+      .map(([muscleGroup, totalVolume]) => ({
+        muscleGroup,
+        totalVolume: Math.round(totalVolume * 10) / 10,
+      }))
+      .sort((a, b) => b.totalVolume - a.totalVolume);
   }
 
   /**
    * GET /analytics/heatmap
-   * Số buổi tập theo từng ngày trong N ngày gần nhất (kiểu GitHub contribution)
-   * Ngày không có buổi tập → không xuất hiện trong kết quả (FE hiểu = 0)
-   *
-   * @param days - Số ngày nhìn lại, mặc định 365
    */
   async getHeatmap(userId: string, days = 365) {
     const to = new Date();
@@ -137,17 +158,15 @@ export const analyticsService = new AnalyticsService();
 
 // ─── Utility functions (UTC-safe) ────────────────────────────────────────────────
 
-/** Thứ Hai đầu tuần của ngày bất kỳ (UTC midnight) */
 function getWeekStart(date = new Date()): Date {
   const d = new Date(date);
-  const day = d.getUTCDay();             // 0 = Sun, 1 = Mon...
-  const diff = day === 0 ? -6 : 1 - day; // shift về thứ Hai
+  const day = d.getUTCDay();
+  const diff = day === 0 ? -6 : 1 - day;
   d.setUTCDate(d.getUTCDate() + diff);
   d.setUTCHours(0, 0, 0, 0);
   return d;
 }
 
-/** Chủ nhật cuối tuần (UTC 23:59:59.999) */
 function getWeekEnd(date = new Date()): Date {
   const start = getWeekStart(date);
   const end = new Date(start);
@@ -156,18 +175,11 @@ function getWeekEnd(date = new Date()): Date {
   return end;
 }
 
-/**
- * Trả về 4 tuần gần nhất theo thứ tự tăng dần (cũ → mới)
- * Index 0 = 3 tuần trước, Index 3 = tuần hiện tại
- */
 function getLast4Weeks(): Array<{ start: Date; end: Date }> {
   return Array.from({ length: 4 }, (_, i) => {
     const anchor = new Date();
     anchor.setUTCDate(anchor.getUTCDate() - (3 - i) * 7);
-    return {
-      start: getWeekStart(anchor),
-      end: getWeekEnd(anchor),
-    };
+    return { start: getWeekStart(anchor), end: getWeekEnd(anchor) };
   });
 }
 
