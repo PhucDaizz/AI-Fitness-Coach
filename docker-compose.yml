@@ -30,6 +30,22 @@ services:
     networks:
       - fitnesscoach-network
 
+  mongodb:
+    image: mongo:7.0
+    container_name: fitnesscoach_mongodb
+    restart: always
+    ports:
+    - "27017:27017"
+    volumes:
+    - mongodb_data:/data/db
+    networks:
+    - fitnesscoach-network
+    healthcheck:
+      test: ["CMD-SHELL", "mongosh --quiet --eval \"db.adminCommand('ping').ok\" | grep -q 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      
   rabbitmq:
     image: rabbitmq:3-management
     container_name: fitnesscoach_rabbitmq
@@ -108,12 +124,35 @@ services:
     networks:
       - fitnesscoach-network
 
+  node_service:
+    build:
+      context: ./NodeService
+      dockerfile: Dockerfile
+    container_name: fitnesscoach_node_service
+    restart: on-failure
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env.node
+    environment:
+      - NODE_ENV=development
+      - MONGODB_URI=mongodb://mongodb:27017/ai-fitness-coach
+    networks:
+      - fitnesscoach-network
+
+  
 networks:
   fitnesscoach-network:
     driver: bridge
 
 volumes:
   mysql_data:
+  mongodb_data:
   rabbitmq_data:
   qdrant_data:
   ollama_data:
