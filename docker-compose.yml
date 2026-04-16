@@ -17,6 +17,19 @@ services:
       timeout: 5s
       retries: 5
 
+  ollama:
+    image: ollama/ollama:latest
+    container_name: fitnesscoach_ollama
+    restart: always
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama 
+    environment:
+      - OLLAMA_ORIGINS=*
+    networks:
+      - fitnesscoach-network
+
   rabbitmq:
     image: rabbitmq:3-management
     container_name: fitnesscoach_rabbitmq
@@ -91,7 +104,7 @@ services:
       - ConnectionStrings__DefaultConnection=Server=mysql;Port=3306;Database=AI.Fitness.Coach.Service;user=root;password=phucdai011;
       - RabbitMQ__HostName=rabbitmq
       - Qdrant__Host=qdrant
-      - Ollama__Url=http://host.docker.internal:11434
+      - Ollama__Url=http://ollama:11434
     networks:
       - fitnesscoach-network
 
@@ -103,3 +116,4 @@ volumes:
   mysql_data:
   rabbitmq_data:
   qdrant_data:
+  ollama_data:

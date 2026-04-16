@@ -10,6 +10,7 @@ using AIService.Infrastructure.Data.Seeders;
 using AIService.Infrastructure.Hubs;
 using AIService.Infrastructure.Services;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.EntityFrameworkCore;
 using Nexus.BuildingBlocks.Extensions;
 using System.Diagnostics;
 
@@ -72,6 +73,24 @@ namespace AIService.API
             });
 
             var app = builder.Build();
+
+            using (var scope = app.Services.CreateScope())
+            {
+                var services = scope.ServiceProvider;
+                try
+                {
+                    var context = services.GetRequiredService<ApplicationDbContext>();
+                    if (context.Database.GetPendingMigrations().Any())
+                    {
+                        await context.Database.MigrateAsync();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    var logger = services.GetRequiredService<ILogger<Program>>();
+                    logger.LogError(ex, "Loi khi tai du lieu.");
+                }
+            }
 
             app.UseExceptionHandler();
 
