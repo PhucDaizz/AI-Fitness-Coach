@@ -5,24 +5,30 @@ import profileRoutes from './profile.routes';
 import workoutPlanRoutes from './workout-plan.routes';
 import workoutLogRoutes from './workout-log.routes';
 import streakRoutes from './streak.routes';
+import analyticsRoutes from './analytics.routes';
+import nutritionRoutes from './nutrition.routes';
 
 const router = Router();
 
 // ─── Tất cả routes bên dưới đều yêu cầu JWT ────────────────────────────────────
 router.use(authenticate);
 
-// ─── Domain routes ──────────────────────────────────────────────────────────────
+// ─── Phase 2 ────────────────────────────────────────────────────────────────────
 router.use('/profile', profileRoutes);
+
+// ─── Phase 2 (sau khi Exercise model sẵn sàng) ──────────────────────────────────
+// router.use('/exercises', exerciseRoutes);
+
+// ─── Phase 3 ────────────────────────────────────────────────────────────────────
 router.use('/workout-plans', workoutPlanRoutes);
 router.use('/workout-logs', workoutLogRoutes);
 router.use('/streak', streakRoutes);
 
-// Phase 2: exercise routes sẽ mount ở đây
-// router.use('/exercises', exerciseRoutes);
+// ─── Phase 4 ────────────────────────────────────────────────────────────────────
+router.use('/analytics', analyticsRoutes);
+router.use('/nutrition', nutritionRoutes);
 
-// Phase 4: nutrition, analytics, chat routes sẽ mount ở đây
-// router.use('/nutrition', nutritionRoutes);
-// router.use('/analytics', analyticsRoutes);
+// ─── Phase 5 ────────────────────────────────────────────────────────────────────
 // router.use('/chat', chatRoutes);
 
 export default router;
