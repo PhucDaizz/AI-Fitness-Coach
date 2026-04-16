@@ -12,9 +12,9 @@ const Navbar = () => {
         </div>
         <div className="flex gap-4 items-center">
           <Link to="/login" className="text-[#adaaaa] hover:text-white transition-colors font-bold tracking-tight">Login</Link>
-          <button className="bg-[#b1ff24] text-[#3e5e00] px-6 py-2 rounded-full font-bold scale-95 active:scale-90 transition-transform hover:opacity-80">
+          <Link to="/signup" className="bg-[#b1ff24] text-[#3e5e00] px-6 py-2 rounded-full font-bold scale-95 active:scale-90 transition-transform hover:opacity-80">
             Get Started
-          </button>
+          </Link>
         </div>
       </div>
     </nav>

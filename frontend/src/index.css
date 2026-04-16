@@ -17,6 +17,14 @@
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
   }
+
+  .kinetic-pulse {
+    box-shadow: 0 0 15px rgba(177, 255, 36, 0.2);
+  }
+
+  .text-glow {
+    text-shadow: 0 0 8px rgba(177, 255, 36, 0.4);
+  }
 }
 
 @layer base {

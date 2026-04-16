@@ -28,7 +28,7 @@ const Login = () => {
         {/* Footer Link */}
         <p className="text-center mt-10 text-on-surface-variant text-sm font-black">
           Don't have an account? 
-          <a className="text-primary hover:underline underline-offset-4 ml-1 uppercase italic tracking-tighter" href="#">Sign Up</a>
+          <Link to="/signup" className="text-primary hover:underline underline-offset-4 ml-1 uppercase italic tracking-tighter">Sign Up</Link>
         </p>
 
         {/* Legal links */}
