@@ -3,8 +3,14 @@ using AIService.API.ExceptionHandling;
 using AIService.API.Extensions;
 using AIService.API.StartUp;
 using AIService.Application;
+using AIService.Application.Common.Interfaces;
 using AIService.Infrastructure;
+using AIService.Infrastructure.BackgroundJobs.Consumer;
+using AIService.Infrastructure.Data.Seeders;
+using AIService.Infrastructure.Hubs;
+using AIService.Infrastructure.Services;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.EntityFrameworkCore;
 using Nexus.BuildingBlocks.Extensions;
 using System.Diagnostics;
 
@@ -12,7 +18,7 @@ namespace AIService.API
 {
     public class Program
     {
-        public static void Main(string[] args)
+        public static async Task Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
 
@@ -38,20 +44,106 @@ namespace AIService.API
             builder.AddDependencies();
             builder.Services.AddInfrastructure(builder.Configuration);
             builder.Services.AddApplication();
+
+            var aiProvider = builder.Configuration["AI_Provider"] ?? "Ollama";
+
+            if (aiProvider.Equals("OpenAI", StringComparison.OrdinalIgnoreCase))
+            {
+                builder.Services.AddSingleton<IEmbeddingService, OpenAiEmbeddingService>();
+            }
+            else
+            {
+                builder.Services.AddHttpClient<OllamaEmbeddingService>();
+                builder.Services.AddSingleton<IEmbeddingService, OllamaEmbeddingService>();
+            }
+            builder.Services.AddHttpContextAccessor();
+
+            builder.Services.AddHostedService<EmbeddingConsumer>();
+            builder.Services.AddHostedService<ChatConsumer>();
+
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy("AllowAll", policy =>
+                {
+                    policy.SetIsOriginAllowed(_ => true) // Cho phép test từ file HTML Local
+                          .AllowAnyMethod()
+                          .AllowAnyHeader()
+                          .AllowCredentials(); // Bắt buộc cho tính năng SignalR Negotiate
+                });
+            });
+
             var app = builder.Build();
+
+            using (var scope = app.Services.CreateScope())
+            {
+                var services = scope.ServiceProvider;
+                try
+                {
+                    var context = services.GetRequiredService<ApplicationDbContext>();
+                    if (context.Database.GetPendingMigrations().Any())
+                    {
+                        await context.Database.MigrateAsync();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    var logger = services.GetRequiredService<ILogger<Program>>();
+                    logger.LogError(ex, "Loi khi tai du lieu.");
+                }
+            }
 
             app.UseExceptionHandler();
 
             app.UseSwaggerConfiguration();
 
-            app.UseHttpsRedirection();
+            //app.UseHttpsRedirection();
 
             app.MapHealthChecks("/health");
 
+            app.UseAuthentication();
             app.UseAuthorization();
 
+            app.UseCors("AllowAll");
+
+            app.MapHub<ChatHub>("/hubs/chat");
 
             app.MapControllers();
+            using (var scope = app.Services.CreateScope())
+            {
+                var services = scope.ServiceProvider;
+                var logger = services.GetRequiredService<ILogger<Program>>();
+
+                try
+                {
+                    int maxRetries = 5;
+                    for (int retry = 1; retry <= maxRetries; retry++)
+                    {
+                        try
+                        {
+                            logger.LogInformation($"[Lần {retry}/{maxRetries}] Đang kết nối DB và điều phối bơm dữ liệu...");
+
+                            var coordinator = services.GetRequiredService<DataSeederCoordinator>();
+
+                            await coordinator.ExecuteAsync();
+
+                            break; 
+                        }
+                        catch (Exception ex)
+                        {
+                            if (retry == maxRetries) throw;
+
+                            logger.LogWarning($"⏳ Database chưa sẵn sàng. Đợi 5 giây rồi thử lại... (Lỗi: {ex.Message})");
+
+                            await Task.Delay(5000);
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    logger.LogCritical(ex, "FATAL ERROR: Không thể khởi tạo Database!");
+                }
+            }
+
 
             app.Run();
         }

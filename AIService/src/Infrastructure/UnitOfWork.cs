@@ -1,5 +1,5 @@
 ﻿using AIService.Application.Common.Interfaces;
-using Infrastructure;
+using AIService.Domain.Repositories;
 using Microsoft.EntityFrameworkCore.Storage;
 
 namespace AIService.Infrastructure
@@ -8,10 +8,30 @@ namespace AIService.Infrastructure
     {
         private readonly ApplicationDbContext _context;
         private IDbContextTransaction? _transaction;
+        public IExerciseCategoryRepository ExerciseCategoryRepository { get; }
+        public IExerciseRepository ExerciseRepository { get; }
+        public IMealRepository MealRepository { get; }
+        public IMuscleGroupRepository MuscleGroupRepository { get; }
+        public IEquipmentRepository EquipmentRepository { get; }
+        public ISessionRepository SessionRepository { get; }
 
-        public UnitOfWork(ApplicationDbContext context)
+        public UnitOfWork(
+            ApplicationDbContext context,
+            IEquipmentRepository equipmentRepository,
+            IExerciseCategoryRepository exerciseCategoryRepository,
+            IExerciseRepository exerciseRepository,
+            IMealRepository mealRepository,
+            IMuscleGroupRepository muscleGroupRepository,
+            ISessionRepository sessionRepository
+        )
         {
             _context = context;
+            ExerciseCategoryRepository = exerciseCategoryRepository;
+            ExerciseRepository = exerciseRepository;
+            MealRepository = mealRepository;
+            MuscleGroupRepository = muscleGroupRepository;
+            SessionRepository = sessionRepository;
+            EquipmentRepository = equipmentRepository;
         }
         public async Task BeginTransactionAsync()
         {

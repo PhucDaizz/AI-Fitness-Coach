@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   mysql:
     image: mysql:8.0
@@ -19,6 +17,19 @@ services:
       timeout: 5s
       retries: 5
 
+  ollama:
+    image: ollama/ollama:latest
+    container_name: fitnesscoach_ollama
+    restart: always
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama 
+    environment:
+      - OLLAMA_ORIGINS=*
+    networks:
+      - fitnesscoach-network
+
   mongodb:
     image: mongo:7.0
     container_name: fitnesscoach_mongodb
@@ -34,6 +45,7 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+      
   rabbitmq:
     image: rabbitmq:3-management
     container_name: fitnesscoach_rabbitmq
@@ -49,7 +61,7 @@ services:
     networks:
       - fitnesscoach-network
     healthcheck:
-      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      test: [ "CMD", "rabbitmq-diagnostics", "-q", "ping" ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -71,6 +83,44 @@ services:
       - .env.auth
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
+    networks:
+      - fitnesscoach-network
+
+  qdrant:
+    image: qdrant/qdrant:latest
+    container_name: fitnesscoach_qdrant
+    restart: always
+    ports:
+      - "6334:6334" # gRPC
+      - "6333:6333" # REST
+    volumes:
+      - qdrant_data:/qdrant/storage
+    networks:
+      - fitnesscoach-network
+
+  ai_service:
+    build:
+      context: ./AIService
+      dockerfile: Dockerfile
+    container_name: fitnesscoach_ai_service
+    restart: on-failure
+    depends_on:
+      mysql:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      qdrant:
+        condition: service_started
+    ports:
+      - "7002:8080" # Exposed on port 7002 to avoid conflict with auth_service
+    env_file:
+      - .env.example.ai
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Server=mysql;Port=3306;Database=AI.Fitness.Coach.Service;user=root;password=phucdai011;
+      - RabbitMQ__HostName=rabbitmq
+      - Qdrant__Host=qdrant
+      - Ollama__Url=http://ollama:11434
     networks:
       - fitnesscoach-network
 
@@ -104,3 +154,5 @@ volumes:
   mysql_data:
   mongodb_data:
   rabbitmq_data:
+  qdrant_data:
+  ollama_data:

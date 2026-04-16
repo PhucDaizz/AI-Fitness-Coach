@@ -4,15 +4,12 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Infrastructure.Data.Configurations
 {
-    public abstract class BaseEntityConfiguration<T> : IEntityTypeConfiguration<T>
-        where T : BaseEntity
+    public abstract class BaseEntityConfiguration<TEntity, TId> : IEntityTypeConfiguration<TEntity>
+        where TEntity : BaseEntity<TId>
     {
-        public virtual void Configure(EntityTypeBuilder<T> builder)
+        public virtual void Configure(EntityTypeBuilder<TEntity> builder)
         {
             builder.HasKey(e => e.Id);
-
-            builder.Property(e => e.Id)
-                   .ValueGeneratedNever();
 
             builder.Property(e => e.CreatedAt)
                    .IsRequired();

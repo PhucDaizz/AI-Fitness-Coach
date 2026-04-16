@@ -1,5 +1,6 @@
-﻿using AIService.Application.Common.Interfaces;
+using AIService.Application.Common.Interfaces;
 using AIService.Domain.Common;
+using AIService.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace AIService.Infrastructure
@@ -11,12 +12,24 @@ namespace AIService.Infrastructure
         {
             _domainEventService = domainEventService;
         }
-        /*
-                public DbSet<Listing> Listings { get; set; } = null!;
-                public DbSet<AuctionBid> AuctionBids { get; set; } = null!;
-                public DbSet<PriceSuggestion> PriceSuggestions { get; set; } = null!;
-                public DbSet<Transactions> Transactions { get; set; } = null!;
-                public DbSet<CreditInventory> CreditInventories { get; set; } = null!;*/
+        
+        public DbSet<Equipment> EquipmentDbSet { get; set; }
+        public DbSet<Exercise> ExerciseDbSet { get; set; }
+        public DbSet<ExerciseCategory> ExerciseCategoryDbSet { get; set; }
+        public DbSet<ExerciseMuscle> ExerciseMuscleDbSet { get; set; }
+        public DbSet<MuscleGroup> MuscleGroupDbSet { get; set; }
+        public DbSet<Meal> MealDbSet { get; set; }
+        public DbSet<Message> MessageDbSet { get; set; }
+        public DbSet<Session> SessionDbSet { get; set; }
+
+        public IQueryable<Equipment> Equipments => EquipmentDbSet;
+        public IQueryable<Exercise> Exercises => ExerciseDbSet;
+        public IQueryable<ExerciseCategory> ExerciseCategories => ExerciseCategoryDbSet;
+        public IQueryable<ExerciseMuscle> ExerciseMuscles => ExerciseMuscleDbSet;
+        public IQueryable<MuscleGroup> MuscleGroups => MuscleGroupDbSet;
+        public IQueryable<Meal> Meals => MealDbSet;
+        public IQueryable<Message> Messages => MessageDbSet;
+        public IQueryable<Session> Sessions => SessionDbSet;
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -28,14 +41,8 @@ namespace AIService.Infrastructure
 
         public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
         {
-            await DispatchDomainEventsAsync(cancellationToken);
-            return await base.SaveChangesAsync(cancellationToken);
-        }
-
-        private async Task DispatchDomainEventsAsync(CancellationToken cancellationToken = default)
-        {
             var domainEntities = ChangeTracker
-                .Entries<BaseEntity>()
+                .Entries<IHasDomainEvent>()
                 .Where(x => x.Entity.DomainEvents.Any())
                 .Select(x => x.Entity)
                 .ToList();
@@ -46,10 +53,14 @@ namespace AIService.Infrastructure
 
             domainEntities.ForEach(entity => entity.ClearDomainEvents());
 
+            var result = await base.SaveChangesAsync(cancellationToken);
+
             foreach (var domainEvent in domainEvents)
             {
                 await _domainEventService.PublishAsync(domainEvent, cancellationToken);
             }
+
+            return result;
         }
     }
 }
