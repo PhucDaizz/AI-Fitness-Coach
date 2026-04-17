@@ -2,14 +2,14 @@ import { authApi } from './axiosInstances';
 
 /**
  * Common handler to unwrap the backend's ApiResponse structure
- * @param {Promise} apiPromise 
+ * @param {Promise} apiPromise
  */
 const handleResponse = async (apiPromise) => {
   try {
     const response = await apiPromise;
     console.log('API Raw Response:', response);
     const apiResponse = response.data;
-// ...
+    // ...
 
     if (apiResponse.success) {
       return apiResponse.data;
@@ -32,10 +32,8 @@ const handleResponse = async (apiPromise) => {
 };
 
 export const login = async (email, password) => {
-  const data = await handleResponse(
-    authApi.post('/Auth/Login', { email, password })
-  );
-  
+  const data = await handleResponse(authApi.post('/Auth/Login', { email, password }));
+
   // Data here is { token, refreshToken }
   if (data?.token) {
     localStorage.setItem('token', data.token);
@@ -50,8 +48,8 @@ export const register = async (fullName, email, password, phoneNumber) => {
       fullName,
       email,
       password,
-      phoneNumber
-    })
+      phoneNumber,
+    }),
   );
 };
 

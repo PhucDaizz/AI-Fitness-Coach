@@ -18,7 +18,7 @@ const createInstance = (baseURL) => {
       }
       return config;
     },
-    (error) => Promise.reject(error)
+    (error) => Promise.reject(error),
   );
 
   // Response interceptor for global error handling
@@ -32,7 +32,7 @@ const createInstance = (baseURL) => {
         // window.location.href = '/login';
       }
       return Promise.reject(error);
-    }
+    },
   );
 
   return instance;
