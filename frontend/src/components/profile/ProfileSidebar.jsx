@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 
-const ProfileSidebar = ({ isAdmin, fullName, avatarUrl, isOpen, onClose }) => {
+const ProfileSidebar = ({ isAdmin, fullName, avatarUrl, isOpen, onClose, activeTab = 'profile' }) => {
   const navigate = useNavigate();
 
   return (
@@ -50,14 +50,14 @@ const ProfileSidebar = ({ isAdmin, fullName, avatarUrl, isOpen, onClose }) => {
             <span className="material-symbols-outlined">dashboard</span>
             Dashboard
           </Link>
-          <Link to="/profile" className="flex items-center gap-4 px-4 py-3 rounded-lg text-[#b1ff24] border-l-4 border-[#b1ff24] bg-gradient-to-r from-[#b1ff24]/10 to-transparent transition-all">
-            <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>person</span>
+          <Link to="/profile" className={`flex items-center gap-4 px-4 py-3 rounded-lg transition-all ${activeTab === 'profile' ? 'text-[#b1ff24] border-l-4 border-[#b1ff24] bg-gradient-to-r from-[#b1ff24]/10 to-transparent' : 'text-[#adaaaa] hover:bg-[#1a1919] hover:text-white'}`}>
+            <span className="material-symbols-outlined" style={{ fontVariationSettings: activeTab === 'profile' ? "'FILL' 1" : "''" }}>person</span>
             Profile
           </Link>
-          <button className="flex items-center gap-4 px-4 py-3 rounded-lg text-[#adaaaa] hover:bg-[#1a1919] hover:text-white transition-all text-left">
-            <span className="material-symbols-outlined">shield</span>
+          <Link to="/security" className={`flex items-center gap-4 px-4 py-3 rounded-lg transition-all ${activeTab === 'security' ? 'text-[#b1ff24] border-l-4 border-[#b1ff24] bg-gradient-to-r from-[#b1ff24]/10 to-transparent' : 'text-[#adaaaa] hover:bg-[#1a1919] hover:text-white'}`}>
+            <span className="material-symbols-outlined" style={{ fontVariationSettings: activeTab === 'security' ? "'FILL' 1" : "''" }}>shield</span>
             Security
-          </button>
+          </Link>
         </div>
         
         <div className="px-4 mt-auto flex flex-col gap-2 font-['Inter'] uppercase tracking-widest text-[0.75rem] font-bold">

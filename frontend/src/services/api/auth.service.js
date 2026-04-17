@@ -67,6 +67,14 @@ export const updateProfile = async (profileData) => {
   return await handleResponse(authApi.put('/Auth/profile', profileData));
 };
 
+export const changePassword = async (passwordData) => {
+  return await handleResponse(authApi.post('/Auth/change-password', passwordData));
+};
+
+export const forgotPassword = async (email, clientUrl) => {
+  return await handleResponse(authApi.post('/Auth/forgot-password', { email, clientUrl }));
+};
+
 export const logout = () => {
   localStorage.removeItem('token');
   localStorage.removeItem('refreshToken');

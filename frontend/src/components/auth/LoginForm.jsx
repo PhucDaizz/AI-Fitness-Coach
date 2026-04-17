@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { login, getGoogleLoginUrl } from '../../services/api/auth.service';
 import { isAdmin } from '../../utils/authUtils';
 
@@ -76,7 +76,7 @@ const LoginForm = () => {
         <div className="space-y-2">
           <div className="flex justify-between items-end ml-1">
             <label className="text-[0.6875rem] font-bold uppercase tracking-widest text-on-surface-variant" htmlFor="password">Password</label>
-            <a className="text-[0.6875rem] font-bold uppercase tracking-widest text-secondary hover:opacity-80 transition-opacity" href="#">Forgot Password?</a>
+            <Link className="text-[0.6875rem] font-bold uppercase tracking-widest text-secondary hover:opacity-80 transition-opacity" to="/forgot-password">Forgot Password?</Link>
           </div>
           <div className="relative group">
             <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant group-focus-within:text-primary transition-colors pointer-events-none z-10">lock</span>
