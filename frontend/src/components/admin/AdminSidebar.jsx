@@ -5,11 +5,15 @@ const AdminSidebar = () => {
   const location = useLocation();
 
   const navItems = [
-    { icon: 'dashboard', label: 'Dashboard', path: '/admin', active: true },
-    { icon: 'monitoring', label: 'System Metrics', path: '#' },
-    { icon: 'group', label: 'User Insights', path: '#' },
-    { icon: 'psychology', label: 'Model Training', path: '#' },
-    { icon: 'error', label: 'Alerts', path: '#' },
+    { icon: 'dashboard', label: 'Dashboard', path: '/admin' },
+    { icon: 'category', label: 'Exercise Category', path: '/admin/exercise-category' },
+    { icon: 'fitness_center', label: 'Equipment', path: '#' },
+    { icon: 'build', label: 'Maintenance', path: '#' },
+    { icon: 'group', label: 'User Management', path: '#' },
+    { icon: 'restaurant', label: 'Meal Management', path: '#' },
+    { icon: 'accessibility_new', label: 'Muscle Group', path: '/admin/muscle-group' },
+    { icon: 'assessment', label: 'Reports', path: '#' },
+    { icon: 'settings', label: 'Settings', path: '#' },
   ];
 
   return (
@@ -28,7 +32,7 @@ const AdminSidebar = () => {
       
       <nav className="flex-1 space-y-1">
         {navItems.map((item, index) => {
-          const isActive = item.active; // Hardcoded for now based on current template
+          const isActive = location.pathname === item.path;
           return (
             <Link 
               key={index}

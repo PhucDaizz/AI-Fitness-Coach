@@ -5,6 +5,8 @@ import Login from '../pages/auth/Login';
 import SignUp from '../pages/auth/SignUp';
 import OAuthCallback from '../pages/auth/OAuthCallback';
 import SystemStatistics from '../pages/admin/SystemStatistics';
+import ExerciseCategoryPage from '../pages/admin/ExerciseCategoryPage';
+import MuscleGroupPage from '../pages/admin/MuscleGroupPage';
 import ProfilePage from '../pages/auth/ProfilePage';
 import SecurityPage from '../pages/auth/SecurityPage';
 import ForgotPassword from '../pages/auth/ForgotPassword';
@@ -20,6 +22,8 @@ const AppRoutes = () => {
         <Route path="/signup" element={<SignUp />} />
         <Route path="/oauth-callback" element={<OAuthCallback />} />
         <Route path="/admin" element={<SystemStatistics />} />
+        <Route path="/admin/exercise-category" element={<ExerciseCategoryPage />} />
+        <Route path="/admin/muscle-group" element={<MuscleGroupPage />} />
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/security" element={<SecurityPage />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
