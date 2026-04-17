@@ -67,99 +67,132 @@ namespace Infrastructure.Services
         public string CreateConfirmationEmailBody(string userName, string confirmationLink)
         {
             return $@"
-                <!DOCTYPE html>
-                <html lang=""vi"">
-                <head>
-                    <meta charset=""UTF-8"">
-                    <meta name=""viewport"" content=""width=device-width, initial-scale=1.0"">
-                    <title>Xác nhận tài khoản - Doris</title>
-                </head>
-                <body style=""font-family: Arial, sans-serif; background-color: #f4f4f4; margin:0; padding:0;"">
-                    <div style=""width:100%; max-width:600px; margin:0 auto; background-color:#ffffff; padding:20px; box-shadow:0 0 10px rgba(0,0,0,0.05);"">
-        
-                        <!-- Logo / Header -->
-                        <div style=""text-align:center; padding:20px 0; border-bottom:1px solid #eeeeee;"">
-                            <img src=""https://iili.io/KoLNvF2.jpg"" alt=""Doris Logo"" style=""max-width:150px; margin-bottom:10px;"">
-                            <h1 style=""color:#333333; font-size:22px; margin:0;"">Xác nhận tài khoản của bạn</h1>
-                        </div>
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <meta charset=""UTF-8"">
+                <meta name=""viewport"" content=""width=device-width, initial-scale=1.0"">
+                <title>Activate your KINETIC AI cockpit</title>
+                <style>
+                    @import url('https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,700;14..32,800&display=swap');
+                </style>
+            </head>
+            <body style=""margin:0; padding:0; background-color:#0e0e0e; font-family: 'Inter', Arial, sans-serif;"">
+                <table width=""100%"" cellpadding=""0"" cellspacing=""0"" border=""0"" style=""background-color:#0e0e0e;"">
+                    <tr>
+                        <td align=""center"" style=""padding: 40px 20px;"">
+                            <!-- Main card – tonal stacking -->
+                            <table width=""100%"" max-width=""560"" cellpadding=""0"" cellspacing=""0"" border=""0"" style=""max-width:560px; width:100%; background-color:#1a1919; border-radius:24px;"">
+                                <tr>
+                                    <td style=""padding: 32px 32px 40px 32px;"">
+                                        <!-- Header with editorial asymmetry -->
+                                        <div style=""margin-bottom:32px;"">
+                                            <span style=""font-size:12px; letter-spacing:0.05em; text-transform:uppercase; color:#6a9cff; font-weight:700;"">KINETIC AI // ONBOARDING</span>
+                                            <h1 style=""font-size:28px; font-weight:800; letter-spacing:-0.02em; color:#ffffff; margin:12px 0 4px; line-height:1.2;"">Activate your<br>digital cockpit</h1>
+                                            <p style=""font-size:14px; color:#adaaaa; margin-top:8px; line-height:1.5;"">One more step to unlock full performance metrics.</p>
+                                        </div>
 
-                        <!-- Nội dung -->
-                        <div style=""padding:30px 20px; text-align:center; color:#555555;"">
-                            <p style=""font-size:16px; margin:0 0 15px;"">Xin chào {userName},</p>
-                            <p style=""font-size:16px; margin:0 0 20px; line-height:1.6;"">
-                                Cảm ơn bạn đã đăng ký tài khoản tại <strong>Doris</strong> – nền tảng mua sắm thời trang trực tuyến.  
-                                Vui lòng xác nhận địa chỉ email của bạn bằng cách nhấn vào nút bên dưới:
-                            </p>
-            
-                            <a href=""{confirmationLink}"" 
-                                style=""display:inline-block; padding:12px 28px; background-color:#111111; color:#ffffff; 
-                                        text-decoration:none; border-radius:30px; font-size:16px; font-weight:bold;"">
-                                Xác nhận Email
-                            </a>
+                                        <!-- Body -->
+                                        <div style=""margin-bottom:32px;"">
+                                            <p style=""font-size:16px; line-height:1.5; color:#e0e0e0; margin-bottom:24px;"">
+                                                Hello <strong style=""color:#b1ff24;"">{userName}</strong>, verify your email address to access personalized training plans, AI coaching, and real‑time biometric sync.
+                                            </p>
 
-                            <p style=""font-size:14px; margin:25px 0 0; color:#888888; line-height:1.6;"">
-                                Nếu bạn không thực hiện yêu cầu này, vui lòng bỏ qua email.
-                            </p>
-                        </div>
+                                            <!-- CTA Button – primary neon, pill, no border -->
+                                            <table cellpadding=""0"" cellspacing=""0"" border=""0"" style=""margin:28px 0 32px; width:100%;"">
+                                                <tr>
+                                                    <td align=""center"" bgcolor=""#b1ff24"" style=""border-radius:100px; padding:12px 28px;"">
+                                                        <a href=""{confirmationLink}"" style=""display:inline-block; color:#000000; text-decoration:none; font-weight:800; font-size:15px; letter-spacing:-0.2px;"">✓ VERIFY EMAIL →</a>
+                                                    </td>
+                                                </tr>
+                                            </table>
 
-                        <!-- Footer -->
-                        <div style=""text-align:center; padding:20px; font-size:12px; color:#999999; border-top:1px solid #eeeeee;"">
-                            <p style=""margin:0;"">Trân trọng, <br> Đội ngũ Doris</p>
-                            <p style=""margin:8px 0 0;"">
-                                Hỗ trợ khách hàng: 
-                                <a href=""mailto:support@doris.com"" style=""color:#111111; text-decoration:none;"">support@doris.com</a>
-                            </p>
-                            <p style=""margin:8px 0 0; font-size:11px; color:#bbbbbb;"">
-                                © 2025 Doris. Tất cả các quyền được bảo lưu.
-                            </p>
-                        </div>
-                    </div>
-                </body>
-                </html>
+                                            <!-- Ghost panel -->
+                                            <div style=""background-color:#262626; border-radius:16px; padding:20px; margin-top:24px;"">
+                                                <p style=""font-size:13px; color:#6a9cff; margin:0 0 8px; text-transform:uppercase; letter-spacing:0.03em;"">⚡ Security pulse</p>
+                                                <p style=""font-size:14px; color:#ffffff; margin:0; line-height:1.4;"">
+                                                    Once verified, the KINETIC AI coach will calibrate to your physiology.
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                        <!-- Footer – tonal shift, no border -->
+                                        <div style=""margin-top:32px; background-color:#000000; border-radius:16px; text-align:center; padding:20px 16px;"">
+                                            <p style=""font-size:12px; color:#6a6a6a; margin:0 0 8px;"">KINETIC AI – The Obsidian Pulse</p>
+                                            <p style=""font-size:11px; color:#4a4a4a; margin:0;"">This is an automated message from your digital cockpit.</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                </table>
+            </body>
+            </html>
             ";
         }
 
-        public string CreateResetPasswordEmailBody(string userName, string resetLink, int expiryMinutes = 30)
+        public string CreateResetPasswordEmailBody(string userName, string resetLink, int expiryMinutes = 60)
         {
             return $@"
             <!DOCTYPE html>
             <html>
             <head>
-                <meta charset='UTF-8'>
-                <title>Reset Your Password</title>
+                <meta charset=""UTF-8"">
+                <meta name=""viewport"" content=""width=device-width, initial-scale=1.0"">
+                <title>Reset your KINETIC AI access key</title>
+                <style>
+                    @import url('https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,700;14..32,800&display=swap');
+                </style>
             </head>
-            <body style='font-family: Arial, sans-serif;'>
-                <div style='max-width: 600px; margin: 0 auto; padding: 20px;'>
-                    <h2>Reset Your Password</h2>
-                    <p>Hello {userName},</p>
-                    <p>We received a request to reset your password for your TravelNow account.</p>
-                
-                    <p style='text-align: center; margin: 30px 0;'>
-                        <a href='{resetLink}' 
-                           style='background-color: #4CAF50; color: white; padding: 12px 24px; 
-                                  text-decoration: none; border-radius: 4px; font-weight: bold;'>
-                           Reset Password
-                        </a>
-                    </p>
-                
-                    <p><strong>This link will expire in {expiryMinutes} minutes.</strong></p>
-                
-                    <p>If you didn't request a password reset, please ignore this email or 
-                       contact our support team if you have concerns.</p>
-                
-                    <p>Best regards,<br>The TravelNow Team</p>
-                
-                    <hr style='border: none; border-top: 1px solid #eee; margin: 30px 0;'>
-                
-                    <p style='font-size: 12px; color: #666;'>
-                        If you're having trouble clicking the button, copy and paste this URL into your browser:<br>
-                        <a href='{resetLink}' style='color: #666;'>{resetLink}</a>
-                    </p>
-                </div>
+            <body style=""margin:0; padding:0; background-color:#0e0e0e; font-family: 'Inter', Arial, sans-serif;"">
+                <table width=""100%"" cellpadding=""0"" cellspacing=""0"" border=""0"" style=""background-color:#0e0e0e;"">
+                    <tr>
+                        <td align=""center"" style=""padding: 40px 20px;"">
+                            <table width=""100%"" max-width=""560"" cellpadding=""0"" cellspacing=""0"" border=""0"" style=""max-width:560px; width:100%; background-color:#1a1919; border-radius:24px;"">
+                                <tr>
+                                    <td style=""padding: 32px 32px 40px 32px;"">
+                                        <div style=""margin-bottom:32px;"">
+                                            <span style=""font-size:12px; letter-spacing:0.05em; text-transform:uppercase; color:#b1ff24; font-weight:700;"">KINETIC AI // SECURITY</span>
+                                            <h1 style=""font-size:28px; font-weight:800; letter-spacing:-0.02em; color:#ffffff; margin:12px 0 4px; line-height:1.2;"">Reset your<br>access key</h1>
+                                            <p style=""font-size:14px; color:#adaaaa; margin-top:8px; line-height:1.5;"">A password reset was requested for your KINETIC AI account.</p>
+                                        </div>
+
+                                        <div style=""margin-bottom:32px;"">
+                                            <p style=""font-size:16px; line-height:1.5; color:#e0e0e0; margin-bottom:24px;"">
+                                                Hello <strong style=""color:#b1ff24;"">{userName}</strong>, to secure your cockpit, create a new authentication key using the button below.
+                                            </p>
+
+                                            <table cellpadding=""0"" cellspacing=""0"" border=""0"" style=""margin:28px 0 32px; width:100%;"">
+                                                <tr>
+                                                    <td align=""center"" bgcolor=""#b1ff24"" style=""border-radius:100px; padding:12px 28px;"">
+                                                        <a href=""{resetLink}"" style=""display:inline-block; color:#000000; text-decoration:none; font-weight:800; font-size:15px; letter-spacing:-0.2px;"">⟳ RESET PASSWORD →</a>
+                                                    </td>
+                                                </tr>
+                                            </table>
+
+                                            <div style=""background-color:#262626; border-radius:16px; padding:20px; margin-top:24px;"">
+                                                <p style=""font-size:13px; color:#6a9cff; margin:0 0 8px; text-transform:uppercase; letter-spacing:0.03em;"">⏱️ Security pulse</p>
+                                                <p style=""font-size:14px; color:#ffffff; margin:0; line-height:1.4;"">
+                                                    This link will expire in <strong style=""color:#b1ff24;"">{expiryMinutes} minutes</strong>. If you didn't request this change, ignore this email.
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                        <div style=""margin-top:32px; background-color:#000000; border-radius:16px; text-align:center; padding:20px 16px;"">
+                                            <p style=""font-size:12px; color:#6a6a6a; margin:0 0 8px;"">KINETIC AI – The Obsidian Pulse</p>
+                                            <p style=""font-size:11px; color:#4a4a4a; margin:0;"">Your digital cockpit, always secure.</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                </table>
             </body>
-            </html>";
+            </html>
+            ";
         }
-        
 
         public string GenerateConfirmationLink(string userId, string token)
         {

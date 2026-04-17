@@ -8,6 +8,8 @@ import SystemStatistics from '../pages/admin/SystemStatistics';
 import ProfilePage from '../pages/auth/ProfilePage';
 import SecurityPage from '../pages/auth/SecurityPage';
 import ForgotPassword from '../pages/auth/ForgotPassword';
+import VerifyEmail from '../pages/auth/VerifyEmail';
+import ResetPassword from '../pages/auth/ResetPassword';
 
 const AppRoutes = () => {
   return (
@@ -21,6 +23,8 @@ const AppRoutes = () => {
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/security" element={<SecurityPage />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/verify-email" element={<VerifyEmail />} />
+        <Route path="/auth/resetpass" element={<ResetPassword />} />
         
         {/* Wildcard to redirect to home */}
         <Route path="*" element={<Navigate to="/" replace />} />

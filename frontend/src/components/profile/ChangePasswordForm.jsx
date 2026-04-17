@@ -7,6 +7,10 @@ const ChangePasswordForm = () => {
     newPassword: '',
     confirmNewPassword: ''
   });
+  const [showCurrent, setShowCurrent] = useState(false);
+  const [showNew, setShowNew] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
+  
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState({ type: '', text: '' });
 
@@ -68,43 +72,80 @@ const ChangePasswordForm = () => {
       )}
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-6 relative z-10">
+        {/* Current Password */}
         <div className="flex flex-col gap-2">
           <label className="font-label text-[0.6875rem] uppercase tracking-widest text-on-surface-variant ml-2 font-bold">Current Password</label>
-          <input 
-            name="currentPassword"
-            value={formData.currentPassword}
-            onChange={handleChange}
-            className="bg-surface-container-lowest border border-outline-variant/10 rounded-xl px-4 py-4 text-on-surface placeholder:text-outline-variant focus:ring-1 focus:ring-primary focus:bg-surface-container-low transition-all text-base outline-none" 
-            placeholder="••••••••" 
-            type="password"
-            required
-          />
+          <div className="relative group/input">
+            <input 
+              name="currentPassword"
+              value={formData.currentPassword}
+              onChange={handleChange}
+              className="w-full bg-surface-container-lowest border border-outline-variant/10 rounded-xl px-4 py-4 pr-12 text-on-surface placeholder:text-outline-variant focus:ring-1 focus:ring-primary focus:bg-surface-container-low transition-all text-base outline-none" 
+              placeholder="••••••••" 
+              type={showCurrent ? "text" : "password"}
+              required
+            />
+            <button 
+              type="button"
+              onClick={() => setShowCurrent(!showCurrent)}
+              className="absolute right-4 top-1/2 -translate-y-1/2 text-on-surface-variant hover:text-primary transition-colors"
+            >
+              <span className="material-symbols-outlined text-[20px]">
+                {showCurrent ? 'visibility' : 'visibility_off'}
+              </span>
+            </button>
+          </div>
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* New Password */}
           <div className="flex flex-col gap-2">
             <label className="font-label text-[0.6875rem] uppercase tracking-widest text-on-surface-variant ml-2 font-bold">New Password</label>
-            <input 
-              name="newPassword"
-              value={formData.newPassword}
-              onChange={handleChange}
-              className="bg-surface-container-lowest border border-outline-variant/10 rounded-xl px-4 py-4 text-on-surface placeholder:text-outline-variant focus:ring-1 focus:ring-primary focus:bg-surface-container-low transition-colors text-base outline-none" 
-              placeholder="••••••••" 
-              type="password"
-              required
-            />
+            <div className="relative group/input">
+              <input 
+                name="newPassword"
+                value={formData.newPassword}
+                onChange={handleChange}
+                className="w-full bg-surface-container-lowest border border-outline-variant/10 rounded-xl px-4 py-4 pr-12 text-on-surface placeholder:text-outline-variant focus:ring-1 focus:ring-primary focus:bg-surface-container-low transition-colors text-base outline-none" 
+                placeholder="••••••••" 
+                type={showNew ? "text" : "password"}
+                required
+              />
+              <button 
+                type="button"
+                onClick={() => setShowNew(!showNew)}
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-on-surface-variant hover:text-primary transition-colors"
+              >
+                <span className="material-symbols-outlined text-[20px]">
+                  {showNew ? 'visibility' : 'visibility_off'}
+                </span>
+              </button>
+            </div>
           </div>
+
+          {/* Confirm New Password */}
           <div className="flex flex-col gap-2">
             <label className="font-label text-[0.6875rem] uppercase tracking-widest text-on-surface-variant ml-2 font-bold">Confirm New Password</label>
-            <input 
-              name="confirmNewPassword"
-              value={formData.confirmNewPassword}
-              onChange={handleChange}
-              className="bg-surface-container-lowest border border-outline-variant/10 rounded-xl px-4 py-4 text-on-surface placeholder:text-outline-variant focus:ring-1 focus:ring-primary focus:bg-surface-container-low transition-colors text-base outline-none" 
-              placeholder="••••••••" 
-              type="password"
-              required
-            />
+            <div className="relative group/input">
+              <input 
+                name="confirmNewPassword"
+                value={formData.confirmNewPassword}
+                onChange={handleChange}
+                className="w-full bg-surface-container-lowest border border-outline-variant/10 rounded-xl px-4 py-4 pr-12 text-on-surface placeholder:text-outline-variant focus:ring-1 focus:ring-primary focus:bg-surface-container-low transition-colors text-base outline-none" 
+                placeholder="••••••••" 
+                type={showConfirm ? "text" : "password"}
+                required
+              />
+              <button 
+                type="button"
+                onClick={() => setShowConfirm(!showConfirm)}
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-on-surface-variant hover:text-primary transition-colors"
+              >
+                <span className="material-symbols-outlined text-[20px]">
+                  {showConfirm ? 'visibility' : 'visibility_off'}
+                </span>
+              </button>
+            </div>
           </div>
         </div>
 

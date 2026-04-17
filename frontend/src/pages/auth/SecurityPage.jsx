@@ -2,8 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { getCurrentUser } from '../../services/api/auth.service';
 import { isAdmin } from '../../utils/authUtils';
 import ProfileSidebar from '../../components/profile/ProfileSidebar';
+import BioCard from '../../components/profile/BioCard';
 import ChangePasswordForm from '../../components/profile/ChangePasswordForm';
 import RecoveryCard from '../../components/profile/RecoveryCard';
+import VerificationAlert from '../../components/profile/VerificationAlert';
 
 const SecurityPage = () => {
   const [user, setUser] = useState(null);
@@ -75,7 +77,7 @@ const SecurityPage = () => {
           </div>
           
           <div className="max-w-4xl w-full">
-            <RecoveryCard isEmailVerified={user?.emailConfirmed} />
+            <RecoveryCard isEmailVerified={user?.emailConfirmed} email={user?.email} />
           </div>
         </div>
       </main>

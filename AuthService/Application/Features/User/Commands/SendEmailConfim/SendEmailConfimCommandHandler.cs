@@ -39,7 +39,7 @@ namespace Application.Features.User.Commands.SendEmailConfim
 
             var confirmationLink = _emailServices.GenerateConfirmationLink(user.Id, token);
 
-            string subject = "Xác nhận tài khoản - TravelNow";
+            string subject = "Verify Email - KINETIC AI";
             string htmlBody = _emailServices.CreateConfirmationEmailBody(
                 userName: user.FullName ?? "Quý khách",
                 confirmationLink: confirmationLink);
