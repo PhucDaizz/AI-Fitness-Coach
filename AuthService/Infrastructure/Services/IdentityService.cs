@@ -349,5 +349,47 @@ namespace Infrastructure.Services
                 _ => (string.Empty, false)
             };
         }
+
+        public async Task<(bool Success, string Message)> ChangePasswordAsync(
+            string userId,
+            string currentPassword,
+            string newPassword)
+        {
+            try
+            {
+                var user = await _userManager.FindByIdAsync(userId);
+                if (user == null)
+                {
+                    _logger.LogWarning($"User {userId} not found when changing password");
+                    return (false, "User not found");
+                }
+
+                var isPasswordValid = await _userManager.CheckPasswordAsync(user, currentPassword);
+                if (!isPasswordValid)
+                {
+                    _logger.LogWarning($"Invalid current password for user {userId}");
+                    return (false, "Current password is incorrect");
+                }
+
+                var result = await _userManager.ChangePasswordAsync(user, currentPassword, newPassword);
+
+                if (!result.Succeeded)
+                {
+                    var errors = string.Join(", ", result.Errors.Select(e => e.Description));
+                    _logger.LogWarning($"Change password failed for user {userId}: {errors}");
+                    return (false, $"Failed to change password: {errors}");
+                }
+
+                await _userManager.UpdateAsync(user);
+
+                _logger.LogInformation($"Password changed successfully for user {userId}");
+                return (true, "Password changed successfully");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Error changing password for user {userId}");
+                return (false, "An error occurred while changing the password");
+            }
+        }
     }
 }

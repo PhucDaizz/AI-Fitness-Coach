@@ -14,6 +14,7 @@ namespace Application.Contracts
         Task<string> GenerateEmailConfirmationTokenAsync(string userId, CancellationToken cancellationToken = default);
         Task<Result<string>> ConfirmEmailAsync(string userId, string token, CancellationToken cancellationToken = default);
         Task<Result<bool>> ResetPasswordAsync(string email, string token, string newPassword, CancellationToken cancellationToken = default);
+        Task<(bool Success, string Message)> ChangePasswordAsync(string userId, string currentPassword, string newPassword);
         Task<Result<string>> GeneratePasswordResetTokenAsync(string email, CancellationToken cancellationToken = default);
         Task<bool> HasLoginAsync(string userId, string loginProvider);
         Task AddLoginAsync(string userId, string loginProvider, string providerKey);

@@ -1,5 +1,6 @@
 ﻿using Application.Common.Interfaces;
 using Application.DTOs.User;
+using Application.Features.User.Commands.ChangePassword;
 using Application.Features.User.Commands.ConfirmEmail;
 using Application.Features.User.Commands.ExternalLogin;
 using Application.Features.User.Commands.ForgotPassword;
@@ -265,6 +266,34 @@ namespace API.Controllers
                 return Redirect($"{frontendUrl}/login-failed?error={Uri.EscapeDataString(ex.Message)}");
             }
         }
+
+        /// <summary>
+        /// Change user password (requires authentication)
+        /// </summary>
+        [HttpPost("change-password")]
+        [Authorize]
+        public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordCommand command)
+        {
+            var result = await _mediator.Send(command);
+
+            if (result.IsFailure)
+            {
+                return BadRequest(new ApiResponse<bool>
+                {
+                    Success = false,
+                    Message = result.Error.Message,
+                    Data = false
+                });
+            }
+
+            return Ok(new ApiResponse<bool>
+            {
+                Success = true,
+                Message = "Password changed successfully",
+                Data = result.Value
+            });
+        }
+
 
         /// <summary>
         /// 1.3 Yêu cầu reset mật khẩu (yêu cầu đã xác nhận email trước đó)
