@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Profile Settings - Obsidian Pulse</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "secondary-fixed-dim": "#aac3ff",
+                    "on-secondary-fixed-variant": "#004caa",
+                    "error-container": "#b92902",
+                    "surface-variant": "#262626",
+                    "secondary": "#6a9cff",
+                    "tertiary-dim": "#e8da46",
+                    "on-primary-container": "#375500",
+                    "on-surface": "#ffffff",
+                    "primary-fixed": "#b1ff24",
+                    "surface-container-high": "#201f1f",
+                    "on-background": "#ffffff",
+                    "on-primary-fixed": "#304a00",
+                    "on-error": "#450900",
+                    "surface-container-lowest": "#000000",
+                    "on-secondary-fixed": "#003173",
+                    "tertiary": "#fff6ab",
+                    "secondary-fixed": "#bfd1ff",
+                    "background": "#0e0e0e",
+                    "on-tertiary-container": "#5b5500",
+                    "error": "#ff7351",
+                    "outline": "#777575",
+                    "tertiary-container": "#f7e953",
+                    "secondary-dim": "#006ff0",
+                    "primary-container": "#a4f005",
+                    "surface-container-highest": "#262626",
+                    "on-secondary-container": "#f7f7ff",
+                    "surface-container-low": "#131313",
+                    "tertiary-fixed": "#f7e953",
+                    "surface": "#0e0e0e",
+                    "on-surface-variant": "#adaaaa",
+                    "on-secondary": "#001e4b",
+                    "on-primary-fixed-variant": "#466900",
+                    "on-primary": "#3e5e00",
+                    "inverse-surface": "#fcf8f8",
+                    "on-error-container": "#ffd2c8",
+                    "inverse-on-surface": "#565554",
+                    "inverse-primary": "#456900",
+                    "surface-container": "#1a1919",
+                    "outline-variant": "#494847",
+                    "secondary-container": "#0059c5",
+                    "surface-tint": "#b1ff24",
+                    "primary-fixed-dim": "#a4f005",
+                    "on-tertiary": "#645d00",
+                    "tertiary-fixed-dim": "#e8da46",
+                    "error-dim": "#d53d18",
+                    "primary": "#b1ff24",
+                    "primary-dim": "#a4f005",
+                    "on-tertiary-fixed": "#484200",
+                    "surface-bright": "#2c2c2c",
+                    "on-tertiary-fixed-variant": "#665f00",
+                    "surface-dim": "#0e0e0e"
+            },
+            "borderRadius": {
+                    "DEFAULT": "1rem",
+                    "lg": "2rem",
+                    "xl": "3rem",
+                    "full": "9999px"
+            },
+            "spacing": {},
+            "fontFamily": {
+                    "headline": [
+                            "Inter"
+                    ],
+                    "body": [
+                            "Inter"
+                    ],
+                    "label": [
+                            "Inter"
+                    ]
+            }
+    },
+        },
+      }
+    </script>
+<style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0e0e0e;
+            color: #ffffff;
+        }
+        .glass-panel {
+            background: rgba(26, 25, 25, 0.6);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+        .glow-border:focus-within {
+            box-shadow: 0 0 15px rgba(177, 255, 36, 0.3);
+            border-color: #b1ff24;
+        }
+        /* Hide scrollbar for clean UI */
+        ::-webkit-scrollbar {
+            width: 0px;
+            background: transparent;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background min-h-screen flex font-body">
+<!-- Top Navigation (Mobile Only) -->
+<nav class="md:hidden fixed top-0 w-full z-50 bg-[#0e0e0e]/80 backdrop-blur-xl shadow-2xl shadow-black/50 h-16 px-6 flex justify-between items-center">
+<div class="text-2xl font-black italic text-[#b1ff24] tracking-tighter">OBSIDIAN PULSE</div>
+<div class="flex gap-4">
+<span class="material-symbols-outlined text-[#adaaaa] hover:text-white transition-colors">notifications</span>
+<span class="material-symbols-outlined text-[#b1ff24]">settings</span>
+</div>
+</nav>
+<!-- Side Navigation (Desktop) -->
+<aside class="hidden md:flex flex-col h-screen w-64 fixed left-0 top-0 pt-16 py-8 gap-4 bg-[#000000] bg-[#1a1919] border-r border-[#494847]/15">
+<div class="px-8 mb-8">
+<div class="text-xl font-black text-white italic tracking-tighter mb-12">OBSIDIAN PULSE</div>
+<div class="flex items-center gap-4 mb-8">
+<img alt="Athlete avatar" class="w-12 h-12 rounded-full object-cover border-2 border-primary" data-alt="Close up portrait of a fit athletic man in dark lighting looking focused" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBor6rBEH2iA19JbFmpGI65HQfgXxl9JAsz54V7CJyBlO3sIrf0wf3GiN5jwnlW4Vzw_6jx2I3c_JUQHrW9ASxXLM5pvfuCHZbqTxxViVdcvN21N6Zvwxaf7ab1Y41o061gCagVNPiwz_W-Mz3zHMPe8-_HYNLeLGtFuXdRGOuWacmQErV1NCmII6QHrv5m2wDLbHEbDnikXMERgDkuVpQBQjl7BkaBEHsXyyT0rejwIGyMfjOYPKrOT-Bntzl8TcUaAHrER3FuwQ94"/>
+<div>
+<div class="font-bold text-on-surface">Alex Rivers</div>
+<div class="text-xs text-on-surface-variant uppercase tracking-widest font-bold">Elite Level</div>
+</div>
+</div>
+<button class="w-full py-3 rounded-full bg-surface-container-highest text-primary font-bold text-xs uppercase tracking-widest hover:bg-surface-variant transition-colors border border-outline-variant/15 flex justify-center items-center gap-2 mb-8">
+<span class="material-symbols-outlined text-[18px]">bolt</span>
+                UPGRADE TO PRO
+            </button>
+</div>
+<div class="flex-1 px-4 flex flex-col gap-2 font-['Inter'] uppercase tracking-widest text-[0.75rem] font-bold">
+<a class="flex items-center gap-4 px-4 py-3 rounded-lg text-[#b1ff24] border-l-4 border-[#b1ff24] bg-gradient-to-r from-[#b1ff24]/10 to-transparent transition-all duration-300 ease-in-out" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">person</span>
+                Profile
+            </a>
+<a class="flex items-center gap-4 px-4 py-3 rounded-lg text-[#adaaaa] hover:bg-[#1a1919] hover:text-white transition-all duration-300 ease-in-out" href="#">
+<span class="material-symbols-outlined">shield</span>
+                Security
+            </a>
+<a class="flex items-center gap-4 px-4 py-3 rounded-lg text-[#adaaaa] hover:bg-[#1a1919] hover:text-white transition-all duration-300 ease-in-out" href="#">
+<span class="material-symbols-outlined">workspace_premium</span>
+                Subscriptions
+            </a>
+</div>
+<div class="px-4 mt-auto flex flex-col gap-2 font-['Inter'] uppercase tracking-widest text-[0.75rem] font-bold">
+<a class="flex items-center gap-4 px-4 py-3 rounded-lg text-[#adaaaa] hover:bg-[#1a1919] hover:text-white transition-all duration-300 ease-in-out" href="#">
+<span class="material-symbols-outlined">help</span>
+                Help
+            </a>
+<a class="flex items-center gap-4 px-4 py-3 rounded-lg text-error hover:bg-surface-container-highest transition-all duration-300 ease-in-out" href="#">
+<span class="material-symbols-outlined">logout</span>
+                Logout
+            </a>
+</div>
+</aside>
+<!-- Main Canvas -->
+<main class="flex-1 md:ml-64 pt-20 md:pt-12 px-4 md:px-12 lg:px-24 pb-24 max-w-7xl mx-auto w-full">
+<!-- Header Section -->
+<header class="mb-12">
+<h1 class="text-[2.25rem] md:text-[3.5rem] font-headline font-bold tracking-[-0.04em] leading-tight mb-2">Profile Details</h1>
+<p class="text-on-surface-variant font-body">Manage your identity and biometric anchor points.</p>
+</header>
+<!-- Email Verification Alert -->
+<div class="mb-12 bg-surface-container border border-error/30 rounded-lg p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 relative overflow-hidden">
+<!-- Subtle gradient background for the alert -->
+<div class="absolute inset-0 bg-gradient-to-r from-error/5 to-transparent pointer-events-none"></div>
+<div class="relative z-10 flex gap-4 items-start">
+<div class="w-10 h-10 rounded-full bg-error/20 flex items-center justify-center shrink-0 mt-1">
+<span class="material-symbols-outlined text-error">warning</span>
+</div>
+<div>
+<h3 class="text-xl font-bold mb-1 text-on-surface">Unverified Comms Channel</h3>
+<p class="text-on-surface-variant text-sm">dai@gmail.com requires verification to unlock advanced coaching insights.</p>
+</div>
+</div>
+<button class="relative z-10 shrink-0 bg-surface-container-highest text-on-surface hover:text-primary border border-outline-variant/30 hover:border-primary/50 px-6 py-3 rounded-full font-bold text-sm uppercase tracking-widest transition-all shadow-[0_0_15px_rgba(177,255,36,0)] hover:shadow-[0_0_15px_rgba(177,255,36,0.2)]">
+                Verify Now
+            </button>
+</div>
+<!-- Forms Grid -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
+<!-- Left Column: Avatar & Quick Info -->
+<div class="lg:col-span-4 flex flex-col gap-8">
+<div class="bg-surface-container p-8 rounded-xl border border-outline-variant/15 flex flex-col items-center text-center relative overflow-hidden group">
+<div class="w-32 h-32 rounded-full overflow-hidden border-4 border-surface-container-highest relative mb-6">
+<img alt="Athlete avatar large" class="w-full h-full object-cover" data-alt="Close up portrait of a fit athletic man in dark lighting looking focused" src="https://lh3.googleusercontent.com/aida-public/AB6AXuChyTiS0FCWjh6wvyCIrBsx8GsAO7vyfjXIE4fJHQUnxA_fbEultdCQ8oCiJboW2NtZ3ziu9R_B6V5cjpqZE1l2mbiUOfggTgWwqRINMwDd2J-Y361qOrpion4PIuuqhGU0bP4ilSZN-BBNR8e2ZJo3hkXmNUiDqygSc1nf4BR1dnGoZQ-jI2_eXXquTbpxA2v1CuQkIkY5bFVWyORl6zlY-VL8p7Kz92weXpCUMmAc0WS8nZ5Tj210F5zFy76s4PlBz9sZCy4jbRmb"/>
+<div class="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
+<span class="material-symbols-outlined text-white">photo_camera</span>
+</div>
+</div>
+<h2 class="text-2xl font-bold mb-1">Phúc Đại</h2>
+<p class="text-primary font-bold uppercase tracking-widest text-xs mb-6">ID: OP-7734</p>
+<div class="w-full h-[1px] bg-outline-variant/20 mb-6"></div>
+<div class="w-full flex justify-between text-sm mb-2">
+<span class="text-on-surface-variant">Member Since</span>
+<span class="font-bold">2023</span>
+</div>
+<div class="w-full flex justify-between text-sm">
+<span class="text-on-surface-variant">Training Phase</span>
+<span class="font-bold text-secondary">Hypertrophy</span>
+</div>
+</div>
+</div>
+<!-- Right Column: Edit Form -->
+<div class="lg:col-span-8">
+<form class="bg-surface-container rounded-xl p-8 lg:p-10 border border-outline-variant/15 shadow-2xl shadow-black/40">
+<h3 class="text-xl font-bold mb-8 border-b border-outline-variant/15 pb-4">Core Biometrics</h3>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+<!-- Full Name -->
+<div class="flex flex-col gap-2 relative">
+<label class="text-xs uppercase tracking-[0.05em] text-on-surface-variant font-bold">Full Name</label>
+<div class="relative glow-border rounded-lg transition-all border border-outline-variant/30 bg-surface-container-lowest focus-within:bg-surface-container-low">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant">person</span>
+<input class="w-full bg-transparent border-none text-on-surface pl-12 pr-4 py-4 rounded-lg focus:ring-0 focus:outline-none placeholder-on-surface-variant/50" type="text" value="Phúc Đại"/>
+</div>
+</div>
+<!-- Phone Number -->
+<div class="flex flex-col gap-2 relative">
+<label class="text-xs uppercase tracking-[0.05em] text-on-surface-variant font-bold">Comms Link (Phone)</label>
+<div class="relative glow-border rounded-lg transition-all border border-outline-variant/30 bg-surface-container-lowest focus-within:bg-surface-container-low">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant">call</span>
+<input class="w-full bg-transparent border-none text-on-surface pl-12 pr-4 py-4 rounded-lg focus:ring-0 focus:outline-none placeholder-on-surface-variant/50" type="tel" value="0123456789"/>
+</div>
+</div>
+</div>
+<div class="mb-8">
+<label class="text-xs uppercase tracking-[0.05em] text-on-surface-variant font-bold block mb-4">Biological Anchor (Gender)</label>
+<div class="flex bg-surface-container-lowest p-1 rounded-lg border border-outline-variant/20 inline-flex w-full sm:w-auto">
+<button class="flex-1 sm:px-8 py-3 rounded-md text-sm font-bold bg-surface-container-highest text-on-surface shadow-sm transition-all text-center" type="button">
+                                Male
+                            </button>
+<button class="flex-1 sm:px-8 py-3 rounded-md text-sm font-bold text-on-surface-variant hover:text-on-surface transition-all text-center" type="button">
+                                Female
+                            </button>
+<button class="flex-1 sm:px-8 py-3 rounded-md text-sm font-bold text-on-surface-variant hover:text-on-surface transition-all text-center" type="button">
+                                Unspecified
+                            </button>
+</div>
+</div>
+<div class="mb-12">
+<label class="text-xs uppercase tracking-[0.05em] text-on-surface-variant font-bold block mb-2">Base of Operations (Address)</label>
+<div class="relative glow-border rounded-lg transition-all border border-outline-variant/30 bg-surface-container-lowest focus-within:bg-surface-container-low">
+<span class="material-symbols-outlined absolute left-4 top-4 text-on-surface-variant">location_on</span>
+<textarea class="w-full bg-transparent border-none text-on-surface pl-12 pr-4 py-4 rounded-lg focus:ring-0 focus:outline-none placeholder-on-surface-variant/50 resize-none" rows="3">Ho Chi Minh City, Vietnam</textarea>
+</div>
+</div>
+<div class="flex justify-end gap-4 border-t border-outline-variant/15 pt-8 mt-4">
+<button class="px-8 py-4 rounded-full font-bold text-sm text-on-surface hover:bg-surface-container-highest transition-colors uppercase tracking-widest" type="button">
+                            Discard
+                        </button>
+<button class="px-10 py-4 rounded-full font-bold text-sm bg-primary text-on-primary shadow-[0_10px_30px_rgba(177,255,36,0.3)] hover:shadow-[0_15px_40px_rgba(177,255,36,0.5)] transition-all uppercase tracking-widest hover:-translate-y-1" type="button">
+                            Save Changes
+                        </button>
+</div>
+</form>
+</div>
+</div>
+</main>
+</body></html>

@@ -55,6 +55,18 @@ export const register = async (fullName, email, password, phoneNumber) => {
   );
 };
 
+export const getGoogleLoginUrl = () => {
+  return `${import.meta.env.VITE_AUTH_API_URL}/api/Auth/google-login`;
+};
+
+export const getCurrentUser = async () => {
+  return await handleResponse(authApi.get('/Auth/me'));
+};
+
+export const updateProfile = async (profileData) => {
+  return await handleResponse(authApi.put('/Auth/profile', profileData));
+};
+
 export const logout = () => {
   localStorage.removeItem('token');
   localStorage.removeItem('refreshToken');
