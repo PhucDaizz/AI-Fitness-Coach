@@ -42,7 +42,7 @@ namespace AIService.API.Controllers
         /// <param name="categoryIds">Danh sách ID danh mục, phân cách bằng dấu phẩy. Ví dụ: "10,11,12" (tùy chọn)</param>
         /// <param name="locationTypes">Loại địa điểm tập, phân cách bằng dấu phẩy. Giá trị hợp lệ: "Gym", "Home", "Outdoor" (tùy chọn)</param>
         /// <param name="embedStatus">Trạng thái nhúng của bài tập (Admin only). Giá trị: `embedded`, `pending`, `skip` (mặc định: embedded)</param>
-        /// <param name="sortBy">Trường dùng để sắp xếp. Giá trị hợp lệ: "Name", "CreatedAt", "Popularity", "Difficulty" (mặc định: "CreatedAt")</param>
+        /// <param name="sortBy">Trường dùng để sắp xếp. Giá trị hợp lệ: "Name", "CreatedAt"(mặc định: "CreatedAt")</param>
         /// <param name="sortDescending">Sắp xếp giảm dần nếu true, tăng dần nếu false (mặc định: true)</param>
         /// <returns>Danh sách bài tập phân trang với các thông tin chi tiết</returns>
         /// <response code="200">Thành công - Trả về danh sách bài tập</response>

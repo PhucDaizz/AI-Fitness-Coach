@@ -1,6 +1,36 @@
 import React from 'react';
 import Pagination from '../../common/Pagination';
 
+const getEquipmentIcon = (name = '') => {
+  const nameLower = name.toLowerCase();
+  
+  const iconMap = {
+    'barbell': 'fitness_center',
+    'dumbbell': 'fitness_center',
+    'sz-bar': 'fitness_center',
+    'pull-up bar': 'fitness_center',
+    'bench': 'chair_alt',
+    'machine': 'settings_accessibility',
+    'kettlebell': 'fitness_center',
+    'cable': 'cable',
+    'resistance band': 'cable',
+    'bodyweight': 'accessibility_new',
+    'gym mat': 'layers',
+    'swiss ball': 'sports_volleyball',
+    'treadmill': 'directions_run',
+    'rowing': 'rowing',
+    'cycle': 'directions_bike',
+    'other': 'more_horiz'
+  };
+
+  // Find partial match
+  for (const [key, icon] of Object.entries(iconMap)) {
+    if (nameLower.includes(key)) return icon;
+  }
+
+  return 'fitness_center'; // Default icon
+};
+
 const EquipmentTable = ({ items, onEdit, onDelete, pagination, onPageChange }) => {
   return (
     <div className="bg-surface-container rounded-3xl overflow-hidden shadow-2xl shadow-black/60">
@@ -24,7 +54,7 @@ const EquipmentTable = ({ items, onEdit, onDelete, pagination, onPageChange }) =
                   <td className="px-6 py-5">
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 rounded-xl bg-surface-container-highest flex items-center justify-center text-[#b1ff24]">
-                        <span className="material-symbols-outlined">fitness_center</span>
+                        <span className="material-symbols-outlined">{getEquipmentIcon(item.name)}</span>
                       </div>
                       <span className="font-semibold text-sm text-white">{item.name}</span>
                     </div>
