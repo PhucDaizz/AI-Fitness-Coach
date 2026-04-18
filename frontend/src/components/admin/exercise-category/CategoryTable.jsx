@@ -1,4 +1,5 @@
 import React from 'react';
+import Pagination from '../../common/Pagination';
 
 const CategoryTable = ({ categories, onEdit, onDelete, pagination, onPageChange }) => {
   return (
@@ -52,37 +53,7 @@ const CategoryTable = ({ categories, onEdit, onDelete, pagination, onPageChange 
         <p className="text-[10px] uppercase tracking-widest text-on-surface-variant">
           Showing {((pagination.pageNumber - 1) * pagination.pageSize) + 1} to {Math.min(pagination.pageNumber * pagination.pageSize, pagination.totalCount)} of {pagination.totalCount} entries
         </p>
-        <div className="flex items-center gap-1">
-          <button 
-            disabled={!pagination.hasPreviousPage}
-            onClick={() => onPageChange(pagination.pageNumber - 1)}
-            className="p-2 text-on-surface-variant hover:text-white transition-colors disabled:opacity-30"
-          >
-            <span className="material-symbols-outlined">chevron_left</span>
-          </button>
-          
-          {[...Array(pagination.totalPages)].map((_, i) => (
-            <button 
-              key={i + 1}
-              onClick={() => onPageChange(i + 1)}
-              className={`w-8 h-8 flex items-center justify-center rounded-lg transition-all text-xs font-bold ${
-                pagination.pageNumber === i + 1 
-                ? 'bg-primary text-on-primary' 
-                : 'hover:bg-surface-container-highest text-white'
-              }`}
-            >
-              {i + 1}
-            </button>
-          ))}
-
-          <button 
-            disabled={!pagination.hasNextPage}
-            onClick={() => onPageChange(pagination.pageNumber + 1)}
-            className="p-2 text-on-surface-variant hover:text-white transition-colors disabled:opacity-30"
-          >
-            <span className="material-symbols-outlined">chevron_right</span>
-          </button>
-        </div>
+        <Pagination pagination={pagination} onPageChange={onPageChange} />
       </div>
     </div>
   );

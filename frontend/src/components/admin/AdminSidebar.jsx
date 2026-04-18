@@ -7,7 +7,7 @@ const AdminSidebar = () => {
   const navItems = [
     { icon: 'dashboard', label: 'Dashboard', path: '/admin' },
     { icon: 'category', label: 'Exercise Category', path: '/admin/exercise-category' },
-    { icon: 'fitness_center', label: 'Equipment', path: '#' },
+    { icon: 'inventory_2', label: 'Equipment', path: '/admin/equipment' },
     { icon: 'build', label: 'Maintenance', path: '#' },
     { icon: 'group', label: 'User Management', path: '#' },
     { icon: 'restaurant', label: 'Meal Management', path: '#' },
