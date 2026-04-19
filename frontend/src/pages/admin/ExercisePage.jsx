@@ -3,9 +3,11 @@ import AdminSidebar from '../../components/admin/AdminSidebar';
 import AdminHeader from '../../components/admin/AdminHeader';
 import ExerciseTable from '../../components/admin/exercise/ExerciseTable';
 import ExerciseModal from '../../components/admin/exercise/ExerciseModal';
+import ExerciseFilter from '../../components/common/exercise/ExerciseFilter';
 import DeleteConfirmModal from '../../components/admin/DeleteConfirmModal';
 import { 
   getExercises, 
+  getExerciseById,
   createExercise, 
   updateExercise, 
   deleteExercise 
@@ -14,28 +16,28 @@ import { getExerciseCategories } from '../../services/api/exerciseCategory.servi
 import { getMuscleGroups } from '../../services/api/muscleGroup.service';
 import { getEquipments } from '../../services/api/equipment.service';
 
+const INITIAL_FILTERS = {
+  searchTerm: '',
+  categoryIds: '',
+  muscleGroupIds: '',
+  equipmentIds: '',
+  locationTypes: '',
+  embedStatus: 2, // 2 = embedded
+  sortBy: 'CreatedAt',
+  sortDescending: true
+};
+
 const ExercisePage = () => {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [isFetchingDetail, setIsFetchingDetail] = useState(false);
   const [lookups, setLookups] = useState({
     categories: [],
     muscles: [],
     equipment: []
   });
 
-  // Local state for search input to avoid real-time API calls
-  const [searchInput, setSearchInput] = useState('');
-
-  const [filters, setFilters] = useState({
-    searchTerm: '',
-    categoryId: '',
-    muscleGroupId: '',
-    equipmentId: '',
-    locationType: '',
-    embedStatus: 2, // 2 = embedded
-    sortBy: 'CreatedAt',
-    sortDescending: true
-  });
+  const [filters, setFilters] = useState(INITIAL_FILTERS);
 
   const [pagination, setPagination] = useState({
     pageNumber: 1,
@@ -75,11 +77,11 @@ const ExercisePage = () => {
         pageNumber: page,
         pageSize: pagination.pageSize,
         searchTerm: filters.searchTerm,
-        categoryIds: filters.categoryId,
-        muscleGroupIds: filters.muscleGroupId,
-        equipmentIds: filters.equipmentId,
-        locationTypes: filters.locationType,
-        embedStatus: filters.embedStatus,
+        categoryIds: filters.categoryIds || undefined,
+        muscleGroupIds: filters.muscleGroupIds || undefined,
+        equipmentIds: filters.equipmentIds || undefined,
+        locationTypes: filters.locationTypes || undefined,
+        embedStatus: filters.embedStatus !== '' ? filters.embedStatus : undefined,
         sortBy: filters.sortBy,
         sortDescending: filters.sortDescending
       };
@@ -110,18 +112,10 @@ const ExercisePage = () => {
   }, [filters, fetchData]);
 
   const handleFilterChange = (key, value) => {
-    setFilters(prev => ({ ...prev, [key]: value }));
-  };
-
-  // Trigger search only when user clicks button or presses Enter
-  const handleSearchSubmit = (e) => {
-    if (e) e.preventDefault();
-    handleFilterChange('searchTerm', searchInput);
-  };
-
-  const handleKeyDown = (e) => {
-    if (e.key === 'Enter') {
-      handleSearchSubmit();
+    if (key === 'reset') {
+      setFilters(INITIAL_FILTERS);
+    } else {
+      setFilters(prev => ({ ...prev, [key]: value }));
     }
   };
 
@@ -130,9 +124,35 @@ const ExercisePage = () => {
     setIsModalOpen(true);
   };
 
-  const handleEditClick = (item) => {
-    setEditingItem(item);
-    setIsModalOpen(true);
+  const handleEditClick = async (item) => {
+    try {
+      setIsFetchingDetail(true);
+      const fullDetail = await getExerciseById(item.id);
+      
+      const mappedData = {
+        id: fullDetail.id,
+        name: fullDetail.name,
+        description: fullDetail.description,
+        descriptionSource: fullDetail.descriptionSource || 0,
+        categoryId: fullDetail.category?.id || '',
+        imageUrl: fullDetail.imageUrl,
+        imageThumbnailUrl: fullDetail.imageThumbnailUrl,
+        isFrontImage: fullDetail.isFrontImage,
+        locationType: fullDetail.locationTypes || [],
+        muscles: [
+          ...(fullDetail.primaryMuscles?.map(m => ({ muscleId: m.id, isPrimary: true })) || []),
+          ...(fullDetail.secondaryMuscles?.map(m => ({ muscleId: m.id, isPrimary: false })) || [])
+        ],
+        equipmentIds: fullDetail.equipments?.map(e => e.id) || []
+      };
+
+      setEditingItem(mappedData);
+      setIsModalOpen(true);
+    } catch (err) {
+      alert("Error decoding protocol narrative: " + err.message);
+    } finally {
+      setIsFetchingDetail(false);
+    }
   };
 
   const handleDeleteClick = (item) => {
@@ -170,11 +190,19 @@ const ExercisePage = () => {
     <div className="bg-background text-on-background min-h-screen">
       <AdminSidebar />
 
+      {/* Loading Overlay */}
+      {isFetchingDetail && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[150] flex flex-col items-center justify-center">
+          <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+          <p className="text-primary font-black uppercase tracking-[0.3em] mt-4 text-[10px]">Accessing Bio-Protocol Narrative...</p>
+        </div>
+      )}
+
       <main className="md:ml-64 min-h-screen relative z-10">
         <AdminHeader />
         
         <div className="p-8">
-          {/* Header Section */}
+          {/* Page Header */}
           <div className="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-6">
             <div>
               <nav className="flex gap-2 text-[10px] uppercase tracking-[0.2em] text-[#adaaaa] mb-2 font-bold">
@@ -183,131 +211,28 @@ const ExercisePage = () => {
                 <span className="text-primary italic">Exercise Library</span>
               </nav>
               <h2 className="text-4xl font-black tracking-tighter text-white uppercase italic">Advanced <span className="text-primary">Library</span></h2>
-              <p className="text-on-surface-variant text-sm mt-2 opacity-60">Manage your high-performance training protocol definitions.</p>
+              <div className="h-1 w-20 bg-primary mt-2"></div>
             </div>
-            <div className="flex gap-4 items-center">
-              <div className="flex bg-surface-container rounded-full p-1 border border-white/5">
-                {[
-                  { id: 2, label: 'Embedded' },
-                  { id: 1, label: 'Pending' },
-                  { id: 3, label: 'Skip' }
-                ].map(status => (
-                  <button 
-                    key={status.id}
-                    onClick={() => handleFilterChange('embedStatus', status.id)}
-                    className={`px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest transition-all ${
-                      filters.embedStatus === status.id ? 'bg-surface-container-highest text-white' : 'text-on-surface-variant hover:text-white'
-                    }`}
-                  >
-                    {status.label}
-                  </button>
-                ))}
-              </div>
-              <button 
-                onClick={handleAddClick}
-                className="bg-primary text-on-primary px-8 py-3 rounded-xl font-black flex items-center gap-2 hover:scale-[1.05] active:scale-[0.98] transition-all shadow-[0_0_20px_rgba(177,255,36,0.3)] uppercase text-xs"
-              >
-                <span className="material-symbols-outlined font-bold">add</span>
-                Create Exercise
-              </button>
-            </div>
-          </div>
-
-          {/* Search Bar - Submit logic added */}
-          <div className="bg-surface-container mb-6 px-6 py-4 flex items-center gap-4 rounded-2xl border border-white/5 focus-within:ring-1 focus-within:ring-primary/30 transition-all">
-            <span className="material-symbols-outlined text-primary">search</span>
-            <input 
-              type="text" 
-              placeholder="Type protocol name or ID... (Press Enter to search)"
-              value={searchInput}
-              onChange={e => setSearchInput(e.target.value)}
-              onKeyDown={handleKeyDown}
-              className="bg-transparent border-none focus:ring-0 text-white text-sm w-full placeholder:text-outline-variant"
-            />
             <button 
-              onClick={handleSearchSubmit}
-              className="bg-surface-container-highest text-white px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-primary hover:text-black transition-all"
+              onClick={handleAddClick}
+              className="bg-primary text-on-primary px-8 py-3 rounded-xl font-black flex items-center gap-2 hover:scale-[1.05] active:scale-[0.98] transition-all shadow-[0_0_20px_rgba(177,255,36,0.3)] uppercase text-[10px]"
             >
-              Search
+              <span className="material-symbols-outlined font-bold text-[18px]">add</span>
+              Initialize Exercise
             </button>
           </div>
 
-          {/* Filters & Sorting Row */}
-          <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-8">
-            <div className="bg-surface-container p-3 rounded-xl border border-white/5 space-y-1">
-              <label className="block text-[0.6rem] uppercase tracking-widest text-[#adaaaa] font-bold">Category</label>
-              <select 
-                value={filters.categoryId}
-                onChange={e => handleFilterChange('categoryId', e.target.value)}
-                className="w-full bg-[#1a1919] border-none text-xs rounded-lg focus:ring-1 focus:ring-primary py-1 px-2 text-white appearance-none cursor-pointer"
-              >
-                <option value="" className="bg-[#1a1919] text-white">All Categories</option>
-                {lookups.categories.map(c => (
-                  <option key={c.id} value={c.id} className="bg-[#1a1919] text-white">
-                    {c.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div className="bg-surface-container p-3 rounded-xl border border-white/5 space-y-1">
-              <label className="block text-[0.6rem] uppercase tracking-widest text-[#adaaaa] font-bold">Muscle</label>
-              <select 
-                value={filters.muscleGroupId}
-                onChange={e => handleFilterChange('muscleGroupId', e.target.value)}
-                className="w-full bg-[#1a1919] border-none text-xs rounded-lg focus:ring-1 focus:ring-primary py-1 px-2 text-white appearance-none cursor-pointer"
-              >
-                <option value="" className="bg-[#1a1919] text-white">All Muscles</option>
-                {lookups.muscles.map(m => (
-                  <option key={m.id} value={m.id} className="bg-[#1a1919] text-white">
-                    {m.nameEN}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div className="bg-surface-container p-3 rounded-xl border border-white/5 space-y-1">
-              <label className="block text-[0.6rem] uppercase tracking-widest text-[#adaaaa] font-bold">Gear</label>
-              <select 
-                value={filters.equipmentId}
-                onChange={e => handleFilterChange('equipmentId', e.target.value)}
-                className="w-full bg-[#1a1919] border-none text-xs rounded-lg focus:ring-1 focus:ring-primary py-1 px-2 text-white appearance-none cursor-pointer"
-              >
-                <option value="" className="bg-[#1a1919] text-white">All Equipment</option>
-                {lookups.equipment.map(eq => (
-                  <option key={eq.id} value={eq.id} className="bg-[#1a1919] text-white">
-                    {eq.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div className="bg-surface-container p-3 rounded-xl border border-white/5 space-y-1">
-              <label className="block text-[0.6rem] uppercase tracking-widest text-[#adaaaa] font-bold">Sort By</label>
-              <select 
-                value={filters.sortBy}
-                onChange={e => handleFilterChange('sortBy', e.target.value)}
-                className="w-full bg-[#1a1919] border-none text-xs rounded-lg focus:ring-1 focus:ring-primary py-1 px-2 text-white appearance-none cursor-pointer"
-              >
-                <option value="CreatedAt" className="bg-[#1a1919] text-white">Date Created</option>
-                <option value="Name" className="bg-[#1a1919] text-white">Alpha-Name</option>
-              </select>
-            </div>
-            <div className="bg-surface-container p-3 rounded-xl border border-white/5 space-y-1">
-              <label className="block text-[0.6rem] uppercase tracking-widest text-[#adaaaa] font-bold">Order</label>
-              <button 
-                onClick={() => handleFilterChange('sortDescending', !filters.sortDescending)}
-                className="w-full h-8 flex items-center justify-between px-3 bg-[#1a1919] rounded-lg text-xs font-bold text-white hover:text-primary transition-colors border-none"
-              >
-                <span>{filters.sortDescending ? 'Descending' : 'Ascending'}</span>
-                <span className="material-symbols-outlined text-sm">
-                  {filters.sortDescending ? 'south' : 'north'}
-                </span>
-              </button>
-            </div>
-          </div>
+          <ExerciseFilter 
+            filters={filters} 
+            onFilterChange={handleFilterChange} 
+            lookups={lookups} 
+            isAdmin={true} 
+          />
 
           {/* Table Area */}
           {loading ? (
             <div className="flex justify-center items-center h-64">
-              <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin shadow-[0_0_15px_rgba(177,255,36,0.2)]"></div>
+              <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin shadow-[0_0_15px_rgba(177,255,36,0.3)]"></div>
             </div>
           ) : (
             <ExerciseTable 

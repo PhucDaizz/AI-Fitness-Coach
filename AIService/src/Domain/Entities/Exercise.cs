@@ -36,7 +36,7 @@ namespace AIService.Domain.Entities
 
         private Exercise(int id, Guid? uuId, string name, string? description, DescriptionSource source)
         {
-            if (id <= 0) throw new DomainException("id không hợp lệ");
+            if (id < 0) throw new DomainException("id không hợp lệ");
             if (string.IsNullOrWhiteSpace(name)) throw new DomainException("Tên bài tập không được để trống");
 
             Id = id;

@@ -7,6 +7,7 @@ import MealFilter from '../../components/common/meal/MealFilter';
 import DeleteConfirmModal from '../../components/admin/DeleteConfirmModal';
 import { 
   getAdminMeals, 
+  getMealById,
   createMeal, 
   updateMeal, 
   deleteMeal 
@@ -32,6 +33,7 @@ const INITIAL_FILTERS = {
 const MealPage = () => {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [isFetchingDetail, setIsFetchingDetail] = useState(false);
   
   const [filters, setFilters] = useState(INITIAL_FILTERS);
 
@@ -105,9 +107,20 @@ const MealPage = () => {
     setIsModalOpen(true);
   };
 
-  const handleEditClick = (item) => {
-    setEditingItem(item);
-    setIsModalOpen(true);
+  /**
+   * Fetch full meal details (including description) before editing
+   */
+  const handleEditClick = async (item) => {
+    try {
+      setIsFetchingDetail(true);
+      const fullDetail = await getMealById(item.id);
+      setEditingItem(fullDetail);
+      setIsModalOpen(true);
+    } catch (err) {
+      alert("Critical Error: Unable to fetch full culinary narrative. " + err.message);
+    } finally {
+      setIsFetchingDetail(false);
+    }
   };
 
   const handleDeleteClick = (item) => {
@@ -144,6 +157,14 @@ const MealPage = () => {
   return (
     <div className="bg-background text-on-background min-h-screen">
       <AdminSidebar />
+
+      {/* Detail Loading Overlay */}
+      {isFetchingDetail && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[110] flex flex-col items-center justify-center">
+          <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+          <p className="text-primary font-black uppercase tracking-[0.3em] mt-4 text-[10px]">Decoding Culinary Profiles...</p>
+        </div>
+      )}
 
       <main className="md:ml-64 min-h-screen relative z-10 transition-all duration-300">
         <AdminHeader />
@@ -182,9 +203,6 @@ const MealPage = () => {
               <span className="text-[10px] font-black uppercase tracking-[0.2em] text-on-surface-variant italic">
                 Synchronized Matrix: <span className="text-white font-mono">{pagination.totalCount.toLocaleString()} Elements Found</span>
               </span>
-            </div>
-            <div className="text-[10px] text-on-surface-variant italic opacity-50">
-              Query Latency: <span className="text-primary">{(Math.random() * 50).toFixed(2)}ms</span>
             </div>
           </div>
 
