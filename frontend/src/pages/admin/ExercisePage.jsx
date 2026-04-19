@@ -23,6 +23,9 @@ const ExercisePage = () => {
     equipment: []
   });
 
+  // Local state for search input to avoid real-time API calls
+  const [searchInput, setSearchInput] = useState('');
+
   const [filters, setFilters] = useState({
     searchTerm: '',
     categoryId: '',
@@ -110,6 +113,18 @@ const ExercisePage = () => {
     setFilters(prev => ({ ...prev, [key]: value }));
   };
 
+  // Trigger search only when user clicks button or presses Enter
+  const handleSearchSubmit = (e) => {
+    if (e) e.preventDefault();
+    handleFilterChange('searchTerm', searchInput);
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter') {
+      handleSearchSubmit();
+    }
+  };
+
   const handleAddClick = () => {
     setEditingItem(null);
     setIsModalOpen(true);
@@ -163,11 +178,11 @@ const ExercisePage = () => {
           <div className="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-6">
             <div>
               <nav className="flex gap-2 text-[10px] uppercase tracking-[0.2em] text-[#adaaaa] mb-2 font-bold">
-                <span className="hover:text-primary cursor-pointer">Protocol</span>
+                <span className="hover:text-primary cursor-pointer transition-colors">Protocol</span>
                 <span>/</span>
-                <span className="text-primary">Exercise Library</span>
+                <span className="text-primary italic">Exercise Library</span>
               </nav>
-              <h2 className="text-4xl font-black tracking-tighter text-white">Advanced <span className="text-primary italic">Library</span></h2>
+              <h2 className="text-4xl font-black tracking-tighter text-white uppercase italic">Advanced <span className="text-primary">Library</span></h2>
               <p className="text-on-surface-variant text-sm mt-2 opacity-60">Manage your high-performance training protocol definitions.</p>
             </div>
             <div className="flex gap-4 items-center">
@@ -192,22 +207,29 @@ const ExercisePage = () => {
                 onClick={handleAddClick}
                 className="bg-primary text-on-primary px-8 py-3 rounded-xl font-black flex items-center gap-2 hover:scale-[1.05] active:scale-[0.98] transition-all shadow-[0_0_20px_rgba(177,255,36,0.3)] uppercase text-xs"
               >
-                <span className="material-symbols-outlined">add</span>
+                <span className="material-symbols-outlined font-bold">add</span>
                 Create Exercise
               </button>
             </div>
           </div>
 
-          {/* Search Bar - Separate Row */}
+          {/* Search Bar - Submit logic added */}
           <div className="bg-surface-container mb-6 px-6 py-4 flex items-center gap-4 rounded-2xl border border-white/5 focus-within:ring-1 focus-within:ring-primary/30 transition-all">
-            <span className="material-symbols-outlined text-on-surface-variant">search</span>
+            <span className="material-symbols-outlined text-primary">search</span>
             <input 
               type="text" 
-              placeholder="Search by protocol name or ID..."
-              value={filters.searchTerm}
-              onChange={e => handleFilterChange('searchTerm', e.target.value)}
+              placeholder="Type protocol name or ID... (Press Enter to search)"
+              value={searchInput}
+              onChange={e => setSearchInput(e.target.value)}
+              onKeyDown={handleKeyDown}
               className="bg-transparent border-none focus:ring-0 text-white text-sm w-full placeholder:text-outline-variant"
             />
+            <button 
+              onClick={handleSearchSubmit}
+              className="bg-surface-container-highest text-white px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-primary hover:text-black transition-all"
+            >
+              Search
+            </button>
           </div>
 
           {/* Filters & Sorting Row */}
@@ -257,7 +279,6 @@ const ExercisePage = () => {
                 ))}
               </select>
             </div>
-            {/* Sorting Column 1: Field */}
             <div className="bg-surface-container p-3 rounded-xl border border-white/5 space-y-1">
               <label className="block text-[0.6rem] uppercase tracking-widest text-[#adaaaa] font-bold">Sort By</label>
               <select 
@@ -269,7 +290,6 @@ const ExercisePage = () => {
                 <option value="Name" className="bg-[#1a1919] text-white">Alpha-Name</option>
               </select>
             </div>
-            {/* Sorting Column 2: Direction */}
             <div className="bg-surface-container p-3 rounded-xl border border-white/5 space-y-1">
               <label className="block text-[0.6rem] uppercase tracking-widest text-[#adaaaa] font-bold">Order</label>
               <button 
