@@ -7,6 +7,7 @@ namespace AIService.Infrastructure.Services
     public class RedisCacheService : ICacheService
     {
         private readonly IDatabase _database;
+        private const string OnlineUsersKey = "System:OnlineUsers";
 
         public RedisCacheService(IDatabase database)
         {
@@ -28,6 +29,16 @@ namespace AIService.Infrastructure.Services
             }
         }
 
+        public async Task<long> DecrementOnlineUserAsync(string userId)
+        {
+            return await _database.HashDecrementAsync(OnlineUsersKey, userId, 1);
+        }
+
+        public async Task<long> GetOnlineUsersCountAsync()
+        {
+            return await _database.HashLengthAsync(OnlineUsersKey);
+        }
+
         public async Task<List<T>> GetRecentChatHistoryAsync<T>(Guid sessionId, int limit)
         {
             string key = $"chat_history:{sessionId}";
@@ -43,6 +54,11 @@ namespace AIService.Infrastructure.Services
         {
             string key = $"chat_history:{sessionId}";
             return await _database.KeyExistsAsync(key);
+        }
+
+        public async Task IncrementOnlineUserAsync(string userId)
+        {
+            await _database.HashIncrementAsync(OnlineUsersKey, userId, 1);
         }
 
         public async Task RefreshChatHistoryAsync<T>(Guid sessionId, List<T> recentMessages, TimeSpan? expiry = null)
@@ -62,6 +78,11 @@ namespace AIService.Infrastructure.Services
                     await _database.KeyExpireAsync(key, expiry.Value);
                 }
             }
+        }
+
+        public async Task RemoveOnlineUserAsync(string userId)
+        {
+            await _database.HashDeleteAsync(OnlineUsersKey, userId);
         }
     }
 }

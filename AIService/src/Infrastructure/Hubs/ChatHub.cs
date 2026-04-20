@@ -1,4 +1,6 @@
-﻿using MediatR;
+﻿using AIService.Application.Features.System.Commands.UserConnected;
+using AIService.Application.Features.System.Commands.UserDisconnected;
+using MediatR;
 using Microsoft.AspNetCore.SignalR;
 
 namespace AIService.Infrastructure.Hubs
@@ -14,11 +16,23 @@ namespace AIService.Infrastructure.Hubs
 
         public override async Task OnConnectedAsync()
         {
+            var userId = Context.UserIdentifier;
+            if (userId != null)
+            {
+                await _mediator.Send(new UserConnectedCommand(userId));
+            }
+
             await base.OnConnectedAsync();
         }
 
         public override async Task OnDisconnectedAsync(Exception? exception)
         {
+            var userId = Context.UserIdentifier;
+            if (userId != null)
+            {
+                await _mediator.Send(new UserDisconnectedCommand(userId));
+            }
+
             await base.OnDisconnectedAsync(exception);
         }
     }

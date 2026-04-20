@@ -37,5 +37,10 @@ namespace AIService.Infrastructure.Services
         {
             await _hubContext.Clients.User(userId).SessionTitleUpdated(sessionId, newTitle);
         }
+
+        public async Task BroadcastOnlineUsersCountAsync(long count)
+        {
+            await _hubContext.Clients.All.UpdateOnlineUsersCount(count);
+        }
     }
 }

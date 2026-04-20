@@ -9,6 +9,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using System.Text;
+using System.Text.Json;
 
 namespace AIService.Application.Features.AI.Commands.StreamFitnessChat
 {
@@ -237,7 +238,7 @@ namespace AIService.Application.Features.AI.Commands.StreamFitnessChat
             // OpenAI / Ollama
             if (chunk.Metadata.TryGetValue("Usage", out var usageObj) && usageObj != null)
             {
-                if (usageObj is System.Text.Json.JsonElement jsonElement)
+                if (usageObj is JsonElement jsonElement)
                 {
                     if (jsonElement.TryGetProperty("PromptTokens", out var pt))
                         promptTokens = pt.GetInt32();

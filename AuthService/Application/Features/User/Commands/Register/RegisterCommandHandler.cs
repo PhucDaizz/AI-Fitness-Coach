@@ -14,12 +14,14 @@ namespace Application.Features.User.Commands.Register
         private readonly IUnitOfWork _unitOfWork;
         private readonly IIdentityService _identityService;
         private readonly IMessagePublisher _messagePublisher;
+        private readonly ICacheService _cacheService;
 
-        public RegisterCommandHandler(IUnitOfWork unitOfWork, IEmailServices emailServices, IIdentityService identityService, IMessagePublisher messagePublisher)
+        public RegisterCommandHandler(IUnitOfWork unitOfWork, IEmailServices emailServices, IIdentityService identityService, IMessagePublisher messagePublisher, ICacheService cacheService)
         {
             _unitOfWork = unitOfWork;
             _identityService = identityService;
             _messagePublisher = messagePublisher;
+            _cacheService = cacheService;
         }
 
         public async Task<Result<string>> Handle(RegisterCommand command, CancellationToken cancellationToken)
@@ -48,6 +50,8 @@ namespace Application.Features.User.Commands.Register
                         Email = command.Email,
                         FullName = command.FullName
                     });
+            
+            await _cacheService.IncrementTotalUsersCountAsync();
 
             return Result.Success("Create user successfully");
         }
