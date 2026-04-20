@@ -6,7 +6,7 @@ import {
   getWorkoutPlanCalendar,
   updateWorkoutPlanStatus,
 } from '../controllers/workout-plan.controller';
-import { rescheduleWorkoutDay } from '@/controllers/reschedule.controller';
+import { rescheduleWorkoutDay } from '../controllers/reschedule.controller';
 
 const router = Router();
 

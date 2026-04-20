@@ -5,25 +5,25 @@ import { WorkoutDayModel } from '../models/workout-plan.model';
 // ─── Output types ────────────────────────────────────────────────────────────────
 
 export type DailySessionEntry = {
-  date: string;    // "YYYY-MM-DD"
-  count: number;   // số buổi tập trong ngày
+  date: string;   // "YYYY-MM-DD"
+  count: number;
+};
+
+export type VolumeByExerciseEntry = {
+  exerciseId: string;
+  totalVolume: number;
 };
 
 export type MuscleVolumeEntry = {
-  exerciseId: any;
   muscleGroup: string;
-  totalVolume: number;  // kg · reps
+  totalVolume: number;
 };
 
 // ─── AnalyticsRepository ─────────────────────────────────────────────────────────
 
 export class AnalyticsRepository {
-  async getVolumeByExercise(userId: string): Promise<MuscleVolumeEntry[]> {
-    return this.getMuscleVolume(userId);
-  }
   /**
    * Đếm số buổi tập trong khoảng [from, to]
-   * Dùng cho: sessionsThisWeek trong summary
    */
   async countSessions(userId: string, from: Date, to: Date): Promise<number> {
     return WorkoutLogModel.countDocuments({
@@ -32,16 +32,6 @@ export class AnalyticsRepository {
     });
   }
 
-  /**
-   * Đếm số buổi tập theo từng ngày trong khoảng [from, to]
-   *
-   * Dùng chung cho 2 endpoints:
-   *   - weekly: service sẽ bin kết quả vào 4 tuần
-   *   - heatmap: service dùng trực tiếp
-   *
-   * Trả về mảng đã sort theo ngày tăng dần.
-   * Ngày không có tập sẽ không xuất hiện (FE xử lý = 0).
-   */
   async getDailySessions(
     userId: string,
     from: Date,
@@ -73,22 +63,20 @@ export class AnalyticsRepository {
   }
 
   /**
-   * Tính tổng volume theo nhóm cơ chính (primary muscle group)
+   * Tính volume theo từng exerciseId — KHÔNG lookup muscle group.
+   *
+   * Muscle group mapping được thực hiện ở service layer
+   * bằng cách gọi .NET API qua ExerciseClient.
    *
    * Pipeline:
-   * 1. Join ExerciseLog → WorkoutLog để filter theo userId
-   * 2. Bỏ qua bài bodyweight (weightKg = null hoặc 0)
-   * 3. Parse repsDone "10,10,8" → sum = 28
-   * 4. volume per exercise = weightKg × totalReps
-   * 5. Lookup exercises để lấy muscles_primary
-   * 6. Group by nhóm cơ đầu tiên → sum volume
-   *
-   * ⚠️  $toString xử lý type mismatch:
-   *     ExerciseLog.exerciseId (String) vs Exercise._id (Number từ wger)
-   *     Cần xác nhận field 'muscles_primary' với Thành viên 2
+   *   1. Join ExerciseLog → WorkoutLog để filter theo userId
+   *   2. Bỏ bodyweight (weightKg null hoặc 0)
+   *   3. Parse repsDone "10,10,8" → sum reps = 28
+   *   4. volume = weightKg × totalReps
+   *   5. Group by exerciseId → sum volume
    */
-  async getMuscleVolume(userId: string): Promise<MuscleVolumeEntry[]> {
-    return ExerciseLogModel.aggregate<MuscleVolumeEntry>([
+  async getVolumeByExercise(userId: string): Promise<VolumeByExerciseEntry[]> {
+    return ExerciseLogModel.aggregate<VolumeByExerciseEntry>([
       // ── Stage 1: Join WorkoutLog để lọc theo userId ──────────────────────────
       {
         $lookup: {
@@ -102,7 +90,7 @@ export class AnalyticsRepository {
       {
         $match: {
           'log.userId': userId,
-          weightKg: { $gt: 0 }, // bỏ qua bodyweight exercise
+          weightKg: { $gt: 0 }, // bỏ bodyweight
         },
       },
 
@@ -135,86 +123,28 @@ export class AnalyticsRepository {
           },
         },
       },
-      {
-        $addFields: {
-          volume: { $multiply: ['$weightKg', '$totalReps'] },
-        },
-      },
 
-      // ── Stage 3: Lookup Exercise để lấy nhóm cơ ─────────────────────────────
-      // $toString: xử lý exerciseId (string) vs exercise._id (number)
-      {
-        $lookup: {
-          from: 'exercises',
-          let: { exId: '$exerciseId' },
-          pipeline: [
-            {
-              $match: {
-                $expr: { $eq: [{ $toString: '$_id' }, '$$exId'] },
-              },
-            },
-            { $project: { muscles_primary: 1, _id: 0 } },
-          ],
-          as: 'exerciseData',
-        },
-      },
-
-      // ── Stage 4: Lấy nhóm cơ đầu tiên, fallback 'unknown' ───────────────────
-      {
-        $addFields: {
-          muscleGroup: {
-            $cond: {
-              if: {
-                $and: [
-                  { $gt: [{ $size: '$exerciseData' }, 0] },
-                  {
-                    $gt: [
-                      {
-                        $size: {
-                          $ifNull: [
-                            { $arrayElemAt: ['$exerciseData.muscles_primary', 0] },
-                            [],
-                          ],
-                        },
-                      },
-                      0,
-                    ],
-                  },
-                ],
-              },
-              then: {
-                // exerciseData[0].muscles_primary[0]
-                $arrayElemAt: [
-                  { $arrayElemAt: ['$exerciseData.muscles_primary', 0] },
-                  0,
-                ],
-              },
-              else: 'unknown', // exercise không tìm thấy hoặc chưa có muscle data
-            },
-          },
-        },
-      },
-
-      // ── Stage 5: Group theo nhóm cơ, sum volume ──────────────────────────────
+      // ── Stage 3: Group by exerciseId, sum volume ─────────────────────────────
       {
         $group: {
-          _id: '$muscleGroup',
-          totalVolume: { $sum: '$volume' },
+          _id: '$exerciseId',
+          totalVolume: {
+            $sum: { $multiply: ['$weightKg', '$totalReps'] },
+          },
         },
       },
       {
         $project: {
-          muscleGroup: '$_id',
+          exerciseId: '$_id',
           totalVolume: { $round: ['$totalVolume', 1] },
           _id: 0,
         },
       },
-      { $sort: { totalVolume: -1 } }, // nhóm cơ tập nhiều nhất lên đầu
     ]);
   }
 
   /**
-   * Đếm số WorkoutLog thuộc một plan (tử số của completion rate)
+   * Đếm số WorkoutLog thuộc plan (tử số completion rate)
    */
   async countLogsByPlan(userId: string, planId: string): Promise<number> {
     return WorkoutLogModel.countDocuments({
@@ -224,7 +154,7 @@ export class AnalyticsRepository {
   }
 
   /**
-   * Đếm số WorkoutDay trong một plan (mẫu số của completion rate)
+   * Đếm số WorkoutDay trong plan (mẫu số completion rate)
    */
   async countDaysByPlan(planId: string): Promise<number> {
     return WorkoutDayModel.countDocuments({
