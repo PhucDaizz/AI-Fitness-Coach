@@ -20,7 +20,8 @@ export type CalendarEntry = {
   dayId: string;
   dayOfWeek: string;
   muscleFocus: string;
-  loggedDate: string | null;   // ISO date string nếu đã tập, null nếu chưa
+  scheduledDate: string;
+  loggedDate: string | null;
   status: 'completed' | 'missed' | 'upcoming';
 };
 
@@ -30,15 +31,13 @@ export class WorkoutPlanService {
   /**
    * POST /workout-plans
    * Nhận plan JSON từ .NET AI và lưu vào MongoDB.
-   * Enforce: mỗi user chỉ được có 1 plan active cùng lúc.
-   * Nếu đã có plan active → tự động archive plan cũ trước khi tạo mới.
+   * scheduledDate của mỗi WorkoutDay được tính từ startsAt + dayOfWeek.
    */
   async createPlan(userId: string, dto: CreateWorkoutPlanDto) {
     const session = await mongoose.startSession();
 
     try {
       return await session.withTransaction(async () => {
-        // Archive plan active cũ (nếu có)
         const existingActive = await workoutPlanRepository.findActiveByUserId(
           userId,
           session,
@@ -52,7 +51,6 @@ export class WorkoutPlanService {
           );
         }
 
-        // Tạo plan mới
         const plan = await workoutPlanRepository.create(
           {
             userId,
@@ -69,14 +67,17 @@ export class WorkoutPlanService {
 
         const planId = plan._id;
 
-        // Tạo days và exercises từng ngày tuần tự (giữ đúng orderIndex)
         for (const dayDto of dto.days) {
+          // ── Tính ngày thực tế từ startsAt + dayOfWeek ─────────────────────────
+          const scheduledDate = resolveDayDate(dto.startsAt, dayDto.dayOfWeek);
+
           const day = await workoutPlanRepository.createDay(
             {
               planId,
               dayOfWeek: dayDto.dayOfWeek as any,
               muscleFocus: dayDto.muscleFocus,
               orderIndex: dayDto.orderIndex,
+              scheduledDate,
             },
             session,
           );
@@ -103,7 +104,6 @@ export class WorkoutPlanService {
 
   /**
    * GET /workout-plans
-   * Lấy danh sách plan của user (mặc định filter active).
    */
   async listPlans(userId: string, query: ListWorkoutPlansQuery) {
     const { status, page, limit } = query;
@@ -124,7 +124,6 @@ export class WorkoutPlanService {
 
   /**
    * GET /workout-plans/:id/days
-   * Chi tiết từng ngày kèm danh sách bài tập.
    */
   async getPlanDays(userId: string, planId: string): Promise<WorkoutDayWithExercises[]> {
     await this._assertPlanOwner(userId, planId);
@@ -133,24 +132,17 @@ export class WorkoutPlanService {
 
   /**
    * GET /workout-plans/:id/calendar
-   * Trả về trạng thái từng ngày tập: completed / missed / upcoming.
-   *
-   * Logic:
-   * - completed  : ngày <= hôm nay và có WorkoutLog
-   * - missed     : ngày < hôm nay và KHÔNG có WorkoutLog
-   * - upcoming   : ngày > hôm nay
+   * Dùng day.scheduledDate trực tiếp — không cần tính lại từ startsAt.
    */
   async getPlanCalendar(userId: string, planId: string): Promise<CalendarEntry[]> {
     const plan = await this._assertPlanOwner(userId, planId);
 
     const days = await workoutPlanRepository.findDaysByPlanId(planId);
 
-    // Lấy tập ngày đã tập của plan này
     const loggedDates = await workoutLogRepository
       .findByUserAndDateRange(
         userId,
         plan.startsAt,
-        // Tìm log tới tận hôm nay (hoặc xa hơn nếu user log muộn)
         new Date(new Date().setUTCHours(23, 59, 59, 999)),
         0,
         1000,
@@ -166,9 +158,8 @@ export class WorkoutPlanService {
     const today = toDateString(new Date());
 
     return days.map<CalendarEntry>((day) => {
-      // Tính ngày thực tế của day dựa trên startsAt + dayOfWeek
-      const dayDate = resolveDayDate(plan.startsAt, day.dayOfWeek as string);
-      const dayDateStr = toDateString(dayDate);
+      // Dùng scheduledDate đã lưu sẵn — không tính lại mỗi lần query
+      const dayDateStr = toDateString(day.scheduledDate);
 
       let status: CalendarEntry['status'];
 
@@ -184,6 +175,7 @@ export class WorkoutPlanService {
         dayId: String(day._id),
         dayOfWeek: day.dayOfWeek,
         muscleFocus: day.muscleFocus,
+        scheduledDate: dayDateStr,
         loggedDate: loggedDates.has(dayDateStr) ? dayDateStr : null,
         status,
       };
@@ -192,8 +184,6 @@ export class WorkoutPlanService {
 
   /**
    * PATCH /workout-plans/:id/status
-   * Cập nhật status: active / completed / archived.
-   * Enforce: không thể set active nếu đã có plan active khác.
    */
   async updateStatus(
     userId: string,
@@ -207,7 +197,6 @@ export class WorkoutPlanService {
         const plan = await this._assertPlanOwner(userId, planId, session);
 
         if (dto.status === 'active' && plan.status !== 'active') {
-          // Kiểm tra đã có plan active khác chưa
           const currentActive = await workoutPlanRepository.findActiveByUserId(
             userId,
             session,
@@ -239,10 +228,6 @@ export class WorkoutPlanService {
 
   // ─── Private helpers ──────────────────────────────────────────────────────────
 
-  /**
-   * Tìm plan và kiểm tra quyền sở hữu.
-   * Ném 404 nếu không tồn tại, 403 nếu không phải chủ sở hữu.
-   */
   private async _assertPlanOwner(
     userId: string,
     planId: string,
@@ -264,23 +249,25 @@ export class WorkoutPlanService {
 
 export const workoutPlanService = new WorkoutPlanService();
 
-// ─── Utility: format Date thành "YYYY-MM-DD" ────────────────────────────────────
+// ─── Utilities ───────────────────────────────────────────────────────────────────
 
 function toDateString(date: Date): string {
   return date.toISOString().slice(0, 10);
 }
 
 /**
- * Tính ngày thực tế của một WorkoutDay trong tuần dựa trên ngày bắt đầu plan.
- * VD: plan startsAt = Monday 14/04 → day Wednesday → 16/04
+ * Tính ngày thực tế của một WorkoutDay dựa trên ngày bắt đầu plan.
+ * VD: plan startsAt = Monday 21/04 → day Thursday → 24/04
+ *
+ * Export để RescheduleService tái dùng nếu cần.
  */
-function resolveDayDate(startsAt: Date, dayOfWeek: string): Date {
+export function resolveDayDate(startsAt: Date, dayOfWeek: string): Date {
   const DAY_INDEX: Record<string, number> = {
     Monday: 1, Tuesday: 2, Wednesday: 3, Thursday: 4,
     Friday: 5, Saturday: 6, Sunday: 0,
   };
 
-  const startDay = startsAt.getUTCDay();   // 0=Sunday, 1=Monday...
+  const startDay = startsAt.getUTCDay();
   const targetDay = DAY_INDEX[dayOfWeek] ?? 0;
 
   let diff = targetDay - startDay;

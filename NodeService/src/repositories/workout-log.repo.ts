@@ -129,6 +129,15 @@ export class WorkoutLogRepository {
 
     return { logs: logsWithExercises, total };
   }
+
+  async hasLogForDay(
+    dayId: string
+  ): Promise<boolean> {
+    const exists = await WorkoutLogModel.exists({ 
+      dayId: new Types.ObjectId(dayId) 
+    });
+    return exists !== null;
+  }
 }
 
 export const workoutLogRepository = new WorkoutLogRepository();

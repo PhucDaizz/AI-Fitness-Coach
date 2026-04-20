@@ -1,4 +1,4 @@
-import { ClientSession, Document, Types } from 'mongoose';
+import { ClientSession, Document, Promise, Types } from 'mongoose';
 import {
   WorkoutPlanModel,
   WorkoutDayModel,
@@ -162,6 +162,45 @@ export class WorkoutPlanRepository {
 
     return daysWithExercises;
   }
+  
+  async findDayByScheduledDate(
+    planId: string,
+    scheduledDate: Date,
+    session?: ClientSession,
+  ): Promise<WorkoutDayLean | null> {
+    return WorkoutDayModel
+      .findOne({
+        planId: new Types.ObjectId(planId),
+        scheduledDate,
+      })
+      .lean<WorkoutDayLean>()
+      .session(session ?? null);
+  }
+
+  async findDaysSortedByDate(
+    planId: string,
+    session?: ClientSession,
+  ): Promise<WorkoutDayLean[]> {
+    return WorkoutDayModel
+      .find({ planId: new Types.ObjectId(planId) })
+      .sort({ scheduledDate: 1 })
+      .lean<WorkoutDayLean[]>()
+      .session(session ?? null);
+  }
+
+  async updateDaySchedule(
+    dayId: string,
+    scheduledDate: Date,
+    dayOfWeek: string,
+    session: ClientSession,
+  ): Promise<void> {
+    await WorkoutDayModel.findByIdAndUpdate(
+      dayId,
+      { $set: { scheduledDate, dayOfWeek } },
+      { session },
+    )
+  }
 }
 
+// ─── Reschedule ─────────────────────────────────────────────────
 export const workoutPlanRepository = new WorkoutPlanRepository();
