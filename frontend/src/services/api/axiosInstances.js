@@ -31,7 +31,7 @@ const createInstance = (baseURL) => {
       }
       return config;
     },
-    (error) => Promise.reject(error)
+    (error) => Promise.reject(error),
   );
 
   // Response interceptor for global error handling
@@ -83,7 +83,7 @@ const createInstance = (baseURL) => {
       }
       
       return Promise.reject(error);
-    }
+    },
   );
 
   return instance;

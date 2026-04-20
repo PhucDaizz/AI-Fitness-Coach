@@ -1,9 +1,10 @@
 import React from 'react';
-import Navbar from '../components/layout/Navbar';
-import Hero from '../components/home/Hero';
+
 import BentoGrid from '../components/home/BentoGrid';
 import CTASection from '../components/home/CTASection';
+import Hero from '../components/home/Hero';
 import Footer from '../components/layout/Footer';
+import Navbar from '../components/layout/Navbar';
 
 const Home = () => {
   return (

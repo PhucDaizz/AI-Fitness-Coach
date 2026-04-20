@@ -53,6 +53,10 @@ const envSchema = z.object({
   RATE_LIMIT_ENABLED: booleanFromString,
   RATE_LIMIT_WINDOW_MS: z.coerce.number().positive().default(900_000),
   RATE_LIMIT_MAX: z.coerce.number().positive().default(100),
+
+  // AIService (.NET)
+  AI_SERVICE_URL: z.string().url("AI_SERVICE_URL phải là một URL hợp lệ").default("http://localhost:5000"),
+
 });
 
 const _parsed = envSchema.safeParse(process.env);
