@@ -53,6 +53,38 @@ export const register = async (fullName, email, password, phoneNumber) => {
   );
 };
 
+export const getGoogleLoginUrl = () => {
+  return `${import.meta.env.VITE_AUTH_API_URL}/api/Auth/google-login`;
+};
+
+export const getCurrentUser = async () => {
+  return await handleResponse(authApi.get('/Auth/me'));
+};
+
+export const updateProfile = async (profileData) => {
+  return await handleResponse(authApi.put('/Auth/profile', profileData));
+};
+
+export const changePassword = async (passwordData) => {
+  return await handleResponse(authApi.post('/Auth/change-password', passwordData));
+};
+
+export const forgotPassword = async (email, clientUrl) => {
+  return await handleResponse(authApi.post('/Auth/forgot-password', { email, clientUrl }));
+};
+
+export const sendConfirmEmail = async () => {
+  return await handleResponse(authApi.post('/Auth/send-confirmemail'));
+};
+
+export const confirmEmail = async (userId, token) => {
+  return await handleResponse(authApi.get(`/Auth/email-confirmation?userId=${userId}&token=${token}`));
+};
+
+export const resetPassword = async (resetData) => {
+  return await handleResponse(authApi.post('/Auth/resetpassword', resetData));
+};
+
 export const logout = () => {
   localStorage.removeItem('token');
   localStorage.removeItem('refreshToken');

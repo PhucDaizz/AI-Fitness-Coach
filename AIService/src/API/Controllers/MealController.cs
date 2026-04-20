@@ -47,37 +47,23 @@ namespace AIService.API.Controllers
         /// <returns>Danh sách món ăn phân trang</returns>
         [HttpGet]
         public async Task<ActionResult<ApiResponse<Domain.Common.Models.PagedResult<MealListItemDto>>>> GetMeals(
-            [FromQuery] int pageNumber = 1,
-            [FromQuery] int pageSize = 20,
-            [FromQuery] string? searchTerm = null)
+            [FromQuery] GetMealsQuery query)
         {
-            var query = new GetMealsQuery
-            {
-                PageNumber = pageNumber,
-                PageSize = pageSize,
-                SearchTerm = searchTerm
-            };
-
             var result = await _mediator.Send(query);
+
             return Ok(ApiResponse<Domain.Common.Models.PagedResult<MealListItemDto>>.SuccessResponse(result.Value!));
         }
 
-
         /// <summary>
-        /// Lấy danh sách món ăn cho Admin (Kèm trạng thái hệ thống)
+        /// Lấy danh sách món ăn cho Admin (Hỗ trợ lọc và phân trang nâng cao)
         /// </summary>
-        /// <param name="pageNumber">Số trang (mặc định 1)</param>
-        /// <param name="pageSize">Kích thước trang (mặc định 20)</param>
-        /// <param name="searchTerm">Từ khóa tìm kiếm theo tên hoặc mô tả món ăn (tùy chọn)</param>
-        /// <returns>Danh sách món ăn phân trang</returns>
+        /// <param name="query">Object chứa các điều kiện lọc và phân trang</param>
+        /// <returns>Danh sách món ăn phân trang cho Admin</returns>
         [HttpGet("admin")]
-        [Authorize(Roles = $"{AppRoles.SysAdmin}")] 
+        [Authorize(Roles = $"{AppRoles.SysAdmin}")]
         public async Task<ActionResult<ApiResponse<PagedResult<AdminMealDto>>>> GetAdminMeals(
-            [FromQuery] int pageNumber = 1,
-            [FromQuery] int pageSize = 20,
-            [FromQuery] string? searchTerm = null)
+            [FromQuery] GetAdminMealsQuery query)
         {
-            var query = new GetAdminMealsQuery { PageNumber = pageNumber, PageSize = pageSize, SearchTerm = searchTerm };
             var result = await _mediator.Send(query);
 
             return Ok(ApiResponse<Domain.Common.Models.PagedResult<AdminMealDto>>.SuccessResponse(result.Value!));

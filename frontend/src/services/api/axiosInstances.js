@@ -7,6 +7,19 @@ const createInstance = (baseURL) => {
     headers: {
       'Content-Type': 'application/json',
     },
+    paramsSerializer: (params) => {
+      const searchParams = new URLSearchParams();
+      for (const key in params) {
+        const value = params[key];
+        if (value === undefined || value === null || value === '') continue;
+        if (Array.isArray(value)) {
+          value.forEach(v => searchParams.append(key, v));
+        } else {
+          searchParams.append(key, value);
+        }
+      }
+      return searchParams.toString();
+    }
   });
 
   // Request interceptor for Auth Token
@@ -24,13 +37,51 @@ const createInstance = (baseURL) => {
   // Response interceptor for global error handling
   instance.interceptors.response.use(
     (response) => response,
-    (error) => {
-      if (error.response?.status === 401) {
-        // Handle unauthorized (e.g., redirect to login or refresh token)
-        console.warn('Unauthorized! Logging out...');
-        localStorage.removeItem('token');
-        // window.location.href = '/login';
+    async (error) => {
+      const originalRequest = error.config;
+
+      // If error is 401 and we haven't retried yet
+      if (error.response?.status === 401 && !originalRequest._retry) {
+        originalRequest._retry = true;
+        
+        const refreshToken = localStorage.getItem('refreshToken');
+        const token = localStorage.getItem('token');
+
+        if (refreshToken && token) {
+          try {
+            console.log('Token expired. Attempting refresh...');
+            
+            // Call the refresh endpoint directly using axios to avoid loops
+            const response = await axios.post(`${import.meta.env.VITE_AUTH_API_URL}/api/Auth/Refreshtoken`, {
+              token,
+              refreshToken
+            });
+
+            if (response.data.success) {
+              const { token: newToken, refreshToken: newRefreshToken } = response.data.data;
+              
+              localStorage.setItem('token', newToken);
+              localStorage.setItem('refreshToken', newRefreshToken);
+
+              // Update the header and retry
+              originalRequest.headers.Authorization = `Bearer ${newToken}`;
+              return axios(originalRequest);
+            }
+          } catch (refreshError) {
+            console.error('Refresh token failed:', refreshError);
+            // Refresh failed, clear everything and go to login
+            localStorage.removeItem('token');
+            localStorage.removeItem('refreshToken');
+            window.location.href = '/login';
+            return Promise.reject(refreshError);
+          }
+        } else {
+          // No refresh token available
+          localStorage.removeItem('token');
+          window.location.href = '/login';
+        }
       }
+      
       return Promise.reject(error);
     },
   );

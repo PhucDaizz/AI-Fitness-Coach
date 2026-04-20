@@ -32,7 +32,10 @@ namespace AIService.Infrastructure
                options.UseMySql(
                    configuration.GetConnectionString("DefaultConnection"),
                    new MySqlServerVersion(new Version(8, 0, 21)),
-                   b => b.MigrationsAssembly(typeof(ApplicationDbContext).Assembly.FullName)));
+                   b => {
+                       b.MigrationsAssembly(typeof(ApplicationDbContext).Assembly.FullName);
+                       b.UseNewtonsoftJson(); 
+                   }));
 
             var redisConnectionString = configuration.GetConnectionString("Redis") ?? "localhost:6379";
             services.AddSingleton<IConnectionMultiplexer>(ConnectionMultiplexer.Connect(redisConnectionString));

@@ -35,12 +35,7 @@ namespace AIService.Infrastructure.Data.Configurations
 
             builder.Property(m => m.DietTags)
                    .HasColumnName("diet_tags")
-                   .HasColumnType("json")
-                   .HasConversion(
-                       v => JsonSerializer.Serialize(v, (JsonSerializerOptions)null!),
-                       v => JsonSerializer.Deserialize<List<string>>(v, (JsonSerializerOptions)null!) ?? new List<string>()
-                   )
-                   .Metadata.SetValueComparer(stringListComparer); 
+                   .HasColumnType("json"); 
 
             builder.Property(m => m.EmbedStatus)
                    .HasColumnName("embed_status")

@@ -18,9 +18,10 @@ namespace AIService.Application.Features.ExerciseCategory.Queries.GetExerciseCat
         public async Task<Result<ExerciseCategoryDetailDto>> Handle(GetExerciseCategoryByIdQuery request, CancellationToken cancellationToken)
         {
             var category = await _context.ExerciseCategories
+                .Where(x => x.Id == request.Id)
                 .Select(x => new ExerciseCategoryDetailDto(x.Id, x.Name, x.NameVN, x.CreatedAt, x.UpdatedAt))
                 .AsNoTracking()
-                .FirstOrDefaultAsync(x => x.Id == request.Id, cancellationToken);
+                .FirstOrDefaultAsync(cancellationToken);
 
             if (category == null)
             {

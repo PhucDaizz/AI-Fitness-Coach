@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-
-import { register } from '../../services/api/auth.service';
+import { register, getGoogleLoginUrl } from '../../services/api/auth.service';
 
 const SignUpForm = () => {
   const [formData, setFormData] = useState({
@@ -17,6 +16,10 @@ const SignUpForm = () => {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleGoogleLogin = () => {
+    window.location.href = getGoogleLoginUrl();
   };
 
   const handleSubmit = async (e) => {
@@ -157,8 +160,9 @@ const SignUpForm = () => {
         </div>
 
         {/* Social Sign Up */}
-        <button
-          type="button"
+        <button 
+          type="button" 
+          onClick={handleGoogleLogin}
           className="w-full flex items-center justify-center gap-3 bg-surface-container-highest border border-outline-variant/30 text-on-surface font-bold py-4 rounded-full hover:bg-surface-bright transition-all active:scale-[0.98]"
         >
           <svg className="w-5 h-5" viewBox="0 0 24 24">

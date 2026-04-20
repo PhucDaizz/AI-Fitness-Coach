@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-
-import { login } from '../../services/api/auth.service';
+import { useNavigate, Link } from 'react-router-dom';
+import { login, getGoogleLoginUrl } from '../../services/api/auth.service';
+import { isAdmin } from '../../utils/authUtils';
 
 const LoginForm = () => {
   const [email, setEmail] = useState('');
@@ -21,13 +21,24 @@ const LoginForm = () => {
     try {
       const data = await login(email, password);
       console.log('Login successful:', data);
-      navigate('/');
+      
+      const token = localStorage.getItem('token');
+      if (isAdmin(token)) {
+        navigate('/admin');
+      } else {
+        navigate('/'); 
+      }
     } catch (err) {
       console.error('Login failed:', err);
       setError(err.message);
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleGoogleLogin = () => {
+    const redirectUrl = getGoogleLoginUrl();
+    window.location.href = redirectUrl;
   };
 
   return (
@@ -73,18 +84,8 @@ const LoginForm = () => {
         {/* Password Field */}
         <div className="space-y-2">
           <div className="flex justify-between items-end ml-1">
-            <label
-              className="text-[0.6875rem] font-bold uppercase tracking-widest text-on-surface-variant"
-              htmlFor="password"
-            >
-              Password
-            </label>
-            <a
-              className="text-[0.6875rem] font-bold uppercase tracking-widest text-secondary hover:opacity-80 transition-opacity"
-              href="#"
-            >
-              Forgot Password?
-            </a>
+            <label className="text-[0.6875rem] font-bold uppercase tracking-widest text-on-surface-variant" htmlFor="password">Password</label>
+            <Link className="text-[0.6875rem] font-bold uppercase tracking-widest text-secondary hover:opacity-80 transition-opacity" to="/forgot-password">Forgot Password?</Link>
           </div>
           <div className="relative group">
             <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant group-focus-within:text-primary transition-colors pointer-events-none z-10">
@@ -137,7 +138,11 @@ const LoginForm = () => {
         </div>
       </div>
 
-      <button className="w-full bg-surface-container-highest text-on-surface font-semibold py-4 rounded-full border border-outline-variant/20 hover:bg-surface-bright transition-colors flex items-center justify-center gap-3">
+      <button 
+        type="button" 
+        onClick={handleGoogleLogin}
+        className="w-full flex items-center justify-center gap-3 bg-surface-container-highest border border-outline-variant/20 hover:bg-surface-bright transition-colors text-on-surface font-semibold py-4 rounded-full"
+      >
         <svg className="w-5 h-5" viewBox="0 0 24 24">
           <path
             d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"

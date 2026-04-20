@@ -48,7 +48,7 @@ namespace Application.Features.User.Commands.ForgotPassword
                 clientUrl: request.ClientUrl);
 
 
-            string subject = "Đặt lại mật khẩu - TravelNow";
+            string subject = "Change Your Password - KINETIC AI";
             string htmlBody = _emailServices.CreateResetPasswordEmailBody( 
                 userName: user.FullName ?? "Quý khách",
                 resetLink: resetPasswordLink,
