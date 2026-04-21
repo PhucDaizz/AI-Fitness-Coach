@@ -40,3 +40,11 @@ export const getTotalUsers = async () => {
 export const getTokenChartData = async (timeFrame = 1) => {
   return await handleResponse(workoutApi.get('/System/token-chart', { params: { timeFrame } }));
 };
+
+/**
+ * Fetch RAG tool usage chart data (Workout Service)
+ * @param {number} timeFrame 1: 7 Days, 2: This Month, 3: This Year, 4: All Time
+ */
+export const getToolUsageChartData = async (timeFrame = 1) => {
+  return await handleResponse(workoutApi.get('/System/tool-usage-chart', { params: { timeFrame } }));
+};

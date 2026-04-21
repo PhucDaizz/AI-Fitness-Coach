@@ -1,34 +1,104 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { getToolUsageChartData } from '../../services/api/system.service';
 
 const MetricWidgets = () => {
+  // Tool Usage States
+  const [toolData, setToolData] = useState([]);
+  const [toolTimeFrame, setToolTimeFrame] = useState(1); // 1: 7Days, 2: ThisMonth, 3: ThisYear, 4: AllTime
+  const [isLoadingTool, setIsLoadingTool] = useState(true);
+
+  // Fetch Tool Usage Chart data
+  useEffect(() => {
+    const fetchToolChart = async () => {
+      try {
+        setIsLoadingTool(true);
+        const data = await getToolUsageChartData(toolTimeFrame);
+        setToolData(data || []);
+      } catch (err) {
+        console.error("Failed to fetch tool usage chart:", err);
+      } finally {
+        setIsLoadingTool(false);
+      }
+    };
+    fetchToolChart();
+  }, [toolTimeFrame]);
+
+  // Tool Usage Calculation
+  const toolColors = ['#b1ff24', '#00e5ff', '#b388ff', '#ff4081', '#ffea00'];
+  const totalToolUsage = toolData.reduce((sum, item) => sum + item.totalUsage, 0);
+  
+  let currentAngle = 0;
+  const toolPieSlices = toolData.map((item, i) => {
+    const percentage = totalToolUsage === 0 ? 0 : item.totalUsage / totalToolUsage;
+    const endAngle = currentAngle + percentage * 360;
+    const slice = { startAngle: currentAngle, endAngle, percentage, color: toolColors[i % toolColors.length], ...item };
+    currentAngle = endAngle;
+    return slice;
+  });
+  
+  const conicGradientStr = toolData.length > 0
+    ? toolPieSlices.map(s => `${s.color} ${s.startAngle}deg ${s.endAngle}deg`).join(', ')
+    : '#1a1a1a';
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-      {/* Tool Usage Distribution */}
-      <div className="bg-surface-container p-6 rounded-3xl flex flex-col h-full">
-        <h3 className="text-sm font-bold text-white uppercase tracking-[0.15em] mb-8">Tool Usage Distribution</h3>
-        <div className="relative flex items-center justify-center flex-1 py-4">
-          <div className="w-40 h-40 rounded-full flex items-center justify-center relative overflow-hidden" style={{ background: 'conic-gradient(#b1ff24 0% 50%, #6a9cff 50% 60%, #494847 60% 85%, #262626 85% 100%)' }}>
-            <div className="w-32 h-32 rounded-full bg-surface-container flex flex-col items-center justify-center z-10 shadow-inner">
-              <span className="text-3xl font-black text-white">50%</span>
-              <span className="text-[8px] font-bold text-on-surface-variant uppercase tracking-widest">Primary Action</span>
-            </div>
-          </div>
+      {/* Tool Usage Distribution (Real Data) */}
+      <div className="bg-surface-container p-6 rounded-3xl flex flex-col h-full relative overflow-hidden group">
+        <div className="absolute -bottom-8 -right-8 p-8 opacity-5 group-hover:scale-110 transition-transform duration-500">
+          <span className="material-symbols-outlined text-[150px]">memory</span>
         </div>
-        <div className="mt-8 space-y-3">
-          {[
-            { color: 'bg-primary', label: 'generate_workout_plan', value: '50%' },
-            { color: 'bg-secondary', label: 'log_workout', value: '10%' },
-            { color: 'bg-outline', label: 'nutrition_advice', value: '25%' },
-            { color: 'bg-surface-variant', label: 'Other', value: '15%' },
-          ].map((item, i) => (
-            <div key={i} className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <div className={`w-2 h-2 rounded-full ${item.color}`}></div>
-                <span className="text-xs text-on-surface-variant font-medium">{item.label}</span>
+
+        <div className="flex justify-between items-start mb-8 relative z-10">
+          <h3 className="text-sm font-bold text-white uppercase tracking-[0.15em]">Tool Usage Distribution</h3>
+          <select 
+            value={toolTimeFrame}
+            onChange={(e) => setToolTimeFrame(parseInt(e.target.value))}
+            className="bg-[#1a1919] border border-white/5 text-[9px] font-black uppercase tracking-widest text-on-surface-variant focus:text-white rounded-lg py-1 px-2 focus:ring-1 focus:ring-primary cursor-pointer outline-none"
+          >
+            <option value={1}>7 Days</option>
+            <option value={2}>This Month</option>
+            <option value={3}>This Year</option>
+            <option value={4}>All Time</option>
+          </select>
+        </div>
+
+        <div className="relative flex items-center justify-center flex-1 min-h-[160px] z-10">
+          {isLoadingTool ? (
+            <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+          ) : toolData.length === 0 ? (
+            <p className="text-[10px] text-on-surface-variant font-black uppercase tracking-widest italic">No tool executions recorded</p>
+          ) : (
+            <div 
+              className="w-40 h-40 rounded-full flex items-center justify-center relative shadow-[0_0_20px_rgba(0,0,0,0.5)] border border-white/5" 
+              style={{ background: `conic-gradient(${conicGradientStr})` }}
+            >
+              <div className="w-32 h-32 rounded-full bg-surface-container flex flex-col items-center justify-center z-10 shadow-inner border border-white/5">
+                <span className="text-3xl font-black text-white italic tracking-tighter">{totalToolUsage.toLocaleString()}</span>
+                <span className="text-[8px] font-bold text-on-surface-variant uppercase tracking-widest">Total Calls</span>
               </div>
-              <span className="text-xs font-bold text-white">{item.value}</span>
             </div>
-          ))}
+          )}
+        </div>
+
+        <div className="mt-8 space-y-3 z-10 max-h-[140px] overflow-y-auto pr-1">
+          {toolData.map((item, i) => {
+            const percent = totalToolUsage === 0 ? 0 : Math.round((item.totalUsage / totalToolUsage) * 100);
+            const color = toolColors[i % toolColors.length];
+            return (
+              <div key={item.toolName} className="flex items-center justify-between group/item">
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 rounded-full shadow-lg" style={{ backgroundColor: color, boxShadow: `0 0 5px ${color}` }}></div>
+                  <span className="text-[10px] text-on-surface-variant font-bold uppercase truncate max-w-[120px]">
+                    {item.toolName.replace('search_', '').replace('_', ' ')}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                   <span className="text-[10px] font-black text-white">{item.totalUsage}</span>
+                   <span className="text-[9px] font-medium text-outline-variant">{percent}%</span>
+                </div>
+              </div>
+            );
+          })}
         </div>
       </div>
 
