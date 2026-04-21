@@ -30,7 +30,7 @@ const envSchema = z.object({
   MONGODB_URI: z.string().url("MONGODB_URI phải là một URL hợp lệ"),
 
   // RabbitMQ — tắt khi chưa có RabbitMQ server
-  RABBITMQ_ENABLED: booleanFromString,
+  // RABBITMQ_ENABLED: booleanFromString,
   RABBITMQ_URL: z.string().default("amqp://guest:guest@localhost:5672"),
   RABBITMQ_QUEUE_PLAN_GENERATED: z.string().default("plan.generated"),
   RABBITMQ_QUEUE_PLAN_ADJUSTED: z.string().default("plan.adjusted"),
@@ -67,7 +67,7 @@ export const env = _parsed.data;
 
 // ─── Log trạng thái các flag khi khởi động ──────────────────────────────────────
 console.log(
-  `🔧 RABBITMQ_ENABLED=${env.RABBITMQ_ENABLED} | RATE_LIMIT_ENABLED=${env.RATE_LIMIT_ENABLED}`,
+  `🔧 RATE_LIMIT_ENABLED=${env.RATE_LIMIT_ENABLED}`,
 );
 
 export const isDev = env.NODE_ENV === "development";
