@@ -1,4 +1,4 @@
-import { authApi } from './axiosInstances';
+import { authApi, workoutApi } from './axiosInstances';
 
 /**
  * Common handler to unwrap the backend's ApiResponse structure
@@ -27,8 +27,16 @@ const handleResponse = async (apiPromise) => {
 };
 
 /**
- * Fetch total number of registered users across the entire system
+ * Fetch total number of registered users across the entire system (Auth Service)
  */
 export const getTotalUsers = async () => {
   return await handleResponse(authApi.get('/System/total-users'));
+};
+
+/**
+ * Fetch token consumption chart data (Workout Service)
+ * @param {number} timeFrame 1: 24h, 2: 7d, 3: 12m
+ */
+export const getTokenChartData = async (timeFrame = 1) => {
+  return await handleResponse(workoutApi.get('/System/token-chart', { params: { timeFrame } }));
 };

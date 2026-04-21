@@ -169,6 +169,7 @@ namespace AIService.Infrastructure
             services.AddScoped<IMealRepository, MealRepository>();
             services.AddScoped<IMuscleGroupRepository, MuscleGroupRepository>();
             services.AddScoped<ISessionRepository, SessionRepository>();
+            services.AddScoped<ITokenDailyStatRepository, TokenDailyStatRepository>();
 
             services.AddScoped<ICacheService, RedisCacheService>();
             services.AddTransient<IChatMemoryService, VectorChatMemoryService>();

@@ -34,6 +34,7 @@ namespace AIService.Infrastructure.Data.Configurations
             builder.Property(m => m.CompletionTokens).IsRequired(false);
             builder.Property(m => m.TotalTokens).IsRequired(false);
 
+            builder.HasIndex(m => new { m.CreatedAt, m.TotalTokens, m.PromptTokens, m.CompletionTokens });
         }
     }
 }

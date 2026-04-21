@@ -21,6 +21,7 @@ namespace AIService.Infrastructure
         public DbSet<Meal> MealDbSet { get; set; }
         public DbSet<Message> MessageDbSet { get; set; }
         public DbSet<Session> SessionDbSet { get; set; }
+        public DbSet<TokenDailyStat> TokenDailyStatDbSet { get; set; }
 
         public IQueryable<Equipment> Equipments => EquipmentDbSet;
         public IQueryable<Exercise> Exercises => ExerciseDbSet;
@@ -30,6 +31,7 @@ namespace AIService.Infrastructure
         public IQueryable<Meal> Meals => MealDbSet;
         public IQueryable<Message> Messages => MessageDbSet;
         public IQueryable<Session> Sessions => SessionDbSet;
+        public IQueryable<TokenDailyStat> TokenDailyStats => TokenDailyStatDbSet;
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

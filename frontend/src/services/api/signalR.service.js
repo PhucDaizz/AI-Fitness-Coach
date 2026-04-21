@@ -14,6 +14,11 @@ class SignalRService {
       SessionTitleUpdated: [],
       UpdateOnlineUsersCount: []
     };
+
+    // Cache latest status data to provide to newly mounted components immediately
+    this.cachedData = {
+      onlineCount: 0
+    };
   }
 
   async connect() {
@@ -52,6 +57,7 @@ class SignalRService {
     });
 
     this.connection.on('UpdateOnlineUsersCount', (count) => {
+      this.cachedData.onlineCount = count; // Save to cache
       this.notifyListeners('UpdateOnlineUsersCount', count);
     });
 
@@ -71,6 +77,11 @@ class SignalRService {
   on(eventName, callback) {
     if (this.listeners[eventName]) {
       this.listeners[eventName].push(callback);
+      
+      // If subscribing to online count, immediately provide the cached value
+      if (eventName === 'UpdateOnlineUsersCount' && this.cachedData.onlineCount > 0) {
+        callback(this.cachedData.onlineCount);
+      }
     } else {
       console.warn(`SignalRService: Unknown event '${eventName}'`);
     }

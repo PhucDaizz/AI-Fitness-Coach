@@ -173,6 +173,27 @@ namespace AIService.Application.Features.AI.Commands.StreamFitnessChat
 
                 var session = await unitOfWork.SessionRepository.GetByIdAsync(sessionGuid, CancellationToken.None);
 
+                int totalTokens = promptTokens + completionTokens;
+                if (totalTokens > 0)
+                {
+                    var today = DateOnly.FromDateTime(DateTime.UtcNow);
+
+                    var dailyStat = await unitOfWork.TokenDailyStatRepository.GetByDateAsync(today, CancellationToken.None);
+
+                    if (dailyStat == null)
+                    {
+                        dailyStat = new TokenDailyStat(today);
+                        dailyStat.AddTokens(promptTokens, completionTokens, totalTokens);
+                        await unitOfWork.TokenDailyStatRepository.AddAsync(dailyStat, CancellationToken.None);
+                    }
+                    else
+                    {
+                        dailyStat.AddTokens(promptTokens, completionTokens, totalTokens);
+
+                        unitOfWork.TokenDailyStatRepository.Update(dailyStat);
+                    }
+                }
+
                 if (session != null)
                 {
                     session.AddAssistantMessage(request.MessageId, responseText, promptTokens, completionTokens);
