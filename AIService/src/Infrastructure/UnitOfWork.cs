@@ -15,6 +15,7 @@ namespace AIService.Infrastructure
         public IEquipmentRepository EquipmentRepository { get; }
         public ISessionRepository SessionRepository { get; }
         public ITokenDailyStatRepository TokenDailyStatRepository { get; }
+        public IToolDailyStatRepository ToolDailyStatRepository { get; }
 
         public UnitOfWork(
             ApplicationDbContext context,
@@ -24,6 +25,7 @@ namespace AIService.Infrastructure
             IMealRepository mealRepository,
             IMuscleGroupRepository muscleGroupRepository,
             ISessionRepository sessionRepository,
+            IToolDailyStatRepository toolDailyStatRepository,
             ITokenDailyStatRepository tokenDailyStatRepository
         )
         {
@@ -34,6 +36,7 @@ namespace AIService.Infrastructure
             MuscleGroupRepository = muscleGroupRepository;
             SessionRepository = sessionRepository;
             EquipmentRepository = equipmentRepository;
+            ToolDailyStatRepository = toolDailyStatRepository;
             TokenDailyStatRepository = tokenDailyStatRepository;
         }
         public async Task BeginTransactionAsync()

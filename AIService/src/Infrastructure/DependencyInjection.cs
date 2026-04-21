@@ -1,6 +1,7 @@
 ﻿using AIService.Application.Common.Interfaces;
 using AIService.Application.Common.Models;
 using AIService.Domain.Repositories;
+using AIService.Infrastructure.AI.Filters;
 using AIService.Infrastructure.AI.Plugins;
 using AIService.Infrastructure.Data.Repositories;
 using AIService.Infrastructure.Data.Seeders;
@@ -61,6 +62,8 @@ namespace AIService.Infrastructure
             kernelBuilder.Plugins.AddFromType<ExercisePlugin>("exercise");
             kernelBuilder.Plugins.AddFromType<NutritionPlugin>("nutrition");
             kernelBuilder.Plugins.AddFromType<FitnessCalculatorPlugin>("calculator");
+
+            kernelBuilder.Services.AddSingleton<IFunctionInvocationFilter, ToolUsageTrackingFilter>();
 
             if (aiProvider.Equals("OpenAI", StringComparison.OrdinalIgnoreCase))
             {
@@ -170,6 +173,7 @@ namespace AIService.Infrastructure
             services.AddScoped<IMuscleGroupRepository, MuscleGroupRepository>();
             services.AddScoped<ISessionRepository, SessionRepository>();
             services.AddScoped<ITokenDailyStatRepository, TokenDailyStatRepository>();
+            services.AddScoped<IToolDailyStatRepository, ToolDailyStatRepository>();
 
             services.AddScoped<ICacheService, RedisCacheService>();
             services.AddTransient<IChatMemoryService, VectorChatMemoryService>();

@@ -11,6 +11,7 @@ namespace AIService.Application.Common.Interfaces
         IMuscleGroupRepository MuscleGroupRepository { get; }
         ISessionRepository SessionRepository { get; }
         ITokenDailyStatRepository TokenDailyStatRepository { get; }
+        IToolDailyStatRepository ToolDailyStatRepository { get; }
 
 
         Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);

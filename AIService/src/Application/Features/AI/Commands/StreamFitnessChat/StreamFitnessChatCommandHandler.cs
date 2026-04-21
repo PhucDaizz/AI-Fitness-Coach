@@ -92,17 +92,36 @@ namespace AIService.Application.Features.AI.Commands.StreamFitnessChat
                         "ai-service-message-embedding-queue", userEvent, cancellationToken)
                 );
 
+
+                var maxRetries = 5;
                 // ── Translate + LongTerm memory song song ────────────
-                var translateTask = _translator.TranslateVietnameseToEnglishAsync(
-                    request.Question, cancellationToken);
+                var attempt = 0;
+                string englishQuestion = request.Question;
+                List<string> longTermContext = new();
 
-                var contextTask = _chatMemoryService.GetRelevantContextAsync(
-                    request.UserId, request.Question, limit: 3, cancellationToken);
+                while (attempt < maxRetries)
+                {
+                    try
+                    {
+                        var translateTask = _translator.TranslateVietnameseToEnglishAsync(
+                            request.Question, cancellationToken);
 
-                await Task.WhenAll(translateTask, contextTask);
+                        var contextTask = _chatMemoryService.GetRelevantContextAsync(
+                            request.UserId, request.Question, limit: 3, cancellationToken);
 
-                var englishQuestion = await translateTask;
-                var longTermContext = await contextTask;
+                        await Task.WhenAll(translateTask, contextTask);
+
+                        englishQuestion = await translateTask;
+                        longTermContext = await contextTask;
+                        break;
+                    }
+                    catch (HttpOperationException ex) when (attempt < maxRetries - 1)
+                    {
+                        attempt++;
+                        _logger.LogWarning("[StreamChat] Translate retry {Attempt}/{Max}", attempt, maxRetries);
+                        await Task.Delay(TimeSpan.FromSeconds(attempt * 2), cancellationToken);
+                    }
+                }
 
                 _logger.LogInformation("[StreamChat] VI: {VI} → EN: {EN}",
                     request.Question, englishQuestion);
@@ -120,16 +139,32 @@ namespace AIService.Application.Features.AI.Commands.StreamFitnessChat
                 var fullResponse = new StringBuilder();
                 StreamingChatMessageContent? lastChunk = null;
 
-                await foreach (var chunk in _ptAi.GetStreamingChatMessageContentsAsync(
-                    chatHistory, settings, _kernel, cancellationToken))
+                attempt = 0;
+
+                while (attempt < maxRetries)
                 {
-                    if (!string.IsNullOrEmpty(chunk.Content))
+                    try
                     {
-                        fullResponse.Append(chunk.Content);
-                        await _notifier.SendMessageChunkAsync(
-                            request.UserId, request.MessageId, chunk.Content);
+                        await foreach (var chunk in _ptAi.GetStreamingChatMessageContentsAsync(
+                            chatHistory, settings, _kernel, cancellationToken))
+                        {
+                            if (!string.IsNullOrEmpty(chunk.Content))
+                            {
+                                fullResponse.Append(chunk.Content);
+                                await _notifier.SendMessageChunkAsync(
+                                    request.UserId, request.MessageId, chunk.Content);
+                            }
+                            lastChunk = chunk;
+                        }
+                        break; 
                     }
-                    lastChunk = chunk;
+                    catch (HttpOperationException ex) when (attempt < maxRetries - 1)
+                    {
+                        attempt++;
+                        fullResponse.Clear();
+                        _logger.LogWarning("[StreamChat] Gemini 500, retry {Attempt}/{Max}", attempt, maxRetries);
+                        await Task.Delay(TimeSpan.FromSeconds(attempt * 2), cancellationToken); 
+                    }
                 }
 
                 await _notifier.SendMessageCompletedAsync(request.UserId, request.MessageId);

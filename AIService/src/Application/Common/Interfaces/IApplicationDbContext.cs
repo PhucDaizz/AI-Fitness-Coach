@@ -13,6 +13,7 @@ namespace AIService.Application.Common.Interfaces
         public IQueryable<Meal> Meals { get; }
         public IQueryable<Message> Messages { get; }
         public IQueryable<Session> Sessions { get; }
+        public IQueryable<ToolDailyStat> ToolDailyStats { get; }
         Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
     }
 }
