@@ -29,12 +29,6 @@ const envSchema = z.object({
   // MongoDB
   MONGODB_URI: z.string().url("MONGODB_URI phải là một URL hợp lệ"),
 
-  // Redis — tắt khi chưa có Redis server
-  REDIS_ENABLED: booleanFromString,
-  REDIS_HOST: z.string().default("localhost"),
-  REDIS_PORT: z.coerce.number().positive().default(6379),
-  REDIS_PASSWORD: z.string().optional(),
-
   // RabbitMQ — tắt khi chưa có RabbitMQ server
   RABBITMQ_ENABLED: booleanFromString,
   RABBITMQ_URL: z.string().default("amqp://guest:guest@localhost:5672"),
@@ -73,7 +67,7 @@ export const env = _parsed.data;
 
 // ─── Log trạng thái các flag khi khởi động ──────────────────────────────────────
 console.log(
-  `🔧  REDIS_ENABLED=${env.REDIS_ENABLED} | RABBITMQ_ENABLED=${env.RABBITMQ_ENABLED} | RATE_LIMIT_ENABLED=${env.RATE_LIMIT_ENABLED}`,
+  `🔧 RABBITMQ_ENABLED=${env.RABBITMQ_ENABLED} | RATE_LIMIT_ENABLED=${env.RATE_LIMIT_ENABLED}`,
 );
 
 export const isDev = env.NODE_ENV === "development";

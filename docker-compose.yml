@@ -136,7 +136,7 @@ services:
       rabbitmq:
         condition: service_healthy
     ports:
-      - "3000:3000"
+      - "7003:7003"
     env_file:
       - .env.node
     environment:
