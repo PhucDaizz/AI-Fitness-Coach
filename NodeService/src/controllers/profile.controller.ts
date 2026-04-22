@@ -1,11 +1,57 @@
 import { Request, Response, NextFunction } from 'express';
 import { ProfileService } from '../services/profile.service';
-import { createProfileSchema, updateProfileSchema } from '../validations/profile.valid';
+import {
+  createProfileSchema,
+  updateProfileSchema,
+  updateAvailableDaysSchema,
+} from '../validations/profile.valid';
 import { sendSuccess, sendCreated } from '../utils/response';
 import { AuthRequest } from '../types';
 import { MESSAGES } from '../constants';
 
 const profileService = new ProfileService();
+
+// ─── GET /profile/exists ─────────────────────────────────────────────────────────
+/**
+ * @openapi
+ * /profile/exists:
+ *   get:
+ *     tags: [Profile]
+ *     summary: Kiểm tra user đã có profile chưa (dùng cho onboarding flow)
+ *     description: |
+ *       Luôn trả HTTP 200.
+ *       FE dùng sau khi đăng nhập để quyết định có hiển thị màn hình Setup Profile không.
+ *     security:
+ *       - BearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Trạng thái tồn tại của profile
+ *         content:
+ *           application/json:
+ *             schema:
+ *               allOf:
+ *                 - $ref: '#/components/schemas/ApiSuccess'
+ *                 - type: object
+ *                   properties:
+ *                     data:
+ *                       type: object
+ *                       properties:
+ *                         exists:
+ *                           type: boolean
+ */
+export async function checkProfileExists(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): Promise<void> {
+  try {
+    const userId = (req as AuthRequest).user.sub;
+    const data = await profileService.checkExists(userId);
+    sendSuccess(res, data);
+  } catch (error) {
+    next(error);
+  }
+}
 
 // ─── GET /profile ────────────────────────────────────────────────────────────────
 /**
@@ -187,6 +233,55 @@ export async function updateProfile(
     const dto = updateProfileSchema.parse(req.body);
     const data = await profileService.updateProfile(userId, dto);
     sendSuccess(res, data, MESSAGES.UPDATED);
+  } catch (error) {
+    next(error);
+  }
+}
+
+// ─── PATCH /profile/available-days ───────────────────────────────────────────────
+/**
+ * @openapi
+ * /profile/available-days:
+ *   patch:
+ *     tags: [Profile]
+ *     summary: Cập nhật lịch rảnh trong tuần
+ *     description: |
+ *       Thay thế toàn bộ danh sách ngày rảnh — gửi đủ list mới.
+ *       Dùng khi user chỉ muốn đổi lịch mà không thay đổi thông tin cá nhân.
+ *     security:
+ *       - BearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - days
+ *             properties:
+ *               days:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                   enum: [Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday]
+ *     responses:
+ *       200:
+ *         description: Cập nhật lịch rảnh thành công
+ *       404:
+ *         description: Chưa có hồ sơ
+ *       422:
+ *         description: Dữ liệu không hợp lệ
+ */
+export async function updateAvailableDays(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): Promise<void> {
+  try {
+    const userId = (req as AuthRequest).user.sub;
+    const dto = updateAvailableDaysSchema.parse(req.body);
+    const data = await profileService.updateAvailableDays(userId, dto);
+    sendSuccess(res, data, 'Cập nhật lịch rảnh thành công');
   } catch (error) {
     next(error);
   }
