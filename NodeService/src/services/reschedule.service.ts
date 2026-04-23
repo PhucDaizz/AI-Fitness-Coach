@@ -6,8 +6,6 @@ import { AppError } from '../middlewares/error.middleware';
 import { HTTP_STATUS } from '../constants';
 import { ReschedulePlanDto } from '../validations/reschedule.valid';
 
-// ─── Result type ─────────────────────────────────────────────────────────────────
-
 export type RescheduleResult = {
   strategy: 'SIMPLE_MOVE' | 'SWAP' | 'SHIFT';
   affected: number;          // số WorkoutDay bị thay đổi scheduledDate
@@ -24,10 +22,13 @@ export class RescheduleService {
   ): Promise<RescheduleResult> {
     // 1. Validate plan ownership + status
     const plan = await workoutPlanRepository.findById(planId);
-    if (!plan) throw new AppError('Không tìm thấy plan', HTTP_STATUS.NOT_FOUND);
-    if (plan.userId !== userId) throw new AppError('Không có quyền truy cập plan này', HTTP_STATUS.FORBIDDEN);
+    if (!plan) 
+      throw new AppError( 'Không tìm thấy plan', HTTP_STATUS.NOT_FOUND);
+    if (plan.userId !== userId) 
+      throw new AppError( 'Không có quyền truy cập plan này', HTTP_STATUS.FORBIDDEN);
     if (plan.status !== 'active') {
-      throw new AppError('Chỉ có thể dời lịch của plan đang active', HTTP_STATUS.BAD_REQUEST);
+      throw new AppError( 'Chỉ có thể dời lịch của plan đang active', HTTP_STATUS.BAD_REQUEST
+      );
     }
 
     // 2. Parse dates về UTC midnight
@@ -35,7 +36,10 @@ export class RescheduleService {
     const targetDate  = parseDateUTC(dto.targetDay);
 
     // 3. Tìm WorkoutDay của currentDay
-    const currentWorkoutDay = await workoutPlanRepository.findDayByScheduledDate(planId, currentDate);
+    const currentWorkoutDay = await workoutPlanRepository.findDayByScheduledDate(
+      planId, 
+      currentDate
+    );
     if (!currentWorkoutDay) {
       throw new AppError(
         `Không tìm thấy buổi tập vào ngày ${dto.currentDay} trong plan này`,
@@ -47,7 +51,10 @@ export class RescheduleService {
     await assertNotLogged(userId, currentWorkoutDay, dto.currentDay);
 
     // 5. Tìm WorkoutDay của targetDay (có thể trống)
-    const targetWorkoutDay = await workoutPlanRepository.findDayByScheduledDate(planId, targetDate);
+    const targetWorkoutDay = await workoutPlanRepository.findDayByScheduledDate(
+      planId, 
+      targetDate
+    );
 
     // 6. Route: trống → simple move, xung đột → SWAP | SHIFT
     if (!targetWorkoutDay) {
@@ -68,24 +75,16 @@ export class RescheduleService {
     targetDate: Date,
     targetStr: string,
   ): Promise<RescheduleResult> {
-    const session = await mongoose.startSession();
-    try {
-      await session.withTransaction(async () => {
-        await workoutPlanRepository.updateDaySchedule(
-          String(currentDay._id),
-          targetDate,
-          getDayOfWeek(targetDate),
-          session,
-        );
-      });
-      return {
-        strategy: 'SIMPLE_MOVE',
-        affected: 1,
-        message: `Đã dời buổi tập sang ${targetStr}`,
-      };
-    } finally {
-      await session.endSession();
-    }
+    await workoutPlanRepository.updateDaySchedule(
+      String(currentDay._id),
+      targetDate,
+      getDayOfWeek(targetDate),
+    );
+    return {
+      strategy: 'SIMPLE_MOVE',
+      affected: 1,
+      message: `Đã dời buổi tập sang ${targetStr}`,
+    };
   }
 
   private async _swap(
@@ -99,30 +98,27 @@ export class RescheduleService {
     const TEMP_DATE    = new Date('9999-12-31T00:00:00.000Z');
     const TEMP_DOW     = '__temp__';
 
-    const session = await mongoose.startSession();
-    try {
-      await session.withTransaction(async () => {
-        // Step 1: currentDay → temp (giải phóng slot)
-        await workoutPlanRepository.updateDaySchedule(
-          String(currentDay._id), TEMP_DATE, TEMP_DOW, session,
-        );
-        // Step 2: targetDay → currentDay's original slot
-        await workoutPlanRepository.updateDaySchedule(
-          String(targetDay._id), currentDay.scheduledDate, currentDay.dayOfWeek, session,
-        );
-        // Step 3: currentDay (ở temp) → targetDay's original slot
-        await workoutPlanRepository.updateDaySchedule(
-          String(currentDay._id), targetDay.scheduledDate, targetDay.dayOfWeek, session,
-        );
-      });
-      return {
-        strategy: 'SWAP',
-        affected: 2,
-        message: `Đã hoán đổi buổi tập ${dto.currentDay} ↔ ${dto.targetDay}`,
-      };
-    } finally {
-      await session.endSession();
-    }
+    await workoutPlanRepository.updateDaySchedule(
+      String(currentDay._id), TEMP_DATE, TEMP_DOW
+    );
+
+    await workoutPlanRepository.updateDaySchedule(
+      String(targetDay._id), 
+      currentDay.scheduledDate, 
+      currentDay.dayOfWeek
+    );
+
+    await workoutPlanRepository.updateDaySchedule(
+      String(currentDay._id),
+      targetDay.scheduledDate,
+      targetDay.dayOfWeek
+    );
+
+    return {
+      strategy: 'SWAP',
+      affected: 2,
+      message: `Đã hoán đổi buổi tập ${dto.currentDay} ↔ ${dto.targetDay}`,
+    };
   }
 
   private async _shift(
@@ -149,47 +145,33 @@ export class RescheduleService {
     const lastDay       = daysToShift[daysToShift.length - 1];
     const nextSlot      = getNextAvailableDate(lastDay.scheduledDate, availableDays);
 
-    const session = await mongoose.startSession();
-    try {
-      await session.withTransaction(async () => {
-        // 1. Ngày cuối → slot mới (chưa tồn tại, không conflict)
-        await workoutPlanRepository.updateDaySchedule(
-          String(lastDay._id),
-          nextSlot,
-          getDayOfWeek(nextSlot),
-          session,
-        );
+    await workoutPlanRepository.updateDaySchedule(
+      String(lastDay._id),
+      nextSlot,
+      getDayOfWeek(nextSlot),
+    );
 
-        // 2. Các ngày còn lại trong daysToShift (reverse, bỏ qua phần tử cuối)
-        //    daysToShift[i] → daysToShift[i+1].scheduledDate (original, không bị thay đổi)
-        for (let i = daysToShift.length - 2; i >= 0; i--) {
-          const newDate = daysToShift[i + 1].scheduledDate;  // original date, lấy từ snapshot
-          await workoutPlanRepository.updateDaySchedule(
-            String(daysToShift[i]._id),
-            newDate,
-            getDayOfWeek(newDate),
-            session,
-          );
-        }
-
-        // 3. currentDay → targetDay's original slot (cuối cùng, Sat đã được C giải phóng)
-        await workoutPlanRepository.updateDaySchedule(
-          String(currentDay._id),
-          targetDay.scheduledDate,
-          getDayOfWeek(targetDay.scheduledDate),
-          session,
-        );
-      });
-
-      return {
-        strategy: 'SHIFT',
-        affected: daysToShift.length + 1,
-        message: `Đã dời buổi tập ${dto.currentDay} → ${dto.targetDay}, `
-               + `${daysToShift.length} buổi tập sau bị đẩy lùi 1 slot`,
-      };
-    } finally {
-      await session.endSession();
+    for (let i = daysToShift.length - 2; i >= 0; i--) {
+      const newDate = daysToShift[i + 1].scheduledDate;  // original date, lấy từ snapshot
+      await workoutPlanRepository.updateDaySchedule(
+        String(daysToShift[i]._id),
+        newDate,
+        getDayOfWeek(newDate),
+      );
     }
+
+    await workoutPlanRepository.updateDaySchedule(
+      String(currentDay._id),
+      targetDay.scheduledDate,
+      getDayOfWeek(targetDay.scheduledDate),
+    );
+
+    return {
+      strategy: 'SHIFT',
+      affected: daysToShift.length + 1,
+      message: `Đã dời buổi tập ${dto.currentDay} → ${dto.targetDay}, `
+             + `${daysToShift.length} buổi tập sau bị đẩy lùi 1 slot`,
+    };
   }
 }
 
@@ -220,7 +202,11 @@ async function assertNotLogged(
   day: WorkoutDayLean,
   dateStr: string,
 ): Promise<void> {
-  const logged = await WorkoutLogModel.exists({ userId, dayId: day._id });
+  const logged = await WorkoutLogModel.exists({ 
+    userId, 
+    dayId: day._id 
+  });
+
   if (logged) {
     throw new AppError(
       `Buổi tập ngày ${dateStr} đã được log — không thể dời`,
@@ -235,7 +221,10 @@ async function assertNotLogged(
  *
  * Nếu user chưa có profile / availableDays rỗng → fallback +7 ngày.
  */
-function getNextAvailableDate(afterDate: Date, availableDays: string[]): Date {
+function getNextAvailableDate(
+  afterDate: Date, 
+  availableDays: string[]
+): Date {
   const DAY_INDEX: Record<string, number> = {
     Sunday: 0, Monday: 1, Tuesday: 2, Wednesday: 3,
     Thursday: 4, Friday: 5, Saturday: 6,
