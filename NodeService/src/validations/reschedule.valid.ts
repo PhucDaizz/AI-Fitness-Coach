@@ -22,4 +22,4 @@ export const rescheduleSchema = z
     path: ['targetDay'],
   });
 
-export type RescheduleDto = z.infer<typeof rescheduleSchema>;
+export type ReschedulePlanDto = z.infer<typeof rescheduleSchema>;

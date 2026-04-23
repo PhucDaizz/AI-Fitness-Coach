@@ -1,4 +1,4 @@
-import mongoose, { Types } from 'mongoose';
+import { Types } from 'mongoose';
 import { workoutLogRepository } from '../repositories/workout-log.repo';
 import { workoutPlanRepository } from '../repositories/workout-plan.repo';
 import { AppError } from '../middlewares/error.middleware';
@@ -19,82 +19,69 @@ export class WorkoutLogService {
    * Validate:
    * 1. planId phải tồn tại và thuộc user
    * 2. dayId phải thuộc planId đó
-   * 3. Chưa log ngày này + day này trước đó (unique per day + dayId)
+   * 3. Chưa log ngày này + day này trước đó
+   *
+   * Không dùng transaction — MongoDB standalone không hỗ trợ.
    */
   async createLog(userId: string, dto: CreateWorkoutLogDto) {
-    const session = await mongoose.startSession();
-
-    try {
-      return await session.withTransaction(async () => {
-        // 1. Validate plan thuộc user
-        const plan = await workoutPlanRepository.findById(dto.planId, session);
-        if (!plan) {
-          throw new AppError('Không tìm thấy workout plan', HTTP_STATUS.NOT_FOUND);
-        }
-        if (plan.userId !== userId) {
-          throw new AppError('Bạn không có quyền truy cập plan này', HTTP_STATUS.FORBIDDEN);
-        }
-
-        // 2. Validate day thuộc plan
-        const day = await workoutPlanRepository.findDayById(dto.dayId, session);
-        if (!day || String(day.planId) !== dto.planId) {
-          throw new AppError(
-            'dayId không hợp lệ hoặc không thuộc plan này',
-            HTTP_STATUS.BAD_REQUEST,
-          );
-        }
-
-        // 3. Normalize loggedDate về UTC 00:00:00 để so sánh chính xác
-        const loggedDate = normalizeDate(dto.loggedDate);
-
-        // 4. Kiểm tra đã log ngày này chưa
-        const existing = await workoutLogRepository.findByUserDayAndDate(
-          userId,
-          dto.dayId,
-          loggedDate,
-          session,
-        );
-        if (existing) {
-          throw new AppError(
-            'Bạn đã log buổi tập này rồi — mỗi ngày chỉ được log 1 lần cho cùng 1 day',
-            HTTP_STATUS.CONFLICT,
-          );
-        }
-
-        // 5. Tạo WorkoutLog
-        const log = await workoutLogRepository.create(
-          {
-            userId,
-            planId: new Types.ObjectId(dto.planId) as any,
-            dayId: new Types.ObjectId(dto.dayId) as any,
-            loggedDate,
-            durationMinutes: dto.durationMinutes,
-            difficultyFeedback: dto.difficultyFeedback as any,
-            notes: dto.notes,
-          },
-          session,
-        );
-
-        // 6. Tạo ExerciseLogs
-        const exerciseRecords = dto.exercises.map((ex) => ({
-          logId: log._id as any,
-          exerciseId: ex.exerciseId,
-          setsDone: ex.setsDone,
-          repsDone: ex.repsDone,
-          weightKg: ex.weightKg,
-          isCompleted: ex.isCompleted ?? false,
-        }));
-
-        await workoutLogRepository.createExerciseLogs(exerciseRecords, session);
-
-        return {
-          ...log,
-          exercises: exerciseRecords,
-        };
-      });
-    } finally {
-      await session.endSession();
+    // 1. Validate plan thuộc user
+    const plan = await workoutPlanRepository.findById(dto.planId);
+    if (!plan) {
+      throw new AppError('Không tìm thấy workout plan', HTTP_STATUS.NOT_FOUND);
     }
+    if (plan.userId !== userId) {
+      throw new AppError('Bạn không có quyền truy cập plan này', HTTP_STATUS.FORBIDDEN);
+    }
+
+    // 2. Validate day thuộc plan
+    const day = await workoutPlanRepository.findDayById(dto.dayId);
+    if (!day || String(day.planId) !== dto.planId) {
+      throw new AppError(
+        'dayId không hợp lệ hoặc không thuộc plan này',
+        HTTP_STATUS.BAD_REQUEST,
+      );
+    }
+
+    // 3. Normalize loggedDate về UTC 00:00:00
+    const loggedDate = normalizeDate(dto.loggedDate);
+
+    // 4. Kiểm tra đã log ngày này chưa
+    const existing = await workoutLogRepository.findByUserDayAndDate(
+      userId,
+      dto.dayId,
+      loggedDate,
+    );
+    if (existing) {
+      throw new AppError(
+        'Bạn đã log buổi tập này rồi — mỗi ngày chỉ được log 1 lần cho cùng 1 day',
+        HTTP_STATUS.CONFLICT,
+      );
+    }
+
+    // 5. Tạo WorkoutLog
+    const log = await workoutLogRepository.create({
+      userId,
+      planId: new Types.ObjectId(dto.planId) as any,
+      dayId: new Types.ObjectId(dto.dayId) as any,
+      loggedDate,
+      durationMinutes: dto.durationMinutes,
+      difficultyFeedback: dto.difficultyFeedback as any,
+      notes: dto.notes,
+    });
+
+    // 6. Tạo ExerciseLogs
+    const exerciseRecords = dto.exercises.map((ex) => ({
+      logId: log._id as any,
+      exerciseId: ex.exerciseId,
+      setsDone: ex.setsDone,
+      repsDone: ex.repsDone,
+      weightKg: ex.weightKg,
+      isCompleted: ex.isCompleted ?? false,
+    }));
+
+    await workoutLogRepository.createExerciseLogs(exerciseRecords);
+
+    return { ...log, exercises: exerciseRecords };
   }
 
   /**

@@ -1,4 +1,4 @@
-import { ClientSession, Document, Promise, Types } from 'mongoose';
+import { ClientSession, Document, Types } from 'mongoose';
 import {
   WorkoutPlanModel,
   WorkoutDayModel,
@@ -75,22 +75,24 @@ export class WorkoutPlanRepository {
 
   async create(
     data: Partial<WorkoutPlanLean>,
-    session: ClientSession,
+    session?: ClientSession,
   ): Promise<WorkoutPlanLean> {
-    const [doc] = await WorkoutPlanModel.create([data], { session });
+    const doc = session
+      ? (await WorkoutPlanModel.create([data], { session }))[0]
+      : await WorkoutPlanModel.create(data);
     return doc.toObject() as WorkoutPlanLean;
   }
 
   async updateStatus(
     planId: string,
     status: string,
-    session: ClientSession,
+    session?: ClientSession,
   ): Promise<WorkoutPlanLean | null> {
     return WorkoutPlanModel
       .findByIdAndUpdate(
         planId,
         { $set: { status } },
-        { new: true, session },
+        { new: true, ...(session ? { session } : {}) },
       )
       .lean<WorkoutPlanLean>();
   }
@@ -120,9 +122,11 @@ export class WorkoutPlanRepository {
 
   async createDay(
     data: Partial<WorkoutDayLean>,
-    session: ClientSession,
+    session?: ClientSession,
   ): Promise<WorkoutDayLean> {
-    const [doc] = await WorkoutDayModel.create([data], { session });
+    const doc = session
+      ? (await WorkoutDayModel.create([data], { session }))[0]
+      : await WorkoutDayModel.create(data);
     return doc.toObject() as WorkoutDayLean;
   }
 
@@ -141,9 +145,9 @@ export class WorkoutPlanRepository {
 
   async createExercisesInDay(
     records: Array<Partial<ExerciseInDayLean>>,
-    session: ClientSession,
+    session?: ClientSession,
   ): Promise<void> {
-    await ExerciseInDayModel.insertMany(records, { session });
+    await ExerciseInDayModel.insertMany(records, session ? { session } : {});
   }
 
   // ─── Compound: lấy days kèm exercises (dùng cho GET /:id/days) ─────────────────
@@ -162,7 +166,9 @@ export class WorkoutPlanRepository {
 
     return daysWithExercises;
   }
-  
+
+  // ─── Reschedule ────────────────────────────────────────────────────────────────
+
   async findDayByScheduledDate(
     planId: string,
     scheduledDate: Date,
@@ -192,15 +198,14 @@ export class WorkoutPlanRepository {
     dayId: string,
     scheduledDate: Date,
     dayOfWeek: string,
-    session: ClientSession,
+    session?: ClientSession,
   ): Promise<void> {
     await WorkoutDayModel.findByIdAndUpdate(
       dayId,
       { $set: { scheduledDate, dayOfWeek } },
-      { session },
-    )
+      session ? { session } : {},
+    );
   }
 }
 
-// ─── Reschedule ─────────────────────────────────────────────────
 export const workoutPlanRepository = new WorkoutPlanRepository();

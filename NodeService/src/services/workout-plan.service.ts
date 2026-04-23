@@ -1,4 +1,3 @@
-import mongoose, { Types } from 'mongoose';
 import {
   workoutPlanRepository,
   WorkoutPlanLean,
@@ -20,7 +19,6 @@ export type CalendarEntry = {
   dayId: string;
   dayOfWeek: string;
   muscleFocus: string;
-  scheduledDate: string;
   loggedDate: string | null;
   status: 'completed' | 'missed' | 'upcoming';
 };
@@ -31,75 +29,59 @@ export class WorkoutPlanService {
   /**
    * POST /workout-plans
    * Nhận plan JSON từ .NET AI và lưu vào MongoDB.
-   * scheduledDate của mỗi WorkoutDay được tính từ startsAt + dayOfWeek.
+   * Enforce: mỗi user chỉ được có 1 plan active cùng lúc.
+   * Nếu đã có plan active → tự động archive plan cũ trước khi tạo mới.
+   *
+   * Không dùng transaction — MongoDB standalone không hỗ trợ.
+   * Thứ tự thực hiện: archive cũ → tạo plan → tạo days → tạo exercises.
    */
   async createPlan(userId: string, dto: CreateWorkoutPlanDto) {
-    const session = await mongoose.startSession();
-
-    try {
-      return await session.withTransaction(async () => {
-        const existingActive = await workoutPlanRepository.findActiveByUserId(
-          userId,
-          session,
-        );
-
-        if (existingActive) {
-          await workoutPlanRepository.updateStatus(
-            String(existingActive._id),
-            'archived',
-            session,
-          );
-        }
-
-        const plan = await workoutPlanRepository.create(
-          {
-            userId,
-            title: dto.title,
-            planType: dto.planType,
-            weekNumber: dto.weekNumber,
-            status: 'active',
-            aiModelUsed: dto.aiModelUsed,
-            startsAt: dto.startsAt,
-            generatedAt: new Date(),
-          },
-          session,
-        );
-
-        const planId = plan._id;
-
-        for (const dayDto of dto.days) {
-          // ── Tính ngày thực tế từ startsAt + dayOfWeek ─────────────────────────
-          const scheduledDate = resolveDayDate(dto.startsAt, dayDto.dayOfWeek);
-
-          const day = await workoutPlanRepository.createDay(
-            {
-              planId,
-              dayOfWeek: dayDto.dayOfWeek as any,
-              muscleFocus: dayDto.muscleFocus,
-              orderIndex: dayDto.orderIndex,
-              scheduledDate,
-            },
-            session,
-          );
-
-          const exercises = dayDto.exercises.map((ex) => ({
-            dayId: day._id,
-            exerciseId: ex.exerciseId,
-            sets: ex.sets,
-            reps: ex.reps,
-            restSeconds: ex.restSeconds ?? 60,
-            notes: ex.notes,
-            orderIndex: ex.orderIndex,
-          }));
-
-          await workoutPlanRepository.createExercisesInDay(exercises, session);
-        }
-
-        return { planId: String(planId), ...plan };
-      });
-    } finally {
-      await session.endSession();
+    // 1. Archive plan active cũ (nếu có)
+    const existingActive = await workoutPlanRepository.findActiveByUserId(userId);
+    if (existingActive) {
+      await workoutPlanRepository.updateStatus(String(existingActive._id), 'archived');
     }
+
+    // 2. Tạo plan mới
+    const plan = await workoutPlanRepository.create({
+      userId,
+      title: dto.title,
+      planType: dto.planType,
+      weekNumber: dto.weekNumber,
+      status: 'active',
+      aiModelUsed: dto.aiModelUsed,
+      startsAt: dto.startsAt,
+      generatedAt: new Date(),
+    });
+
+    const planId = plan._id;
+
+    // 3. Tạo days và exercises tuần tự (giữ đúng orderIndex)
+    for (const dayDto of dto.days) {
+      const scheduledDate = resolveDayDate(dto.startsAt, dayDto.dayOfWeek);
+
+      const day = await workoutPlanRepository.createDay({
+        planId,
+        dayOfWeek: dayDto.dayOfWeek as any,
+        muscleFocus: dayDto.muscleFocus,
+        orderIndex: dayDto.orderIndex,
+        scheduledDate,
+      });
+
+      const exercises = dayDto.exercises.map((ex) => ({
+        dayId: day._id,
+        exerciseId: ex.exerciseId,
+        sets: ex.sets,
+        reps: ex.reps,
+        restSeconds: ex.restSeconds ?? 60,
+        notes: ex.notes,
+        orderIndex: ex.orderIndex,
+      }));
+
+      await workoutPlanRepository.createExercisesInDay(exercises);
+    }
+
+    return { planId: String(planId), ...plan };
   }
 
   /**
@@ -132,7 +114,6 @@ export class WorkoutPlanService {
 
   /**
    * GET /workout-plans/:id/calendar
-   * Dùng day.scheduledDate trực tiếp — không cần tính lại từ startsAt.
    */
   async getPlanCalendar(userId: string, planId: string): Promise<CalendarEntry[]> {
     const plan = await this._assertPlanOwner(userId, planId);
@@ -158,11 +139,10 @@ export class WorkoutPlanService {
     const today = toDateString(new Date());
 
     return days.map<CalendarEntry>((day) => {
-      // Dùng scheduledDate đã lưu sẵn — không tính lại mỗi lần query
-      const dayDateStr = toDateString(day.scheduledDate);
+      const dayDate = resolveDayDate(plan.startsAt, day.dayOfWeek as string);
+      const dayDateStr = toDateString(dayDate);
 
       let status: CalendarEntry['status'];
-
       if (loggedDates.has(dayDateStr)) {
         status = 'completed';
       } else if (dayDateStr < today) {
@@ -175,7 +155,6 @@ export class WorkoutPlanService {
         dayId: String(day._id),
         dayOfWeek: day.dayOfWeek,
         muscleFocus: day.muscleFocus,
-        scheduledDate: dayDateStr,
         loggedDate: loggedDates.has(dayDateStr) ? dayDateStr : null,
         status,
       };
@@ -184,46 +163,32 @@ export class WorkoutPlanService {
 
   /**
    * PATCH /workout-plans/:id/status
+   * Không dùng transaction — MongoDB standalone không hỗ trợ.
    */
   async updateStatus(
     userId: string,
     planId: string,
     dto: UpdatePlanStatusDto,
   ): Promise<WorkoutPlanLean> {
-    const session = await mongoose.startSession();
+    const plan = await this._assertPlanOwner(userId, planId);
 
-    try {
-      return await session.withTransaction(async () => {
-        const plan = await this._assertPlanOwner(userId, planId, session);
-
-        if (dto.status === 'active' && plan.status !== 'active') {
-          const currentActive = await workoutPlanRepository.findActiveByUserId(
-            userId,
-            session,
-          );
-          if (currentActive && String(currentActive._id) !== planId) {
-            throw new AppError(
-              'Đã có plan đang active — archive plan hiện tại trước khi activate plan mới',
-              HTTP_STATUS.CONFLICT,
-            );
-          }
-        }
-
-        const updated = await workoutPlanRepository.updateStatus(
-          planId,
-          dto.status,
-          session,
+    if (dto.status === 'active' && plan.status !== 'active') {
+      const currentActive = await workoutPlanRepository.findActiveByUserId(userId);
+      if (currentActive && String(currentActive._id) !== planId) {
+        throw new AppError(
+          'Đã có plan đang active — archive plan hiện tại trước khi activate plan mới',
+          HTTP_STATUS.CONFLICT,
         );
-
-        if (!updated) {
-          throw new AppError('Cập nhật thất bại', HTTP_STATUS.INTERNAL_SERVER_ERROR);
-        }
-
-        return updated;
-      });
-    } finally {
-      await session.endSession();
+      }
     }
+
+    const updated = await workoutPlanRepository.updateStatus(planId, dto.status);
+
+    if (!updated) {
+      throw new AppError('Cập nhật thất bại', HTTP_STATUS.INTERNAL_SERVER_ERROR);
+    }
+
+    return updated;
   }
 
   // ─── Private helpers ──────────────────────────────────────────────────────────
@@ -231,9 +196,8 @@ export class WorkoutPlanService {
   private async _assertPlanOwner(
     userId: string,
     planId: string,
-    session?: mongoose.ClientSession,
   ): Promise<WorkoutPlanLean> {
-    const plan = await workoutPlanRepository.findById(planId, session);
+    const plan = await workoutPlanRepository.findById(planId);
 
     if (!plan) {
       throw new AppError('Không tìm thấy workout plan', HTTP_STATUS.NOT_FOUND);
@@ -249,25 +213,23 @@ export class WorkoutPlanService {
 
 export const workoutPlanService = new WorkoutPlanService();
 
-// ─── Utilities ───────────────────────────────────────────────────────────────────
+// ─── Utility: format Date thành "YYYY-MM-DD" ────────────────────────────────────
 
 function toDateString(date: Date): string {
   return date.toISOString().slice(0, 10);
 }
 
 /**
- * Tính ngày thực tế của một WorkoutDay dựa trên ngày bắt đầu plan.
- * VD: plan startsAt = Monday 21/04 → day Thursday → 24/04
- *
- * Export để RescheduleService tái dùng nếu cần.
+ * Tính ngày thực tế của một WorkoutDay trong tuần dựa trên ngày bắt đầu plan.
+ * VD: plan startsAt = Monday 14/04 → day Wednesday → 16/04
  */
-export function resolveDayDate(startsAt: Date, dayOfWeek: string): Date {
+function resolveDayDate(startsAt: Date, dayOfWeek: string): Date {
   const DAY_INDEX: Record<string, number> = {
     Monday: 1, Tuesday: 2, Wednesday: 3, Thursday: 4,
     Friday: 5, Saturday: 6, Sunday: 0,
   };
 
-  const startDay = startsAt.getUTCDay();
+  const startDay = startsAt.getUTCDay();   // 0=Sunday, 1=Monday...
   const targetDay = DAY_INDEX[dayOfWeek] ?? 0;
 
   let diff = targetDay - startDay;

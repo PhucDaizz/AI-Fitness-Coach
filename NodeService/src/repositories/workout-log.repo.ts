@@ -56,9 +56,11 @@ export class WorkoutLogRepository {
 
   async create(
     data: Partial<WorkoutLogLean>,
-    session: ClientSession,
+    session?: ClientSession,
   ): Promise<WorkoutLogLean> {
-    const [doc] = await WorkoutLogModel.create([data], { session });
+    const doc = session
+      ? (await WorkoutLogModel.create([data], { session }))[0]
+      : await WorkoutLogModel.create(data);
     return doc.toObject() as WorkoutLogLean;
   }
 
@@ -94,9 +96,9 @@ export class WorkoutLogRepository {
 
   async createExerciseLogs(
     records: Array<Partial<ExerciseLogLean>>,
-    session: ClientSession,
+    session?: ClientSession,
   ): Promise<void> {
-    await ExerciseLogModel.insertMany(records, { session });
+    await ExerciseLogModel.insertMany(records, session ? { session } : {});
   }
 
   async findExercisesByLogId(
@@ -128,15 +130,6 @@ export class WorkoutLogRepository {
     );
 
     return { logs: logsWithExercises, total };
-  }
-
-  async hasLogForDay(
-    dayId: string
-  ): Promise<boolean> {
-    const exists = await WorkoutLogModel.exists({ 
-      dayId: new Types.ObjectId(dayId) 
-    });
-    return exists !== null;
   }
 }
 
