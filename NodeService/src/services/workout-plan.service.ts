@@ -21,8 +21,8 @@ export type CalendarEntry = {
   dayId: string;
   dayOfWeek: string;
   muscleFocus: string;
-  scheduledDate: string;  // "YYYY-MM-DD"
-  loggedDate: string | null;
+  scheduledDate: string;        // ngày tập theo kế hoạch "YYYY-MM-DD"
+  loggedDate: string | null;    // ngày user thực tế log, null nếu chưa tập
   status: 'completed' | 'missed' | 'upcoming';
 };
 
@@ -117,40 +117,44 @@ export class WorkoutPlanService {
 
   /**
    * GET /workout-plans/:id/calendar
+   *
+   * Fix: so sánh theo dayId thay vì date string.
+   * Lý do: loggedDate = ngày user thực tế log, không nhất thiết bằng
+   * scheduledDate trong plan → so sánh date string sai.
+   * dayId là khóa chính xác định buổi tập, luôn đúng.
    */
-  async getPlanCalendar(
-    userId: string, 
-    planId: string
-  ): Promise<CalendarEntry[]> {
+  async getPlanCalendar(userId: string, planId: string): Promise<CalendarEntry[]> {
     const plan = await this._assertPlanOwner(userId, planId);
 
     const days = await workoutPlanRepository.findDaysByPlanId(planId);
 
-    const { logs } = await workoutLogRepository
-      .findByUserAndDateRange(
-        userId,
-        new Date('2000-01-01'),   // từ trước đến giờ (đảm bảo lấy đủ logs liên quan đến plan này)
-        new Date(new Date().setUTCHours(23, 59, 59, 999)),
-        0,
-        1000,
-      );
-    const loggedDayIds = new Set<string>();
-    const logDateByDay = new Map<string, string>();
+    // Lấy tất cả log của plan này → build 2 map:
+    //   loggedDayIds : Set<dayId string>  — để check "đã log chưa"
+    //   logDateByDay : Map<dayId, date>   — để trả về loggedDate cho FE
+    const { logs } = await workoutLogRepository.findByUserAndDateRange(
+      userId,
+      new Date('2000-01-01'),   // from rất xa để lấy toàn bộ lịch sử
+      new Date(new Date().setUTCHours(23, 59, 59, 999)),
+      0,
+      1000,
+    );
+
+    const loggedDayIds  = new Set<string>();
+    const logDateByDay  = new Map<string, string>();
 
     for (const log of logs) {
-      if (String(log.planId) === planId) continue;
-      const dayId = String(log.dayId);
-      loggedDayIds.add(dayId);
-      logDateByDay.set(dayId, toDateString(log.loggedDate));
+      if (String(log.planId) !== planId) continue;
+      const dayIdStr = String(log.dayId);
+      loggedDayIds.add(dayIdStr);
+      logDateByDay.set(dayIdStr, toDateString(log.loggedDate));
     }
 
     const today = toDateString(new Date());
 
     return days.map<CalendarEntry>((day) => {
-      const dayIdStr = String(day._id);
-      const isLogged = loggedDayIds.has(dayIdStr);
+      const dayIdStr    = String(day._id);
+      const isLogged    = loggedDayIds.has(dayIdStr);
       const scheduledStr = toDateString(day.scheduledDate);
-      // const dayDateStr = toDateString(dayDate);
 
       let status: CalendarEntry['status'];
       if (isLogged) {
@@ -162,11 +166,11 @@ export class WorkoutPlanService {
       }
 
       return {
-        dayId: dayIdStr,
-        dayOfWeek: day.dayOfWeek,
-        muscleFocus: day.muscleFocus,
+        dayId:        dayIdStr,
+        dayOfWeek:    day.dayOfWeek,
+        muscleFocus:  day.muscleFocus,
         scheduledDate: scheduledStr,
-        loggedDate: logDateByDay.get(dayIdStr) ?? null,
+        loggedDate:   logDateByDay.get(dayIdStr) ?? null,
         status,
       };
     });
@@ -220,8 +224,9 @@ export class WorkoutPlanService {
     dayId: string,
     dto: CompleteDayDto,
   ) {
+    // 1. Validate plan ownership
     await this._assertPlanOwner(userId, planId);
- 
+
     // 2. Validate day thuộc plan
     const day = await workoutPlanRepository.findDayById(dayId);
     if (!day || String(day.planId) !== planId) {
@@ -230,10 +235,10 @@ export class WorkoutPlanService {
         HTTP_STATUS.BAD_REQUEST,
       );
     }
- 
+
     // 3. Normalize loggedDate — mặc định hôm nay UTC nếu không truyền
     const loggedDate = normalizeToUTCMidnight(dto.loggedDate ?? new Date());
- 
+
     // 4. Kiểm tra đã log ngày này chưa
     const existing = await workoutLogRepository.findByUserDayAndDate(
       userId,
@@ -246,7 +251,7 @@ export class WorkoutPlanService {
         HTTP_STATUS.CONFLICT,
       );
     }
- 
+
     // 5. Lấy danh sách bài tập trong ngày từ plan
     const exercises = await workoutPlanRepository.findExercisesByDayId(dayId);
     if (exercises.length === 0) {
@@ -255,7 +260,7 @@ export class WorkoutPlanService {
         HTTP_STATUS.BAD_REQUEST,
       );
     }
- 
+
     // 6. Tạo WorkoutLog
     const log = await workoutLogRepository.create({
       userId,
@@ -265,7 +270,7 @@ export class WorkoutPlanService {
       difficultyFeedback: dto.difficultyFeedback as any,
       notes: dto.notes,
     });
- 
+
     // 7. Tạo ExerciseLogs — lấy sets/reps từ plan, weightKg = null
     const exerciseRecords = exercises.map((ex) => ({
       logId:       log._id as any,
@@ -275,9 +280,9 @@ export class WorkoutPlanService {
       weightKg:    undefined,
       isCompleted: true,
     }));
- 
+
     await workoutLogRepository.createExerciseLogs(exerciseRecords);
- 
+
     return {
       ...log,
       dayOfWeek:   day.dayOfWeek,
@@ -285,7 +290,7 @@ export class WorkoutPlanService {
       exercises:   exerciseRecords,
     };
   }
-  
+
   // ─── Private helpers ──────────────────────────────────────────────────────────
 
   private async _assertPlanOwner(
@@ -315,9 +320,14 @@ function toDateString(date: Date): string {
 }
 
 /**
- * Tính ngày thực tế của một WorkoutDay trong tuần dựa trên ngày bắt đầu plan.
- * VD: plan startsAt = Monday 14/04 → day Wednesday → 16/04
+ * Normalize về UTC midnight — dùng cho quick-log.
+ * Tách riêng khỏi workout-log.service để tránh circular import.
  */
+function normalizeToUTCMidnight(date: Date): Date {
+  const d = new Date(date);
+  d.setUTCHours(0, 0, 0, 0);
+  return d;
+}
 function resolveDayDate(startsAt: Date, dayOfWeek: string): Date {
   const DAY_INDEX: Record<string, number> = {
     Monday: 1, Tuesday: 2, Wednesday: 3, Thursday: 4,
@@ -335,10 +345,4 @@ function resolveDayDate(startsAt: Date, dayOfWeek: string): Date {
   result.setUTCHours(0, 0, 0, 0);
 
   return result;
-}
-
-function normalizeToUTCMidnight(date: Date): Date {
-  const d = new Date(date);
-  d.setUTCHours(0, 0, 0, 0);
-  return d;
 }
