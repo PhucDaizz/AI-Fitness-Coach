@@ -5,6 +5,7 @@ import {
   getWorkoutPlanDays,
   getWorkoutPlanCalendar,
   updateWorkoutPlanStatus,
+  completeWorkoutDay,
 } from '../controllers/workout-plan.controller';
 import { rescheduleWorkoutDay } from '../controllers/reschedule.controller';
 
@@ -31,5 +32,8 @@ router.patch('/:id/status', updateWorkoutPlanStatus);
 
 // POST /workout-plans/:id/reschedule    — dời / hoán đổi lịch tập
 router.post('/:id/reschedule', rescheduleWorkoutDay);
+
+// POST /workout-plans/:planId/days/:dayId/complete — quick-log cả ngày 1 lượt
+router.post('/:planId/days/:dayId/complete', completeWorkoutDay);
 
 export default router;

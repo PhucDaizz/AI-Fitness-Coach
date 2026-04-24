@@ -7,7 +7,7 @@ const toEnum = <T extends Record<string, string>>(obj: T) =>
 // ─── ExerciseInDay (lồng trong WorkoutDay) ──────────────────────────────────────
 
 const exerciseInDaySchema = z.object({
-  exerciseId: z.string().min(1, 'exerciseId không được để trống'),
+  exerciseId: z.coerce.string().min(1, 'exerciseId không được để trống'),
   sets: z.number().int().min(1, 'sets tối thiểu 1'),
   reps: z.string().min(1, 'reps không được để trống'),   // "8-12" hoặc "10"
   restSeconds: z.number().int().min(0).default(60),
@@ -63,8 +63,21 @@ export const listWorkoutPlansQuerySchema = z.object({
   limit: z.coerce.number().int().min(1).max(50).default(10),
 });
 
+export const completeDaySchema = z.object({
+  loggedDate: z.coerce
+    .date({ message: 'loggedDate phải là ngày hợp lệ (YYYY-MM-DD)' })
+    .optional(),
+  difficultyFeedback: z
+    .enum(['easy', 'ok', 'hard'], {
+      message: 'difficultyFeedback phải là: easy, ok, hard',
+    })
+    .optional(),
+  notes: z.string().optional(),
+})
+
 // ─── TypeScript types ────────────────────────────────────────────────────────────
 
 export type CreateWorkoutPlanDto = z.infer<typeof createWorkoutPlanSchema>;
 export type UpdatePlanStatusDto = z.infer<typeof updatePlanStatusSchema>;
 export type ListWorkoutPlansQuery = z.infer<typeof listWorkoutPlansQuerySchema>;
+export type CompleteDayDto = z.infer<typeof completeDaySchema>;

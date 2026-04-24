@@ -1,3 +1,4 @@
+import { Types } from 'mongoose';
 import {
   workoutPlanRepository,
   WorkoutPlanLean,
@@ -10,6 +11,7 @@ import {
   CreateWorkoutPlanDto,
   UpdatePlanStatusDto,
   ListWorkoutPlansQuery,
+  CompleteDayDto,
 } from '../validations/workout-plan.valid';
 import { buildPagination } from '../utils/response';
 
@@ -19,6 +21,7 @@ export type CalendarEntry = {
   dayId: string;
   dayOfWeek: string;
   muscleFocus: string;
+  scheduledDate: string;  // "YYYY-MM-DD"
   loggedDate: string | null;
   status: 'completed' | 'missed' | 'upcoming';
 };
@@ -115,47 +118,55 @@ export class WorkoutPlanService {
   /**
    * GET /workout-plans/:id/calendar
    */
-  async getPlanCalendar(userId: string, planId: string): Promise<CalendarEntry[]> {
+  async getPlanCalendar(
+    userId: string, 
+    planId: string
+  ): Promise<CalendarEntry[]> {
     const plan = await this._assertPlanOwner(userId, planId);
 
     const days = await workoutPlanRepository.findDaysByPlanId(planId);
 
-    const loggedDates = await workoutLogRepository
+    const { logs } = await workoutLogRepository
       .findByUserAndDateRange(
         userId,
-        plan.startsAt,
+        new Date('2000-01-01'),   // từ trước đến giờ (đảm bảo lấy đủ logs liên quan đến plan này)
         new Date(new Date().setUTCHours(23, 59, 59, 999)),
         0,
         1000,
-      )
-      .then(({ logs }) =>
-        new Set(
-          logs
-            .filter((l) => String(l.planId) === planId)
-            .map((l) => toDateString(l.loggedDate)),
-        ),
       );
+    const loggedDayIds = new Set<string>();
+    const logDateByDay = new Map<string, string>();
+
+    for (const log of logs) {
+      if (String(log.planId) === planId) continue;
+      const dayId = String(log.dayId);
+      loggedDayIds.add(dayId);
+      logDateByDay.set(dayId, toDateString(log.loggedDate));
+    }
 
     const today = toDateString(new Date());
 
     return days.map<CalendarEntry>((day) => {
-      const dayDate = resolveDayDate(plan.startsAt, day.dayOfWeek as string);
-      const dayDateStr = toDateString(dayDate);
+      const dayIdStr = String(day._id);
+      const isLogged = loggedDayIds.has(dayIdStr);
+      const scheduledStr = toDateString(day.scheduledDate);
+      // const dayDateStr = toDateString(dayDate);
 
       let status: CalendarEntry['status'];
-      if (loggedDates.has(dayDateStr)) {
+      if (isLogged) {
         status = 'completed';
-      } else if (dayDateStr < today) {
+      } else if (scheduledStr < today) {
         status = 'missed';
       } else {
         status = 'upcoming';
       }
 
       return {
-        dayId: String(day._id),
+        dayId: dayIdStr,
         dayOfWeek: day.dayOfWeek,
         muscleFocus: day.muscleFocus,
-        loggedDate: loggedDates.has(dayDateStr) ? dayDateStr : null,
+        scheduledDate: scheduledStr,
+        loggedDate: logDateByDay.get(dayIdStr) ?? null,
         status,
       };
     });
@@ -191,6 +202,90 @@ export class WorkoutPlanService {
     return updated;
   }
 
+  /**
+   * POST /workout-plans/:planId/days/:dayId/complete
+   * Quick-log: mark 1 ngày là "done" → tự động tạo WorkoutLog + ExerciseLog
+   *
+   * ExerciseLog được tạo từ dữ liệu plan:
+   *   - setsDone  = sets trong plan
+   *   - repsDone  = reps trong plan (VD: "10-12")
+   *   - weightKg  = undefined (không biết user tập nặng bao nhiêu)
+   *   - isCompleted = true
+   *
+   * Nếu ngày đã được log → trả về 409 (idempotency — tránh double-log).
+   */
+  async completeDay(
+    userId: string,
+    planId: string,
+    dayId: string,
+    dto: CompleteDayDto,
+  ) {
+    await this._assertPlanOwner(userId, planId);
+ 
+    // 2. Validate day thuộc plan
+    const day = await workoutPlanRepository.findDayById(dayId);
+    if (!day || String(day.planId) !== planId) {
+      throw new AppError(
+        'dayId không hợp lệ hoặc không thuộc plan này',
+        HTTP_STATUS.BAD_REQUEST,
+      );
+    }
+ 
+    // 3. Normalize loggedDate — mặc định hôm nay UTC nếu không truyền
+    const loggedDate = normalizeToUTCMidnight(dto.loggedDate ?? new Date());
+ 
+    // 4. Kiểm tra đã log ngày này chưa
+    const existing = await workoutLogRepository.findByUserDayAndDate(
+      userId,
+      dayId,
+      loggedDate,
+    );
+    if (existing) {
+      throw new AppError(
+        'Ngày tập này đã được log rồi',
+        HTTP_STATUS.CONFLICT,
+      );
+    }
+ 
+    // 5. Lấy danh sách bài tập trong ngày từ plan
+    const exercises = await workoutPlanRepository.findExercisesByDayId(dayId);
+    if (exercises.length === 0) {
+      throw new AppError(
+        'Ngày tập này chưa có bài tập nào trong plan',
+        HTTP_STATUS.BAD_REQUEST,
+      );
+    }
+ 
+    // 6. Tạo WorkoutLog
+    const log = await workoutLogRepository.create({
+      userId,
+      planId: new Types.ObjectId(planId) as any,
+      dayId:  new Types.ObjectId(dayId) as any,
+      loggedDate,
+      difficultyFeedback: dto.difficultyFeedback as any,
+      notes: dto.notes,
+    });
+ 
+    // 7. Tạo ExerciseLogs — lấy sets/reps từ plan, weightKg = null
+    const exerciseRecords = exercises.map((ex) => ({
+      logId:       log._id as any,
+      exerciseId:  ex.exerciseId,
+      setsDone:    ex.sets,
+      repsDone:    ex.reps,   // giữ nguyên format "10-12" từ plan
+      weightKg:    undefined,
+      isCompleted: true,
+    }));
+ 
+    await workoutLogRepository.createExerciseLogs(exerciseRecords);
+ 
+    return {
+      ...log,
+      dayOfWeek:   day.dayOfWeek,
+      muscleFocus: day.muscleFocus,
+      exercises:   exerciseRecords,
+    };
+  }
+  
   // ─── Private helpers ──────────────────────────────────────────────────────────
 
   private async _assertPlanOwner(
@@ -240,4 +335,10 @@ function resolveDayDate(startsAt: Date, dayOfWeek: string): Date {
   result.setUTCHours(0, 0, 0, 0);
 
   return result;
+}
+
+function normalizeToUTCMidnight(date: Date): Date {
+  const d = new Date(date);
+  d.setUTCHours(0, 0, 0, 0);
+  return d;
 }
