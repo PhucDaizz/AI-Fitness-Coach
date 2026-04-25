@@ -93,7 +93,7 @@ namespace AIService.Application.Features.AI.Commands.StreamFitnessChat
                 );
 
 
-                var maxRetries = 5;
+                var maxRetries = 15;
                 // ── Translate + LongTerm memory song song ────────────
                 var attempt = 0;
                 string englishQuestion = request.Question;
@@ -162,8 +162,9 @@ namespace AIService.Application.Features.AI.Commands.StreamFitnessChat
                     {
                         attempt++;
                         fullResponse.Clear();
-                        _logger.LogWarning("[StreamChat] Gemini 500, retry {Attempt}/{Max}", attempt, maxRetries);
-                        await Task.Delay(TimeSpan.FromSeconds(attempt * 2), cancellationToken); 
+                        _logger.LogWarning("[StreamChat] Retry {Attempt}/{Max}, Status: {StatusCode}",
+                            attempt, maxRetries, ex.StatusCode);
+                        await Task.Delay(TimeSpan.FromSeconds(attempt * 2), cancellationToken);
                     }
                 }
 
