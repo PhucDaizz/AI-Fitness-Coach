@@ -11,7 +11,7 @@ const exerciseInDaySchema = z.object({
   sets: z.number().int().min(1, 'sets tối thiểu 1'),
   reps: z.string().min(1, 'reps không được để trống'),   // "8-12" hoặc "10"
   restSeconds: z.number().int().min(0).default(60),
-  notes: z.string().optional(),
+  notes: z.string().nullish(),
   orderIndex: z.number().int().min(1, 'orderIndex tối thiểu 1'),
 });
 
@@ -23,6 +23,7 @@ const workoutDaySchema = z.object({
   }),
   muscleFocus: z.string().min(1, 'muscleFocus không được để trống'),
   orderIndex: z.number().int().min(1, 'orderIndex tối thiểu 1'),
+  scheduledDate: z.coerce.date({ message: 'scheduleDate phải là ngày hợp lệ (YYYY-MM-DD)' }).optional(),
   exercises: z
     .array(exerciseInDaySchema)
     .min(1, 'Mỗi ngày cần ít nhất 1 bài tập'),

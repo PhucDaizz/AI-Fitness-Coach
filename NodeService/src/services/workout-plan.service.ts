@@ -61,7 +61,9 @@ export class WorkoutPlanService {
 
     // 3. Tạo days và exercises tuần tự (giữ đúng orderIndex)
     for (const dayDto of dto.days) {
-      const scheduledDate = resolveDayDate(dto.startsAt, dayDto.dayOfWeek);
+      const scheduledDate = dayDto.scheduledDate 
+      ? normalizeToUTCMidnight(dayDto.scheduledDate) 
+      : resolveDayDate(dto.startsAt, dayDto.dayOfWeek);
 
       const day = await workoutPlanRepository.createDay({
         planId,
@@ -77,7 +79,7 @@ export class WorkoutPlanService {
         sets: ex.sets,
         reps: ex.reps,
         restSeconds: ex.restSeconds ?? 60,
-        notes: ex.notes,
+        notes: ex.notes ?? undefined,
         orderIndex: ex.orderIndex,
       }));
 
