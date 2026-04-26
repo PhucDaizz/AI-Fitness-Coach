@@ -16,6 +16,8 @@ import SecurityPage from '../pages/auth/SecurityPage';
 import ForgotPassword from '../pages/auth/ForgotPassword';
 import VerifyEmail from '../pages/auth/VerifyEmail';
 import ResetPassword from '../pages/auth/ResetPassword';
+import PrivacyPolicy from '../pages/PrivacyPolicy';
+import TermsOfService from '../pages/TermsOfService';
 
 const AppRoutes = () => {
   return (
@@ -36,6 +38,8 @@ const AppRoutes = () => {
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/verify-email" element={<VerifyEmail />} />
         <Route path="/auth/resetpass" element={<ResetPassword />} />
+        <Route path="/privacy" element={<PrivacyPolicy />} />
+        <Route path="/terms" element={<TermsOfService />} />
         
         {/* Wildcard to redirect to home */}
         <Route path="*" element={<Navigate to="/" replace />} />
