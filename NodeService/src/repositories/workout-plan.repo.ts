@@ -206,6 +206,23 @@ export class WorkoutPlanRepository {
       session ? { session } : {},
     );
   }
+
+  async deletePlanById(planId: string): Promise<boolean> {
+    const result = await WorkoutPlanModel.deleteOne({ _id: planId });
+    return result.deletedCount === 1;
+  }
+
+  async hasAnyLog(
+    userId: string, 
+    planId: string
+  ): Promise<boolean> {
+    const { WorkoutLogModel } = await import('../models/workout-log.model');
+    const exists = await WorkoutLogModel.exists({
+      userId,
+      planId: new Types.ObjectId(planId),
+    });
+    return exists !== null;
+  }
 }
 
 export const workoutPlanRepository = new WorkoutPlanRepository();

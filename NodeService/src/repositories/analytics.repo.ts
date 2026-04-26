@@ -146,7 +146,10 @@ export class AnalyticsRepository {
   /**
    * Đếm số WorkoutLog thuộc plan (tử số completion rate)
    */
-  async countLogsByPlan(userId: string, planId: string): Promise<number> {
+  async countLogsByPlan(
+    userId: string, 
+    planId: string
+  ): Promise<number> {
     return WorkoutLogModel.countDocuments({
       userId,
       planId: new Types.ObjectId(planId),

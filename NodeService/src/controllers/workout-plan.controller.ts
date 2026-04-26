@@ -313,3 +313,44 @@ export async function completeWorkoutDay(
     next(error);
   }
 }
+
+// ─── DELETE /workout-plans/:id ───────────────────────────────────────────────────
+/**
+ * @openapi
+ * /workout-plans/{id}:
+ *   delete:
+ *     tags: [Workout Plan]
+ *     summary: Xóa workout plan
+ *     description: |
+ *       Chỉ xóa được plan chưa có WorkoutLog.
+ *       WorkoutDay + ExerciseInDay liên quan không bị xóa.
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Xóa thành công
+ *       404:
+ *         description: Không tìm thấy plan
+ *       409:
+ *         description: Plan đã có buổi tập được ghi nhận — không thể xóa
+ */
+export async function deleteWorkoutPlan(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): Promise<void> {
+  try {
+    const userId = (req as AuthRequest).user.sub;
+    const { id } = req.params as { id: string };
+    await workoutPlanService.deletePlan(userId, id);
+    sendSuccess(res, null, 'Xóa workout plan thành công');
+  } catch (error) {
+    next(error);
+  }
+}

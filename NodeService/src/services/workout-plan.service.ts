@@ -293,6 +293,31 @@ export class WorkoutPlanService {
     };
   }
 
+  /**
+   * DELETE /workout-plans/:id
+   * Xóa plan nếu:
+   * - Thuộc user hiện tại
+   * - Chưa có WorkoutLog nào (user chưa tập)
+   *
+   * Không cascade — WorkoutDay + ExerciseInDay giữ nguyên.
+   */
+  async deletePlan(
+    userId: string, 
+    planId: string
+  ): Promise<void> {
+    await this._assertPlanOwner(userId, planId);
+
+    const hasLog = await workoutPlanRepository.hasAnyLog(userId, planId);
+    if (hasLog) {
+      throw new AppError(
+        'Không thể xóa plan đã có buổi tập được ghi nhận',
+        HTTP_STATUS.CONFLICT,
+      );
+    }
+    
+    await workoutPlanRepository.deletePlanById(planId);
+  }
+
   // ─── Private helpers ──────────────────────────────────────────────────────────
 
   private async _assertPlanOwner(
