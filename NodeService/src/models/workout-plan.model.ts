@@ -12,6 +12,7 @@ export interface IWorkoutPlan extends Document {
   aiModelUsed: string;
   startsAt: Date;
   generatedAt: Date;
+  isDeleted: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -57,6 +58,11 @@ const workoutPlanSchema = new Schema<IWorkoutPlan>(
       type: Date,
       required: true,
       default: () => new Date(),
+    },
+    isDeleted: {
+      type: Boolean,
+      default: false,
+      index: true,
     },
   },
   {

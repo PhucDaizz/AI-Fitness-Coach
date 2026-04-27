@@ -37,7 +37,7 @@ export class WorkoutPlanRepository {
     session?: ClientSession,
   ): Promise<WorkoutPlanLean | null> {
     return WorkoutPlanModel
-      .findById(planId)
+      .findById({ _id: planId, isDeleted: false })
       .lean<WorkoutPlanLean>()
       .session(session ?? null);
   }
@@ -47,7 +47,7 @@ export class WorkoutPlanRepository {
     session?: ClientSession,
   ): Promise<WorkoutPlanLean | null> {
     return WorkoutPlanModel
-      .findOne({ userId, status: 'active' })
+      .findOne({ userId, status: 'active', isDeleted: false })
       .lean<WorkoutPlanLean>()
       .session(session ?? null);
   }
@@ -58,7 +58,14 @@ export class WorkoutPlanRepository {
     skip: number,
     limit: number,
   ): Promise<{ plans: WorkoutPlanLean[]; total: number }> {
-    const query = { userId, ...(filter.status ? { status: filter.status } : {}) };
+    const query = { 
+      userId, 
+      isDeleted: false, 
+      ...(filter.status 
+        ? { status: filter.status } 
+        : {}
+      ), 
+    };
 
     const [plans, total] = await Promise.all([
       WorkoutPlanModel
@@ -222,6 +229,24 @@ export class WorkoutPlanRepository {
       planId: new Types.ObjectId(planId),
     });
     return exists !== null;
+  }
+
+  async softDeletePlan(planId: string): Promise<void> {
+    await WorkoutPlanModel.findByIdAndUpdate(
+      planId,
+      { $set: { isDeleted: true } },
+    );
+    
+    const days = await WorkoutPlanModel.find(
+      { planId: new Types.ObjectId(planId) },
+      { _id: 1 },
+    ).lean();
+
+    const dayIds = days.map((d) => d._id);
+    if (dayIds.length > 0) {
+    await ExerciseInDayModel.deleteMany({ dayId: { $in: dayIds } } );
+    }
+    await WorkoutDayModel.deleteMany({ planId: new Types.ObjectId(planId) });
   }
 }
 

@@ -307,15 +307,7 @@ export class WorkoutPlanService {
   ): Promise<void> {
     await this._assertPlanOwner(userId, planId);
 
-    const hasLog = await workoutPlanRepository.hasAnyLog(userId, planId);
-    if (hasLog) {
-      throw new AppError(
-        'Không thể xóa plan đã có buổi tập được ghi nhận',
-        HTTP_STATUS.CONFLICT,
-      );
-    }
-    
-    await workoutPlanRepository.deletePlanById(planId);
+    await workoutPlanRepository.softDeletePlan(planId);
   }
 
   // ─── Private helpers ──────────────────────────────────────────────────────────
