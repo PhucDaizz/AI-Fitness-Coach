@@ -174,6 +174,14 @@ namespace AIService.Infrastructure.Services
             if (!payload.Days.Any())
                 throw new InvalidOperationException($"Tuần {weekNumber} không có ngày tập.");
 
+            foreach (var day in payload.Days)
+            {
+                day.DayOfWeek = DayOfWeekConstants.Normalize(day.DayOfWeek);
+                day.Exercises ??= new List<WorkoutExerciseDto>();
+            }
+
+            payload.WeekNumber = weekNumber;
+
             _logger.LogInformation(
                 "[Executor] Week {W} OK. {D} days, {E} total exercises",
                 weekNumber,

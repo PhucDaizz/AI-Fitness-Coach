@@ -56,29 +56,38 @@ namespace AIService.Infrastructure.AI.Orchestrators
         
                 === RULES ===
                 - Only schedule on available days: {{string.Join(", ", profile.AvailableDays)}}
-                - Week 1: lighter volume to adapt
-                - Each week progressively harder
+                - Progressive overload across weeks: each week harder than previous
+                - Week 1: foundation — learn movement patterns, moderate volume
+                - Week 2: build — increase volume or weight slightly  
+                - Week 3: peak — highest intensity
+                - Week 4: deload — reduce volume to recover (if totalWeeks = 4)
                 - exerciseKeywords must be in English (used for database search)
                 - Include injury context in exerciseKeywords to avoid wrong exercises
                 - Each day must have muscleFocus in Vietnamese
+                - dayOfWeek MUST use exact casing: Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday
         
-                === OUTPUT FORMAT ===
+                 === OUTPUT FORMAT ===
                 {
-                  "totalWeeks": {{totalWeeks}},
-                  "weeks": [
+                    "totalWeeks": {{totalWeeks}},
+                    "weeks": [
                     {
-                      "weekNumber": 1,
-                      "focus": "Mô tả trọng tâm tuần bằng tiếng Việt",
-                      "days": [
+                        "weekNumber": 1,
+                        "focus": "Nền tảng - Làm quen động tác",
+                        "days": [
                         {
-                          "dayOfWeek": "Monday",
-                          "muscleFocus": "Ngực - Tay trước",
-                          "exerciseKeywords": "chest push beginner gym",
-                          "orderIndex": 1
+                            "dayOfWeek": "Monday",
+                            "muscleFocus": "Ngực - Tay trước",
+                            "exerciseKeywords": "chest push beginner gym",
+                            "orderIndex": 1
                         }
-                      ]
+                        ]
+                    },
+                    {
+                        "weekNumber": 2,
+                        "focus": "Tăng khối lượng",
+                        "days": [...]
                     }
-                  ]
+                    ]
                 }
                 """);
 
