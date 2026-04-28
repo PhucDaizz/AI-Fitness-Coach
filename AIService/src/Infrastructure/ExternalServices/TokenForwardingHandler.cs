@@ -14,13 +14,26 @@ namespace AIService.Infrastructure.ExternalServices
 
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
-            var authHeader = _httpContextAccessor.HttpContext?.Request.Headers["Authorization"].FirstOrDefault();
+            var httpContext = _httpContextAccessor.HttpContext;
 
-            if (!string.IsNullOrEmpty(authHeader) && authHeader.StartsWith("Bearer "))
+            if (httpContext != null)
             {
-                var token = authHeader.Substring("Bearer ".Length).Trim();
+                string token = null;
 
-                request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+                var authHeader = httpContext.Request.Headers["Authorization"].FirstOrDefault();
+                if (!string.IsNullOrEmpty(authHeader) && authHeader.StartsWith("Bearer "))
+                {
+                    token = authHeader.Substring("Bearer ".Length).Trim();
+                }
+                else if (httpContext.Request.Query.TryGetValue("access_token", out var queryToken))
+                {
+                    token = queryToken;
+                }
+
+                if (!string.IsNullOrEmpty(token))
+                {
+                    request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+                }
             }
 
             return await base.SendAsync(request, cancellationToken);

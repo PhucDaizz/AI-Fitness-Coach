@@ -65,6 +65,7 @@ namespace AIService.Infrastructure
             services.AddScoped<ExercisePlugin>();
             services.AddScoped<NutritionPlugin>();
             services.AddScoped<FitnessCalculatorPlugin>();
+            services.AddScoped<WorkoutManagerPlugin>();
             //services.AddScoped<WorkoutPlanPlugin>();   -- Thời gian xử lý phức tạp, không phù hợp làm plugin, sẽ gọi trực tiếp trong Orchestrator
 
             // CẤU HÌNH SEMANTIC KERNEL & AI PROVIDER
@@ -74,6 +75,7 @@ namespace AIService.Infrastructure
             kernelBuilder.Plugins.AddFromType<ExercisePlugin>("exercise");
             kernelBuilder.Plugins.AddFromType<NutritionPlugin>("nutrition");
             kernelBuilder.Plugins.AddFromType<FitnessCalculatorPlugin>("calculator");
+            kernelBuilder.Plugins.AddFromType<WorkoutManagerPlugin>("workout_manager");
             //kernelBuilder.Plugins.AddFromType<WorkoutPlanPlugin>("workout_plan");   -- Thời gian xử lý phức tạp, không phù hợp làm plugin, sẽ gọi trực tiếp trong Orchestrator
 
             kernelBuilder.Services.AddSingleton<IFunctionInvocationFilter, ToolUsageTrackingFilter>();
@@ -113,7 +115,7 @@ namespace AIService.Infrastructure
                 kernelBuilder.AddGoogleAIGeminiChatCompletion(
                     modelId: googleConfig.Model,
                     apiKey: googleConfig.ApiKey,
-                    serviceId: "pt_brain",
+                    serviceId: "pt_plant",
                     httpClient: httpClient);
 
                 kernelBuilder.AddGoogleAIGeminiChatCompletion(
@@ -127,7 +129,7 @@ namespace AIService.Infrastructure
 
                 #region OpenRouter
 
-                /*var openRouterConfig = configuration.GetSection("OpenRouter").Get<OpenRouterSettings>()!;
+                var openRouterConfig = configuration.GetSection("OpenRouter").Get<OpenRouterSettings>()!;
                 var openRouterClient = new HttpClient();
                 openRouterClient.DefaultRequestHeaders.Add("HTTP-Referer", "http://localhost:5000");
                 openRouterClient.DefaultRequestHeaders.Add("X-Title", "AI Fitness System");
@@ -136,7 +138,8 @@ namespace AIService.Infrastructure
                     modelId: openRouterConfig.Model,
                     apiKey: openRouterConfig.ApiKey,
                     endpoint: new Uri("https://openrouter.ai/api/v1"),
-                    httpClient: openRouterClient);*/
+                    httpClient: openRouterClient,
+                    serviceId: "pt_brain");
 
                 #endregion
 

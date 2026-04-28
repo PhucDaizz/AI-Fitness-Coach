@@ -17,7 +17,7 @@ namespace AIService.Infrastructure.AI.Orchestrators
             Kernel kernel,
             ILogger<WorkoutPlanOrchestrator> logger)
         {
-            _llm = kernel.GetRequiredService<IChatCompletionService>("pt_brain");
+            _llm = kernel.GetRequiredService<IChatCompletionService>("pt_plant");
             _logger = logger;
         }
 

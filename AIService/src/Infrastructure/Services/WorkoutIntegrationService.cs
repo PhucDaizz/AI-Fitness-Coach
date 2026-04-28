@@ -1,7 +1,9 @@
-﻿using AIService.Application.Common.Interfaces;
+﻿using AIService.Application.Common.Contexts;
+using AIService.Application.Common.Interfaces;
 using AIService.Application.DTOs.Workout;
 using Microsoft.Extensions.Logging;
 using Nexus.BuildingBlocks.Model;
+using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json;
 
@@ -10,12 +12,14 @@ namespace AIService.Infrastructure.Services
     public class WorkoutIntegrationService : IWorkoutIntegrationService
     {
         private readonly HttpClient _httpClient;
+        private readonly IHttpClientFactory _httpClientFactory;
         private readonly ILogger<WorkoutIntegrationService> _logger;
 
         public WorkoutIntegrationService(IHttpClientFactory httpFactory, ILogger<WorkoutIntegrationService> logger)
         {
-            _httpClient = httpFactory.CreateClient("WorkoutService");
+            _httpClientFactory = httpFactory;
             _logger = logger;
+            _httpClient = httpFactory.CreateClient("WorkoutService");
         }
 
         public async Task<string?> CreatePlanToNodeAsync(WorkoutPlanPayloadDto payload, CancellationToken ct)
@@ -55,13 +59,40 @@ namespace AIService.Infrastructure.Services
             }
         }
 
+        public async Task<string> GetActivePlansAsync(CancellationToken ct = default)
+        {
+            using var client = CreateClientWithToken();
+            var response = await client.GetAsync("/api/v1/workout-plans?status=active&page=1&limit=5", ct);
+            if (!response.IsSuccessStatusCode) return "Lỗi không lấy được danh sách plan.";
+
+            var result = await response.Content.ReadFromJsonAsync<ApiResponse<List<WorkoutPlanSummaryDto>>>(cancellationToken: ct);
+            if (result?.Data == null || !result.Data.Any()) return "Người dùng không có lịch tập nào đang Active.";
+
+            return string.Join("\n", result.Data.Select(p => $"PlanId: {p._Id} | Tên: {p.Title} | Bắt đầu: {p.StartsAt:yyyy-MM-dd}"));
+        }
+
+        public async Task<string> GetPlanScheduleAsync(string planId, CancellationToken ct = default)
+        {
+            using var client = CreateClientWithToken();
+            var response = await client.GetAsync($"/api/v1/workout-plans/{planId}/days", ct);
+            if (!response.IsSuccessStatusCode) return "Lỗi không lấy được chi tiết lịch tập.";
+
+            var result = await response.Content.ReadFromJsonAsync<ApiResponse<List<WorkoutPlanDayDto>>>(cancellationToken: ct);
+            if (result?.Data == null) return "Không có dữ liệu ngày tập.";
+
+            var days = result.Data.OrderBy(d => d.ScheduledDate).Select(d =>
+                $"- Ngày: {d.ScheduledDate:yyyy-MM-dd} ({d.DayOfWeek}) | Nhóm cơ: {d.MuscleFocus}");
+            return string.Join("\n", days);
+        }
+
         public async Task<UserProfileDto?> GetProfileAsync(CancellationToken ct = default)
         {
             try
             {
                 _logger.LogInformation("[Node Integration] Fetching user profile...");
 
-                var response = await _httpClient.GetAsync("/api/v1/profile", ct);
+                using var client = CreateClientWithToken();
+                var response = await client.GetAsync("/api/v1/profile", ct);
 
                 if (!response.IsSuccessStatusCode)
                 {
@@ -92,6 +123,43 @@ namespace AIService.Infrastructure.Services
                 return null;
             }
         }
+
+        public async Task<string> ReschedulePlanAsync(string planId, string currentDay, string targetDay, string strategy, CancellationToken ct = default)
+        { 
+            if (string.IsNullOrEmpty(planId))
+            {
+                return "Error: Bạn chưa có lịch tập nào đang hoạt động để dời.";
+            }
+
+            _logger.LogInformation("[Node Integration] Rescheduling plan {PlanId} - {Strategy} from {Current} to {Target}",
+                    planId, strategy, currentDay, targetDay);
+
+            var payload = new RescheduleRequestDto
+            {
+                CurrentDay = currentDay,
+                TargetDay = targetDay,
+                Strategy = strategy.ToUpper()
+            };
+
+            using var client = CreateClientWithToken();
+            var response = await client.PostAsJsonAsync($"/api/v1/workout-plans/{planId}/reschedule", payload, ct);
+
+            if (response.IsSuccessStatusCode) return "SUCCESS: Đã dời lịch thành công!";
+            return $"ERROR: {await response.Content.ReadAsStringAsync(ct)}";
+        }
+
+
+        private HttpClient CreateClientWithToken()
+        {
+            var client = _httpClientFactory.CreateClient("WorkoutService");
+            var token = AccessTokenHolder.Current; 
+            if (!string.IsNullOrEmpty(token))
+            {
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            }
+            return client;
+        }
+
 
         internal record PlanDataResponse(string PlanId);
     }

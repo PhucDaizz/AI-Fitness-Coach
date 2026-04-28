@@ -1,4 +1,5 @@
-﻿using AIService.Application.Common.Interfaces;
+﻿using AIService.Application.Common.Contexts;
+using AIService.Application.Common.Interfaces;
 using AIService.Application.DTOs.ChatMessage;
 using AIService.Application.Features.AI.Utils;
 using AIService.Domain.Entities;
@@ -54,6 +55,8 @@ namespace AIService.Application.Features.AI.Commands.StreamFitnessChat
             StreamFitnessChatCommand request,
             CancellationToken cancellationToken)
         {
+            AccessTokenHolder.Current = request.AccessToken;
+
             try
             {
                 var sessionGuid = Guid.Parse(request.SessionId);
@@ -128,7 +131,7 @@ namespace AIService.Application.Features.AI.Commands.StreamFitnessChat
 
 
                 // ── Build history + Stream ───────────────────────────
-                var chatHistory = FitnessPromptFactory.CreatePTContext(
+                var originalHistory = FitnessPromptFactory.CreatePTContext(
                     request.Question, englishQuestion, recentChats, longTermContext);
 
                 var settings = new PromptExecutionSettings
@@ -143,6 +146,8 @@ namespace AIService.Application.Features.AI.Commands.StreamFitnessChat
 
                 while (attempt < maxRetries)
                 {
+                    var chatHistory = CloneChatHistory(originalHistory);
+
                     try
                     {
                         await foreach (var chunk in _ptAi.GetStreamingChatMessageContentsAsync(
@@ -162,8 +167,15 @@ namespace AIService.Application.Features.AI.Commands.StreamFitnessChat
                     {
                         attempt++;
                         fullResponse.Clear();
-                        _logger.LogWarning("[StreamChat] Retry {Attempt}/{Max}, Status: {StatusCode}",
-                            attempt, maxRetries, ex.StatusCode);
+
+                        _logger.LogError(ex,
+                            "[StreamChat] Retry {Attempt}/{Max}, Status: {StatusCode}\n" +
+                            "ResponseBody: {ResponseBody}\n" +
+                            "ExceptionMessage: {Message}",
+                            attempt, maxRetries, ex.StatusCode,
+                            ex.ResponseContent ?? "N/A",
+                            ex.Message);
+
                         await Task.Delay(TimeSpan.FromSeconds(attempt * 2), cancellationToken);
                     }
                 }
@@ -188,6 +200,10 @@ namespace AIService.Application.Features.AI.Commands.StreamFitnessChat
             {
                 _logger.LogError(ex, "[StreamChat] Error. MsgId: {Id}", request.MessageId);
                 await _notifier.SendErrorAsync(request.UserId, "Có lỗi xảy ra, vui lòng thử lại.");
+            }
+            finally
+            {
+                AccessTokenHolder.Current = null;
             }
         }
 
@@ -316,6 +332,11 @@ namespace AIService.Application.Features.AI.Commands.StreamFitnessChat
             }
 
             return (promptTokens, completionTokens);
+        }
+
+        private static ChatHistory CloneChatHistory(ChatHistory original)
+        {
+            return new ChatHistory(original);
         }
     }
 }

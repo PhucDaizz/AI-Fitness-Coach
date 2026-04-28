@@ -20,7 +20,7 @@ namespace AIService.Infrastructure.Services
             ExercisePlugin exercisePlugin,
             ILogger<WeekPlanExecutor> logger)
         {
-            _llm = kernel.GetRequiredService<IChatCompletionService>("pt_brain");
+            _llm = kernel.GetRequiredService<IChatCompletionService>("pt_plant");
             _exercisePlugin = exercisePlugin;
             _logger = logger;
         }

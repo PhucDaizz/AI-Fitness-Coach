@@ -62,12 +62,15 @@ namespace AIService.API.Controllers
             var messageId = Guid.NewGuid();
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
+            var accessToken = HttpContext.Request.Headers["Authorization"].FirstOrDefault()
+                       ?.Replace("Bearer ", "", StringComparison.OrdinalIgnoreCase);
 
             var command = new StreamFitnessChatCommand(
                 Question: request.Question,
                 SessionId: request.SessionId,
                 UserId: userId,
-                MessageId: messageId
+                MessageId: messageId,
+                AccessToken: accessToken
             );
 
             _ = Task.Run(async () =>
