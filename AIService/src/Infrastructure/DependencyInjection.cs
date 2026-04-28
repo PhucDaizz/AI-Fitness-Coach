@@ -1,9 +1,12 @@
 ﻿using AIService.Application.Common.Interfaces;
 using AIService.Application.Common.Models;
 using AIService.Domain.Repositories;
+using AIService.Infrastructure.AI.Filters;
+using AIService.Infrastructure.AI.Orchestrators;
 using AIService.Infrastructure.AI.Plugins;
 using AIService.Infrastructure.Data.Repositories;
 using AIService.Infrastructure.Data.Seeders;
+using AIService.Infrastructure.ExternalServices;
 using AIService.Infrastructure.Services;
 using AIService.Infrastructure.Settings;
 using Microsoft.EntityFrameworkCore;
@@ -46,13 +49,24 @@ namespace AIService.Infrastructure
                 .AsImplementedInterfaces()
                 .WithScopedLifetime());
 
+
+            services.AddTransient<TokenForwardingHandler>();
+            services.AddHttpClient("WorkoutService", client =>
+            {
+                client.BaseAddress = new Uri(configuration["NodeService:BaseUrl"] ?? "http://localhost:7003");
+                client.Timeout = TimeSpan.FromSeconds(30);
+            })
+            .AddHttpMessageHandler<TokenForwardingHandler>();
+
             services.AddScoped<INutritionSearchService, NutritionSearchService>();
             services.AddScoped<IExerciseSearchService, ExerciseSearchService>();
+            services.AddScoped<IWorkoutIntegrationService, WorkoutIntegrationService>();
 
             services.AddScoped<ExercisePlugin>();
             services.AddScoped<NutritionPlugin>();
             services.AddScoped<FitnessCalculatorPlugin>();
-
+            services.AddScoped<WorkoutManagerPlugin>();
+            //services.AddScoped<WorkoutPlanPlugin>();   -- Thời gian xử lý phức tạp, không phù hợp làm plugin, sẽ gọi trực tiếp trong Orchestrator
 
             // CẤU HÌNH SEMANTIC KERNEL & AI PROVIDER
             var kernelBuilder = services.AddKernel();
@@ -61,6 +75,17 @@ namespace AIService.Infrastructure
             kernelBuilder.Plugins.AddFromType<ExercisePlugin>("exercise");
             kernelBuilder.Plugins.AddFromType<NutritionPlugin>("nutrition");
             kernelBuilder.Plugins.AddFromType<FitnessCalculatorPlugin>("calculator");
+            kernelBuilder.Plugins.AddFromType<WorkoutManagerPlugin>("workout_manager");
+            //kernelBuilder.Plugins.AddFromType<WorkoutPlanPlugin>("workout_plan");   -- Thời gian xử lý phức tạp, không phù hợp làm plugin, sẽ gọi trực tiếp trong Orchestrator
+
+            kernelBuilder.Services.AddSingleton<IFunctionInvocationFilter, ToolUsageTrackingFilter>();
+
+            var handler = new HttpClientHandler();
+            var httpClient = new HttpClient(handler)
+            {
+                Timeout = TimeSpan.FromMinutes(15)
+            };
+
 
             if (aiProvider.Equals("OpenAI", StringComparison.OrdinalIgnoreCase))
             {
@@ -71,16 +96,18 @@ namespace AIService.Infrastructure
             }
             else
             {
+
+
                 var ollamaConfig = configuration.GetSection("Ollama").Get<OllamaSettings>()!;
                 kernelBuilder.AddOllamaEmbeddingGenerator(
                     modelId: ollamaConfig.Model,
                     endpoint: new Uri(ollamaConfig.Url));
 
                 // ĐĂNG KÝ AI LÀM PHIÊN DỊCH (Ollama - qwen2.5:0.5b)
-                kernelBuilder.AddOllamaChatCompletion(
+                /*kernelBuilder.AddOllamaChatCompletion(
                     modelId: "qwen2.5:0.5b",       
                     endpoint: new Uri(ollamaConfig.Url),
-                    serviceId: "fast_translator"); 
+                    serviceId: "fast_translator"); */
 
                 #region Google
 
@@ -88,14 +115,21 @@ namespace AIService.Infrastructure
                 kernelBuilder.AddGoogleAIGeminiChatCompletion(
                     modelId: googleConfig.Model,
                     apiKey: googleConfig.ApiKey,
-                    serviceId: "pt_brain");
+                    serviceId: "pt_plant",
+                    httpClient: httpClient);
+
+                kernelBuilder.AddGoogleAIGeminiChatCompletion(
+                    modelId: "gemma-4-26b-a4b-it",
+                    apiKey: googleConfig.ApiKey,
+                    serviceId: "fast_translator",
+                    httpClient: httpClient);
 
                 #endregion
 
 
                 #region OpenRouter
 
-                /*var openRouterConfig = configuration.GetSection("OpenRouter").Get<OpenRouterSettings>()!;
+                var openRouterConfig = configuration.GetSection("OpenRouter").Get<OpenRouterSettings>()!;
                 var openRouterClient = new HttpClient();
                 openRouterClient.DefaultRequestHeaders.Add("HTTP-Referer", "http://localhost:5000");
                 openRouterClient.DefaultRequestHeaders.Add("X-Title", "AI Fitness System");
@@ -104,7 +138,8 @@ namespace AIService.Infrastructure
                     modelId: openRouterConfig.Model,
                     apiKey: openRouterConfig.ApiKey,
                     endpoint: new Uri("https://openrouter.ai/api/v1"),
-                    httpClient: openRouterClient);*/
+                    httpClient: openRouterClient,
+                    serviceId: "pt_brain");
 
                 #endregion
 
@@ -169,6 +204,8 @@ namespace AIService.Infrastructure
             services.AddScoped<IMealRepository, MealRepository>();
             services.AddScoped<IMuscleGroupRepository, MuscleGroupRepository>();
             services.AddScoped<ISessionRepository, SessionRepository>();
+            services.AddScoped<ITokenDailyStatRepository, TokenDailyStatRepository>();
+            services.AddScoped<IToolDailyStatRepository, ToolDailyStatRepository>();
 
             services.AddScoped<ICacheService, RedisCacheService>();
             services.AddTransient<IChatMemoryService, VectorChatMemoryService>();
@@ -178,6 +215,8 @@ namespace AIService.Infrastructure
             services.AddScoped<ICurrentUserService, CurrentUserService>();
             services.AddScoped<IDomainEventService, DomainEventService>();
             services.AddScoped<IIntegrationEventService, IntegrationEventService>();
+            services.AddScoped<IWorkoutPlanOrchestrator, WorkoutPlanOrchestrator>();
+            services.AddScoped<IWeekPlanExecutor, WeekPlanExecutor>();
 
             return services;
         }

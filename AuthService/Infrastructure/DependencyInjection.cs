@@ -8,6 +8,7 @@ using Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using StackExchange.Redis;
 
 
 namespace Infrastructure
@@ -21,6 +22,15 @@ namespace Infrastructure
                    configuration.GetConnectionString("DefaultConnection"),
                    new MySqlServerVersion(new Version(8, 0, 21)),
                    b => b.MigrationsAssembly(typeof(ApplicationDbContext).Assembly.FullName)));
+
+            var redisConnectionString = configuration.GetConnectionString("Redis") ?? "localhost:6379";
+            services.AddSingleton<IConnectionMultiplexer>(ConnectionMultiplexer.Connect(redisConnectionString));
+
+            services.AddTransient<IDatabase>(sp =>
+            {
+                var multiplexer = sp.GetRequiredService<IConnectionMultiplexer>();
+                return multiplexer.GetDatabase();
+            });
 
             services.AddScoped<IApplicationDbContext>(provider => provider.GetRequiredService<ApplicationDbContext>());
             
@@ -37,6 +47,7 @@ namespace Infrastructure
             services.AddSingleton<IImageProcessor, ImageSharpProcessor>();
             services.AddScoped<ICurrentUserService, CurrentUserService>();
 
+            services.AddScoped<ICacheService, RedisCacheService>();
             services.AddScoped<IDomainEventService, DomainEventService>();
             services.AddScoped<IIntegrationEventService, IntegrationEventService>();
             services.AddScoped<IExternalAuthService, ExternalAuthService>();

@@ -18,5 +18,7 @@
         Task SendErrorAsync(string userId, string errorMessage);
 
         Task SendTitleUpdatedAsync(string userId, Guid sessionId, string newTitle);
+
+        Task BroadcastOnlineUsersCountAsync(long count);
     }
 }

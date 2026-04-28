@@ -270,7 +270,6 @@ namespace AIService.Infrastructure.Migrations
             modelBuilder.Entity("AIService.Domain.Entities.Message", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("char(36)");
 
                     b.Property<int?>("CompletionTokens")
@@ -311,6 +310,8 @@ namespace AIService.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("SessionId");
+
+                    b.HasIndex("CreatedAt", "TotalTokens", "PromptTokens", "CompletionTokens");
 
                     b.ToTable("messages", (string)null);
                 });
@@ -363,7 +364,6 @@ namespace AIService.Infrastructure.Migrations
             modelBuilder.Entity("AIService.Domain.Entities.Session", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("char(36)");
 
                     b.Property<DateTime>("CreatedAt")
@@ -394,6 +394,85 @@ namespace AIService.Infrastructure.Migrations
                     b.ToTable("sessions", (string)null);
                 });
 
+            modelBuilder.Entity("AIService.Domain.Entities.TokenDailyStat", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("char(36)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("CreatedBy")
+                        .HasMaxLength(450)
+                        .HasColumnType("varchar(450)");
+
+                    b.Property<DateOnly>("Date")
+                        .HasColumnType("date");
+
+                    b.Property<long>("TotalCompletionTokens")
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("TotalPromptTokens")
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("TotalTokens")
+                        .HasColumnType("bigint");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasMaxLength(450)
+                        .HasColumnType("varchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Date")
+                        .IsUnique();
+
+                    b.ToTable("token_daily_stats", (string)null);
+                });
+
+            modelBuilder.Entity("AIService.Domain.Entities.ToolDailyStat", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("char(36)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("CreatedBy")
+                        .HasMaxLength(450)
+                        .HasColumnType("varchar(450)");
+
+                    b.Property<DateOnly>("Date")
+                        .HasColumnType("date");
+
+                    b.Property<string>("ToolName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("varchar(100)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasMaxLength(450)
+                        .HasColumnType("varchar(450)");
+
+                    b.Property<int>("UsageCount")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Date", "ToolName")
+                        .IsUnique();
+
+                    b.ToTable("tool_daily_stats", (string)null);
+                });
+
             modelBuilder.Entity("exercise_equipment", b =>
                 {
                     b.Property<int>("equipment_id")
@@ -406,7 +485,7 @@ namespace AIService.Infrastructure.Migrations
 
                     b.HasIndex("exercise_id");
 
-                    b.ToTable("exercise_equipment", (string)null);
+                    b.ToTable("exercise_equipment");
                 });
 
             modelBuilder.Entity("AIService.Domain.Entities.Exercise", b =>
@@ -421,7 +500,7 @@ namespace AIService.Infrastructure.Migrations
 
             modelBuilder.Entity("AIService.Domain.Entities.ExerciseMuscle", b =>
                 {
-                    b.HasOne("AIService.Domain.Entities.Exercise", "Exercise")
+                    b.HasOne("AIService.Domain.Entities.Exercise", null)
                         .WithMany("ExerciseMuscles")
                         .HasForeignKey("ExerciseId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -432,8 +511,6 @@ namespace AIService.Infrastructure.Migrations
                         .HasForeignKey("MuscleId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("Exercise");
 
                     b.Navigation("MuscleGroup");
                 });

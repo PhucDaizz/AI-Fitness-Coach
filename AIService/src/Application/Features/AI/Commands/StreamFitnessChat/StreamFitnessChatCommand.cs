@@ -6,6 +6,7 @@ namespace AIService.Application.Features.AI.Commands.StreamFitnessChat
         string Question,
         string SessionId,
         string UserId,
-        Guid MessageId     
+        Guid MessageId,
+        string? AccessToken = null
     ) : IRequest;
 }

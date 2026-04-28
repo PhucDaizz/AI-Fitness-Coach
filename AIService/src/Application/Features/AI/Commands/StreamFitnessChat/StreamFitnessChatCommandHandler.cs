@@ -1,4 +1,5 @@
-﻿using AIService.Application.Common.Interfaces;
+﻿using AIService.Application.Common.Contexts;
+using AIService.Application.Common.Interfaces;
 using AIService.Application.DTOs.ChatMessage;
 using AIService.Application.Features.AI.Utils;
 using AIService.Domain.Entities;
@@ -9,6 +10,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using System.Text;
+using System.Text.Json;
 
 namespace AIService.Application.Features.AI.Commands.StreamFitnessChat
 {
@@ -53,6 +55,8 @@ namespace AIService.Application.Features.AI.Commands.StreamFitnessChat
             StreamFitnessChatCommand request,
             CancellationToken cancellationToken)
         {
+            AccessTokenHolder.Current = request.AccessToken;
+
             try
             {
                 var sessionGuid = Guid.Parse(request.SessionId);
@@ -91,24 +95,43 @@ namespace AIService.Application.Features.AI.Commands.StreamFitnessChat
                         "ai-service-message-embedding-queue", userEvent, cancellationToken)
                 );
 
+
+                var maxRetries = 15;
                 // ── Translate + LongTerm memory song song ────────────
-                var translateTask = _translator.TranslateVietnameseToEnglishAsync(
-                    request.Question, cancellationToken);
+                var attempt = 0;
+                string englishQuestion = request.Question;
+                List<string> longTermContext = new();
 
-                var contextTask = _chatMemoryService.GetRelevantContextAsync(
-                    request.UserId, request.Question, limit: 3, cancellationToken);
+                while (attempt < maxRetries)
+                {
+                    try
+                    {
+                        var translateTask = _translator.TranslateVietnameseToEnglishAsync(
+                            request.Question, cancellationToken);
 
-                await Task.WhenAll(translateTask, contextTask);
+                        var contextTask = _chatMemoryService.GetRelevantContextAsync(
+                            request.UserId, request.Question, limit: 3, cancellationToken);
 
-                var englishQuestion = await translateTask;
-                var longTermContext = await contextTask;
+                        await Task.WhenAll(translateTask, contextTask);
+
+                        englishQuestion = await translateTask;
+                        longTermContext = await contextTask;
+                        break;
+                    }
+                    catch (HttpOperationException ex) when (attempt < maxRetries - 1)
+                    {
+                        attempt++;
+                        _logger.LogWarning("[StreamChat] Translate retry {Attempt}/{Max}", attempt, maxRetries);
+                        await Task.Delay(TimeSpan.FromSeconds(attempt * 2), cancellationToken);
+                    }
+                }
 
                 _logger.LogInformation("[StreamChat] VI: {VI} → EN: {EN}",
                     request.Question, englishQuestion);
 
 
                 // ── Build history + Stream ───────────────────────────
-                var chatHistory = FitnessPromptFactory.CreatePTContext(
+                var originalHistory = FitnessPromptFactory.CreatePTContext(
                     request.Question, englishQuestion, recentChats, longTermContext);
 
                 var settings = new PromptExecutionSettings
@@ -119,16 +142,42 @@ namespace AIService.Application.Features.AI.Commands.StreamFitnessChat
                 var fullResponse = new StringBuilder();
                 StreamingChatMessageContent? lastChunk = null;
 
-                await foreach (var chunk in _ptAi.GetStreamingChatMessageContentsAsync(
-                    chatHistory, settings, _kernel, cancellationToken))
+                attempt = 0;
+
+                while (attempt < maxRetries)
                 {
-                    if (!string.IsNullOrEmpty(chunk.Content))
+                    var chatHistory = CloneChatHistory(originalHistory);
+
+                    try
                     {
-                        fullResponse.Append(chunk.Content);
-                        await _notifier.SendMessageChunkAsync(
-                            request.UserId, request.MessageId, chunk.Content);
+                        await foreach (var chunk in _ptAi.GetStreamingChatMessageContentsAsync(
+                            chatHistory, settings, _kernel, cancellationToken))
+                        {
+                            if (!string.IsNullOrEmpty(chunk.Content))
+                            {
+                                fullResponse.Append(chunk.Content);
+                                await _notifier.SendMessageChunkAsync(
+                                    request.UserId, request.MessageId, chunk.Content);
+                            }
+                            lastChunk = chunk;
+                        }
+                        break; 
                     }
-                    lastChunk = chunk;
+                    catch (HttpOperationException ex) when (attempt < maxRetries - 1)
+                    {
+                        attempt++;
+                        fullResponse.Clear();
+
+                        _logger.LogError(ex,
+                            "[StreamChat] Retry {Attempt}/{Max}, Status: {StatusCode}\n" +
+                            "ResponseBody: {ResponseBody}\n" +
+                            "ExceptionMessage: {Message}",
+                            attempt, maxRetries, ex.StatusCode,
+                            ex.ResponseContent ?? "N/A",
+                            ex.Message);
+
+                        await Task.Delay(TimeSpan.FromSeconds(attempt * 2), cancellationToken);
+                    }
                 }
 
                 await _notifier.SendMessageCompletedAsync(request.UserId, request.MessageId);
@@ -152,6 +201,10 @@ namespace AIService.Application.Features.AI.Commands.StreamFitnessChat
                 _logger.LogError(ex, "[StreamChat] Error. MsgId: {Id}", request.MessageId);
                 await _notifier.SendErrorAsync(request.UserId, "Có lỗi xảy ra, vui lòng thử lại.");
             }
+            finally
+            {
+                AccessTokenHolder.Current = null;
+            }
         }
 
         private async Task SaveInBackgroundAsync(
@@ -171,6 +224,27 @@ namespace AIService.Application.Features.AI.Commands.StreamFitnessChat
                 var integrationEventSvc = sp.GetRequiredService<IIntegrationEventService>();
 
                 var session = await unitOfWork.SessionRepository.GetByIdAsync(sessionGuid, CancellationToken.None);
+
+                int totalTokens = promptTokens + completionTokens;
+                if (totalTokens > 0)
+                {
+                    var today = DateOnly.FromDateTime(DateTime.UtcNow);
+
+                    var dailyStat = await unitOfWork.TokenDailyStatRepository.GetByDateAsync(today, CancellationToken.None);
+
+                    if (dailyStat == null)
+                    {
+                        dailyStat = new TokenDailyStat(today);
+                        dailyStat.AddTokens(promptTokens, completionTokens, totalTokens);
+                        await unitOfWork.TokenDailyStatRepository.AddAsync(dailyStat, CancellationToken.None);
+                    }
+                    else
+                    {
+                        dailyStat.AddTokens(promptTokens, completionTokens, totalTokens);
+
+                        unitOfWork.TokenDailyStatRepository.Update(dailyStat);
+                    }
+                }
 
                 if (session != null)
                 {
@@ -237,7 +311,7 @@ namespace AIService.Application.Features.AI.Commands.StreamFitnessChat
             // OpenAI / Ollama
             if (chunk.Metadata.TryGetValue("Usage", out var usageObj) && usageObj != null)
             {
-                if (usageObj is System.Text.Json.JsonElement jsonElement)
+                if (usageObj is JsonElement jsonElement)
                 {
                     if (jsonElement.TryGetProperty("PromptTokens", out var pt))
                         promptTokens = pt.GetInt32();
@@ -258,6 +332,11 @@ namespace AIService.Application.Features.AI.Commands.StreamFitnessChat
             }
 
             return (promptTokens, completionTokens);
+        }
+
+        private static ChatHistory CloneChatHistory(ChatHistory original)
+        {
+            return new ChatHistory(original);
         }
     }
 }
