@@ -1,8 +1,6 @@
 import { z } from 'zod';
 import { GENDER, FITNESS_GOAL, FITNESS_LEVEL, ENVIRONMENT, DAY_OF_WEEK } from '../constants';
 
-// ─── Helper: ép kiểu enum thành tuple cho z.enum() ─────────────────────────────
-// z.enum() yêu cầu [string, ...string[]] chứ không nhận string[]
 const toEnum = <T extends Record<string, string>>(obj: T) =>
   Object.values(obj) as [string, ...string[]];
 
@@ -67,6 +65,20 @@ export const updateProfileSchema = createProfileSchema
     'Cần cung cấp ít nhất 1 field để cập nhật',
   );
 
+//
+export const updateAvailableDaysSchema = z.object({
+  days: z
+    .array(z.enum(toEnum(DAY_OF_WEEK), {
+      message: `Mỗi ngày phải là: ${Object.values(DAY_OF_WEEK).join(', ')}`,
+    }))
+    .min(1, 'Cần chọn ít nhất 1 ngày rảnh trong tuần')
+    .refine(
+      (days) => new Set(days).size === days.length,
+      'availableDays không được trùng lặp',
+    ),
+})
+
 // ─── TypeScript types từ schema ─────────────────────────────────────────────────
 export type CreateProfileDto = z.infer<typeof createProfileSchema>;
 export type UpdateProfileDto = z.infer<typeof updateProfileSchema>;
+export type UpdateAvailableDaysDto = z.infer<typeof updateAvailableDaysSchema>;

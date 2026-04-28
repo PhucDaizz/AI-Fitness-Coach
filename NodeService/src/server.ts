@@ -2,13 +2,11 @@ import http from "http";
 import { createApp } from "./app";
 import { env } from "./config/env";
 import { connectDatabase, disconnectDatabase } from "./config/database";
-import { connectRedis, disconnectRedis } from "./config/redis";
 import { connectRabbitMQ, disconnectRabbitMQ } from "./config/rabbitmq";
 
 async function bootstrap(): Promise<void> {
   // ─── Kết nối các service bên ngoài ──────────────────────────────────────────
   await connectDatabase();
-  await connectRedis();
   await connectRabbitMQ();
 
   // ─── Khởi tạo Express app ────────────────────────────────────────────────────
@@ -40,7 +38,6 @@ async function bootstrap(): Promise<void> {
     server.close(async () => {
       await Promise.all([
         disconnectDatabase(),
-        disconnectRedis(),
         disconnectRabbitMQ(),
       ]);
       console.log("✅  Server đã dừng an toàn");

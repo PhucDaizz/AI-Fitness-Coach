@@ -12,6 +12,7 @@ export interface IWorkoutPlan extends Document {
   aiModelUsed: string;
   startsAt: Date;
   generatedAt: Date;
+  isDeleted: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -58,6 +59,11 @@ const workoutPlanSchema = new Schema<IWorkoutPlan>(
       required: true,
       default: () => new Date(),
     },
+    isDeleted: {
+      type: Boolean,
+      default: false,
+      index: true,
+    },
   },
   {
     timestamps: true,
@@ -77,6 +83,7 @@ export interface IWorkoutDay extends Document {
   dayOfWeek: DayOfWeek;
   muscleFocus: string;
   orderIndex: number;
+  scheduledDate: Date;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -104,6 +111,10 @@ const workoutDaySchema = new Schema<IWorkoutDay>(
       required: true,
       min: 1,
     },
+    scheduledDate: {
+      type: Date,
+      required: true,
+    },
   },
   {
     timestamps: true,
@@ -111,20 +122,17 @@ const workoutDaySchema = new Schema<IWorkoutDay>(
   },
 );
 
+workoutDaySchema.index({ planId: 1, scheduledDate: 1 }, { unique: true });
+
 export const WorkoutDayModel = mongoose.model<IWorkoutDay>('WorkoutDay', workoutDaySchema);
 
 // ─── ExerciseInDay ──────────────────────────────────────────────────────────────
 
 export interface IExerciseInDay extends Document {
   dayId: Types.ObjectId;
-
-  // Dùng String (raw ID) vì Exercise model do Phase 2 triển khai.
-  // Khi Phase 2 hoàn thành, thay dòng dưới bằng:
-  //   exerciseId: { type: Schema.Types.ObjectId, ref: 'Exercise', required: true }
   exerciseId: string;
-
   sets: number;
-  reps: string;          // VD: "8-12" hoặc "10"
+  reps: string;
   restSeconds: number;
   notes?: string;
   orderIndex: number;
@@ -140,13 +148,10 @@ const exerciseInDaySchema = new Schema<IExerciseInDay>(
       required: true,
       index: true,
     },
-
-    // Raw string ID — đổi thành ObjectId ref khi Exercise model sẵn sàng (Phase 2)
     exerciseId: {
       type: String,
       required: true,
     },
-
     sets: {
       type: Number,
       required: true,

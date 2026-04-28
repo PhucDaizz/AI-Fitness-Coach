@@ -4,6 +4,7 @@ import {
   createWorkoutPlanSchema,
   updatePlanStatusSchema,
   listWorkoutPlansQuerySchema,
+  completeDaySchema,
 } from "../validations/workout-plan.valid";
 import { sendSuccess, sendCreated } from "../utils/response";
 import { AuthRequest } from "../types";
@@ -238,6 +239,117 @@ export async function updateWorkoutPlanStatus(
     const dto = updatePlanStatusSchema.parse(req.body);
     const data = await workoutPlanService.updateStatus(userId, id, dto);
     sendSuccess(res, data, "Cập nhật status thành công");
+  } catch (error) {
+    next(error);
+  }
+}
+
+// ─── POST /workout-plans/:planId/days/:dayId/complete ────────────────────────────
+/**
+ * @openapi
+ * /workout-plans/{planId}/days/{dayId}/complete:
+ *   post:
+ *     tags: [Workout Plan]
+ *     summary: Quick-log — mark 1 ngày là "done", tự động tạo WorkoutLog + ExerciseLog
+ *     description: |
+ *       Thay vì log từng bài tập thủ công qua POST /workout-logs,
+ *       API này tự động tạo WorkoutLog cho cả ngày với dữ liệu mặc định từ plan:
+ *       - setsDone = sets trong plan
+ *       - repsDone = reps trong plan (VD: "10-12")
+ *       - weightKg = null (không biết user tập nặng bao nhiêu)
+ *       - isCompleted = true
+ *
+ *       Nếu ngày đã được log → trả về 409.
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: planId
+ *         required: true
+ *         schema:
+ *           type: string
+ *       - in: path
+ *         name: dayId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               loggedDate:
+ *                 type: string
+ *                 format: date
+ *                 description: Ngày tập (mặc định hôm nay nếu không truyền)
+ *               difficultyFeedback:
+ *                 type: string
+ *                 enum: [easy, ok, hard]
+ *               notes:
+ *                 type: string
+ *     responses:
+ *       201:
+ *         description: Tạo log thành công
+ *       400:
+ *         description: dayId không thuộc plan hoặc ngày chưa có bài tập
+ *       404:
+ *         description: Không tìm thấy plan
+ *       409:
+ *         description: Ngày này đã được log rồi
+ */
+export async function completeWorkoutDay(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): Promise<void> {
+  try {
+    const userId = (req as AuthRequest).user.sub;
+    const { planId, dayId } = req.params as { planId: string; dayId: string };
+    const dto = completeDaySchema.parse(req.body);
+    const data = await workoutPlanService.completeDay(userId, planId, dayId, dto);
+    sendCreated(res, data, 'Đã log buổi tập thành công');
+  } catch (error) {
+    next(error);
+  }
+}
+
+// ─── DELETE /workout-plans/:id ───────────────────────────────────────────────────
+/**
+ * @openapi
+ * /workout-plans/{id}:
+ *   delete:
+ *     tags: [Workout Plan]
+ *     summary: Xóa workout plan
+ *     description: |
+ *       Chỉ xóa được plan chưa có WorkoutLog.
+ *       WorkoutDay + ExerciseInDay liên quan không bị xóa.
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Xóa thành công
+ *       404:
+ *         description: Không tìm thấy plan
+ *       409:
+ *         description: Plan đã có buổi tập được ghi nhận — không thể xóa
+ */
+export async function deleteWorkoutPlan(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): Promise<void> {
+  try {
+    const userId = (req as AuthRequest).user.sub;
+    const { id } = req.params as { id: string };
+    await workoutPlanService.deletePlan(userId, id);
+    sendSuccess(res, null, 'Xóa workout plan thành công');
   } catch (error) {
     next(error);
   }

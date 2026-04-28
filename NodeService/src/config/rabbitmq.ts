@@ -7,6 +7,9 @@ type Channel = Awaited<ReturnType<ChannelModel['createChannel']>>;
 let connection: ChannelModel | null = null;
 let channel: Channel | null = null;
 let isConnecting = false;
+let reconnectAttempts = 0;
+
+const MAX_RECONNECT_ATTEMPTS = 10;
 
 const QUEUES = [
   env.RABBITMQ_QUEUE_PLAN_GENERATED,
@@ -15,11 +18,6 @@ const QUEUES = [
 ];
 
 export async function connectRabbitMQ(): Promise<void> {
-  if (!env.RABBITMQ_ENABLED) {
-    console.log('⏭️   RabbitMQ disabled (RABBITMQ_ENABLED=false) — bỏ qua kết nối');
-    return;
-  }
-
   if (isConnecting) return;
   isConnecting = true;
 
@@ -31,6 +29,8 @@ export async function connectRabbitMQ(): Promise<void> {
       await channel.assertQueue(queue, { durable: true });
     }
 
+    // Reset counter khi connect thành công
+    reconnectAttempts = 0;
     console.log('✅  RabbitMQ connected, queues declared:', QUEUES.join(', '));
 
     connection.on('error', (err: Error) => {
@@ -43,27 +43,33 @@ export async function connectRabbitMQ(): Promise<void> {
       scheduleReconnect();
     });
   } catch (error) {
-    console.error('❌  RabbitMQ connection failed:', error);
+    const err = error as Error;
+    console.error(`❌  RabbitMQ connection failed (attempt #${reconnectAttempts + 1}): ${err.message}`);
     scheduleReconnect();
   } finally {
     isConnecting = false;
   }
 }
 
-let reconnectAttempts = 0;
 function scheduleReconnect(): void {
-  if (!env.RABBITMQ_ENABLED) return;
-
   connection = null;
   channel = null;
   reconnectAttempts++;
+
+  if (reconnectAttempts >= MAX_RECONNECT_ATTEMPTS) {
+    console.error(
+      `🚫  RabbitMQ: đã thử ${MAX_RECONNECT_ATTEMPTS} lần, dừng reconnect. ` +
+      `Kiểm tra lại RABBITMQ_URL và khởi động lại service.`
+    );
+    return;
+  }
+
   const delay = Math.min(reconnectAttempts * 2_000, 30_000);
-  console.log(`🔄  RabbitMQ reconnecting in ${delay / 1000}s (attempt #${reconnectAttempts})...`);
+  console.log(`🔄  RabbitMQ reconnecting in ${delay / 1000}s (attempt #${reconnectAttempts}/${MAX_RECONNECT_ATTEMPTS})...`);
   setTimeout(() => connectRabbitMQ(), delay);
 }
 
 export async function disconnectRabbitMQ(): Promise<void> {
-  if (!env.RABBITMQ_ENABLED) return;
   try {
     await channel?.close();
     await connection?.close();

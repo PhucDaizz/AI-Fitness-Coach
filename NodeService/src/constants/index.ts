@@ -102,9 +102,3 @@ export const SOCKET_EVENTS = {
   PLAN_UPDATED: 'planUpdated',
   NOTIFICATION: 'notification',
 } as const;
-
-// ─── Cache TTL (giây) ───────────────────────────────────────────────────────────
-export const CACHE_TTL = {
-  ANALYTICS_SUMMARY: 300, // 5 phút
-  EXERCISE_LIST: 3600,    // 1 giờ
-} as const;
