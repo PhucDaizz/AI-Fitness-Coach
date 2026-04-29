@@ -21,7 +21,7 @@ const OAuthCallback = () => {
         if (isAdmin(token)) {
           navigate('/admin');
         } else {
-          navigate('/');
+          navigate('/chat');
         }
       }, 500);
     } else {

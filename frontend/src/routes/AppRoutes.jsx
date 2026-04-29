@@ -18,6 +18,8 @@ import VerifyEmail from '../pages/auth/VerifyEmail';
 import ResetPassword from '../pages/auth/ResetPassword';
 import PrivacyPolicy from '../pages/PrivacyPolicy';
 import TermsOfService from '../pages/TermsOfService';
+import ProtectedRoute from '../components/routes/ProtectedRoute';
+import ChatPage from '../pages/customer/ChatPage';
 
 const AppRoutes = () => {
   return (
@@ -27,12 +29,67 @@ const AppRoutes = () => {
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<SignUp />} />
         <Route path="/oauth-callback" element={<OAuthCallback />} />
-        <Route path="/admin" element={<SystemStatistics />} />
-        <Route path="/admin/exercise-category" element={<ExerciseCategoryPage />} />
-        <Route path="/admin/muscle-group" element={<MuscleGroupPage />} />
-        <Route path="/admin/equipment" element={<EquipmentPage />} />
-        <Route path="/admin/exercises" element={<ExercisePage />} />
-        <Route path="/admin/meals" element={<MealPage />} />
+        
+        {/* Customer Routes */}
+        <Route 
+          path="/chat" 
+          element={
+            <ProtectedRoute allowedRoles={['Customer', 'SysAdmin', 'Admin']}>
+              <ChatPage />
+            </ProtectedRoute>
+          } 
+        />
+
+        {/* Admin Routes */}
+        <Route 
+          path="/admin" 
+          element={
+            <ProtectedRoute allowedRoles={['SysAdmin', 'Admin']}>
+              <SystemStatistics />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/admin/exercise-category" 
+          element={
+            <ProtectedRoute allowedRoles={['SysAdmin', 'Admin']}>
+              <ExerciseCategoryPage />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/admin/muscle-group" 
+          element={
+            <ProtectedRoute allowedRoles={['SysAdmin', 'Admin']}>
+              <MuscleGroupPage />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/admin/equipment" 
+          element={
+            <ProtectedRoute allowedRoles={['SysAdmin', 'Admin']}>
+              <EquipmentPage />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/admin/exercises" 
+          element={
+            <ProtectedRoute allowedRoles={['SysAdmin', 'Admin']}>
+              <ExercisePage />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/admin/meals" 
+          element={
+            <ProtectedRoute allowedRoles={['SysAdmin', 'Admin']}>
+              <MealPage />
+            </ProtectedRoute>
+          } 
+        />
+
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/security" element={<SecurityPage />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />

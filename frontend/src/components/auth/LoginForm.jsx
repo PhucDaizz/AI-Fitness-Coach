@@ -26,7 +26,7 @@ const LoginForm = () => {
       if (isAdmin(token)) {
         navigate('/admin');
       } else {
-        navigate('/'); 
+        navigate('/chat'); 
       }
     } catch (err) {
       console.error('Login failed:', err);

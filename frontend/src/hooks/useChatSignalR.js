@@ -1,32 +1,45 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { chatSignalRService } from '../services/api/signalR.service';
 
 /**
- * A custom hook to easily bind React components to SignalR Chat events
- * @param {Object} eventHandlers Object containing event names as keys and callback functions as values
- * @param {boolean} autoConnect Determine whether to connect automatically on mount
+ * A custom hook to bind React components to SignalR Chat events
+ * Uses a Ref pattern to ensure handlers are always up-to-date without 
+ * having to re-register listeners with the SignalR service on every render.
  */
 const useChatSignalR = (eventHandlers = {}, autoConnect = true) => {
+  const handlersRef = useRef(eventHandlers);
+  
+  // Update the ref whenever the handlers change
   useEffect(() => {
-    // 1. Establish connection if autoConnect is true
+    handlersRef.current = eventHandlers;
+  }, [eventHandlers]);
+
+  useEffect(() => {
     if (autoConnect) {
       chatSignalRService.connect();
     }
 
-    // 2. Register all provided event listeners
-    Object.entries(eventHandlers).forEach(([eventName, callback]) => {
-      chatSignalRService.on(eventName, callback);
+    // Register proxy listeners that always call the latest handler from the Ref
+    const registeredEvents = [];
+
+    Object.keys(chatSignalRService.listeners).forEach(eventName => {
+      const proxyHandler = (...args) => {
+        if (handlersRef.current[eventName]) {
+          handlersRef.current[eventName](...args);
+        }
+      };
+      
+      chatSignalRService.on(eventName, proxyHandler);
+      registeredEvents.push({ eventName, proxyHandler });
     });
 
-    // 3. Cleanup on unmount
     return () => {
-      Object.entries(eventHandlers).forEach(([eventName, callback]) => {
-        chatSignalRService.off(eventName, callback);
+      // Cleanup all registered proxy listeners
+      registeredEvents.forEach(({ eventName, proxyHandler }) => {
+        chatSignalRService.off(eventName, proxyHandler);
       });
-      // Do not auto-disconnect here so the connection persists across route changes.
-      // Call chatSignalRService.disconnect() manually on logout instead.
     };
-  }, [autoConnect, eventHandlers]);
+  }, [autoConnect]); // Only run on mount or autoConnect change
 
   return {
     connect: () => chatSignalRService.connect(),
