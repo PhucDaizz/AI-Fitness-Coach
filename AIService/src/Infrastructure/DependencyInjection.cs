@@ -4,6 +4,7 @@ using AIService.Domain.Repositories;
 using AIService.Infrastructure.AI.Filters;
 using AIService.Infrastructure.AI.Orchestrators;
 using AIService.Infrastructure.AI.Plugins;
+using AIService.Infrastructure.BackgroundJobs;
 using AIService.Infrastructure.Data.Repositories;
 using AIService.Infrastructure.Data.Seeders;
 using AIService.Infrastructure.ExternalServices;
@@ -218,6 +219,10 @@ namespace AIService.Infrastructure
             services.AddScoped<IWorkoutPlanOrchestrator, WorkoutPlanOrchestrator>();
             services.AddScoped<IWeekPlanExecutor, WeekPlanExecutor>();
 
+            services.AddScoped<IChatSessionManager, ChatSessionManager>();
+            services.AddScoped<IChatContextBuilder, ChatContextBuilder>();
+            services.AddScoped<IChatStreamingService, ChatStreamingService>();
+            services.AddSingleton<IChatResponseSaver, ChatResponseSaver>();
             return services;
         }
     }
