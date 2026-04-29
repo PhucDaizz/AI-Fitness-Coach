@@ -81,7 +81,7 @@ namespace AIService.Infrastructure.Services
             if (result?.Data == null) return "Không có dữ liệu ngày tập.";
 
             var days = result.Data.OrderBy(d => d.ScheduledDate).Select(d =>
-                $"- Ngày: {d.ScheduledDate:yyyy-MM-dd} ({d.DayOfWeek}) | Nhóm cơ: {d.MuscleFocus}");
+                $"- Ngày: {d.ScheduledDate:yyyy-MM-dd} ({d.DayOfWeek}) | Nhóm cơ: {d.MuscleFocus} | Day ID: `{d.Id}`");
             return string.Join("\n", days);
         }
 
@@ -122,6 +122,21 @@ namespace AIService.Infrastructure.Services
                 _logger.LogError(ex, "[Node Integration] Dữ liệu Profile trả về sai định dạng JSON.");
                 return null;
             }
+        }
+
+        public async Task<string> LogWorkoutDayCompleteAsync(string planId, string dayId, CompleteWorkoutDayPayload payload, CancellationToken ct = default)
+        {
+            using var client = CreateClientWithToken();
+            var response = await client.PostAsJsonAsync($"/api/v1/workout-plans/{planId}/days/{dayId}/complete", payload, ct);
+
+            var responseString = await response.Content.ReadAsStringAsync(ct);
+
+            if (response.IsSuccessStatusCode)
+            {
+                return $"SUCCESS: {responseString}";
+            }
+
+            return $"FAILED: {responseString}";
         }
 
         public async Task<string> ReschedulePlanAsync(string planId, string currentDay, string targetDay, string strategy, CancellationToken ct = default)
