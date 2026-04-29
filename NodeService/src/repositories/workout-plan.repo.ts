@@ -231,7 +231,7 @@ export class WorkoutPlanRepository {
     return exists !== null;
   }
 
-  async softDeletePlan(planId: string): Promise<void> {
+  async softDeletePlan(userId: string, planId: string): Promise<void> {
     await WorkoutPlanModel.findByIdAndUpdate(
       planId,
       { $set: { isDeleted: true } },
@@ -242,11 +242,22 @@ export class WorkoutPlanRepository {
       { _id: 1 },
     ).lean();
 
-    const dayIds = days.map((d) => d._id);
-    if (dayIds.length > 0) {
-    await ExerciseInDayModel.deleteMany({ dayId: { $in: dayIds } } );
+    if (days.length === 0) return;
+    const allDayIds = days.map((d) => d._id);
+
+    const { WorkoutLogModel } = await import('../models/workout-log.model');
+    const logs = await WorkoutLogModel.find(
+      { userId, planId: new Types.ObjectId(planId) },
+      { dayId: 1 },
+    ).lean();
+
+    const loggedDayIds = new Set(logs.map((log) => String(log.dayId)));
+
+    const dayIdsToDelete = allDayIds.filter((id) => !loggedDayIds.has(String(id)));
+    if (dayIdsToDelete.length > 0) {
+      await ExerciseInDayModel.deleteMany({ dayId: { $in: dayIdsToDelete } });
+      await WorkoutDayModel.deleteMany({ _id: { $in: dayIdsToDelete } });
     }
-    await WorkoutDayModel.deleteMany({ planId: new Types.ObjectId(planId) });
   }
 }
 
