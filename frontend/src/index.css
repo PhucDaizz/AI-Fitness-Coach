@@ -44,6 +44,16 @@
     background: rgba(177, 255, 36, 0.2);
   }
 
+  /* Hide scrollbar for Chrome, Safari and Opera */
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  /* Hide scrollbar for IE, Edge and Firefox */
+  .no-scrollbar {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+  }
+
   .ease-spring {
     transition-timing-function: cubic-bezier(0.68, -0.6, 0.32, 1.6);
   }

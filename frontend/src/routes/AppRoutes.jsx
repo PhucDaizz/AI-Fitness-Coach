@@ -32,7 +32,7 @@ const AppRoutes = () => {
         
         {/* Customer Routes */}
         <Route 
-          path="/chat" 
+          path="/chat/:sessionId?" 
           element={
             <ProtectedRoute allowedRoles={['Customer', 'SysAdmin', 'Admin']}>
               <ChatPage />

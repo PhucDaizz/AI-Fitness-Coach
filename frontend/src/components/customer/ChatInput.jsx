@@ -29,7 +29,7 @@ const ChatInput = ({ onSend, isLoading, isWelcome }) => {
         onSubmit={handleSubmit}
         className={`bg-surface-container-highest/80 rounded-full p-1.5 flex items-center gap-2 border shadow-[0_10px_40px_rgba(0,0,0,0.6)] backdrop-blur-2xl transition-all duration-500 ${
           isWelcome ? 'md:border-primary/20 md:p-2.5 md:scale-105' : 'border-white/10 p-1.5 scale-100'
-        } focus-within:border-primary/30`}
+        } focus-within:border-primary/40 focus-within:ring-1 focus-within:ring-primary/20`}
       >
         <button 
           type="button"
@@ -40,7 +40,7 @@ const ChatInput = ({ onSend, isLoading, isWelcome }) => {
         
         <input 
           ref={inputRef}
-          className="flex-grow bg-transparent border-none text-on-surface focus:ring-0 font-body text-sm placeholder:text-on-surface-variant py-2 px-2"
+          className="flex-grow bg-transparent border-none text-on-surface focus:ring-0 focus:outline-none font-body text-sm placeholder:text-on-surface-variant py-2 px-2"
           placeholder={isWelcome ? "Ask me anything to begin..." : "Type a message..."}
           type="text"
           value={message}

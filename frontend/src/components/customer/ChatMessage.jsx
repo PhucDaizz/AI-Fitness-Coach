@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
-const ChatMessage = ({ id, role, content, timestamp, isStreaming, isThinking }) => {
+const ChatMessage = ({ messageId, role, content, timestamp, isStreaming, isThinking }) => {
   const isAI = role === 'AI' || role === 'Assistant';
   const [copied, setCopied] = useState(false);
   const [liked, setLiked] = useState(false);
@@ -43,8 +43,8 @@ const ChatMessage = ({ id, role, content, timestamp, isStreaming, isThinking }) 
 
   return (
     <div 
-      id={id} 
-      className={`flex ${isAI ? 'justify-start' : 'justify-end'} w-full animate-in fade-in slide-in-from-bottom-3 duration-500 scroll-mt-24`}
+      data-message-id={messageId}
+      className={`flex ${isAI ? 'justify-start' : 'justify-end'} w-full animate-in fade-in slide-in-from-bottom-3 duration-500`}
     >
       <div className={`flex flex-col gap-1 max-w-[85%] md:max-w-[80%]`}>
         {isAI && (
