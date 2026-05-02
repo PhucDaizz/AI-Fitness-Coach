@@ -1,25 +1,22 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { workoutApi } from '../services/api/axiosInstances';
+import { progressApi } from '../services/api/axiosInstances';
 
 // ── Types ──────────────────────────────────────────────────────────────────
 export interface CreateUserProfileRequest {
   // Step 1 — all required
   gender: 'male' | 'female' | 'other';
-  dateOfBirth: string; // "1998-05-15"
+  dateOfBirth: string;
   weightKg: number; // min: 20, max: 300
   heightCm: number; // min: 50, max: 250
   fitnessLevel: 'beginner' | 'intermediate' | 'advanced';
   fitnessGoal: 'weight_loss' | 'muscle_gain' | 'endurance' | 'flexibility' | 'maintenance';
 
-  // Step 2
   environment: 'gym' | 'home' | 'outdoor';
   equipment: string[];
 
-  // Step 3
-  availableDays: string[]; // ["Monday", "Wednesday", "Friday"]
+  availableDays: string[];
   sessionMinutes: number; // 30 | 45 | 60 | 90
 
-  // Step 4 — optional
   injuries?: string;
 }
 
@@ -40,6 +37,7 @@ const handleResponse = async <T>(apiPromise: Promise<any>): Promise<T> => {
       const apiResponse = err.response.data;
       const error = new Error(apiResponse.message || err.message);
       (error as any).errors = apiResponse.errors || [];
+      (error as any).status = err.response.status;
       throw error;
     }
     throw err;
@@ -56,8 +54,25 @@ const handleResponse = async <T>(apiPromise: Promise<any>): Promise<T> => {
  * Response: { success: true, data: { exists: boolean } }
  */
 export const checkProfileExists = async (): Promise<boolean> => {
-  const data = await handleResponse<{ exists: boolean }>(workoutApi.get('/profile/exists'));
-  return data.exists;
+  try {
+    const data = await handleResponse<{ exists: boolean }>(progressApi.get('/v1/profile/exists'));
+    return data.exists === true;
+  } catch (error: any) {
+    const status = error?.status ?? error?.response?.status;
+    if (status === 404) {
+      // If the endpoint returns 404, we treat it as "profile does not exist"
+      return false;
+    }
+    if (status === 401) {
+      // If unauthorized, we also treat it as "profile does not exist" since user might be logged out
+      throw error;
+    }
+    console.warn(
+      '[checkProfileExists] Non-critical error, defaulting to no profile:',
+      error?.message,
+    );
+    return false;
+  }
 };
 
 /**
@@ -67,5 +82,5 @@ export const checkProfileExists = async (): Promise<boolean> => {
  * POST /api/v1/profile
  */
 export const createUserProfile = async (payload: CreateUserProfileRequest): Promise<void> => {
-  await handleResponse(workoutApi.post('/profile', payload));
+  await handleResponse(progressApi.post('/v1/profile', payload));
 };

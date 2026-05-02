@@ -20,24 +20,30 @@ const LoginForm = () => {
     setLoading(true);
     setError(null);
 
+    let token;
     try {
-      const data = await login(email, password);
-      const exists = await checkProfileExists();
-      console.log('Login successful:', data);
+      await login(email, password);
+      token = localStorage.getItem('token');
+      console.log('Login successful, token:', token);
+    } catch (error) {
+      setError(error.message || 'Login failed. Please try again.');
+      setLoading(false);
+      return;
+    }
 
-      const token = localStorage.getItem('token');
-      if (isAdmin(token)) {
-        navigate('/admin');
-      } else {
-        if (exists) {
-          navigate('/chat');
-        } else {
-          navigate('/onboarding');
-        }
-      }
-    } catch (err) {
-      console.error('Login failed:', err);
-      setError(err.message);
+    if (isAdmin(token)) {
+      navigate('/admin');
+      return;
+    }
+
+    try {
+      const exists = await checkProfileExists();
+      navigate(exists ? '/chat' : '/onboarding');
+    } catch (error) {
+      localStorage.removeItem('token');
+      localStorage.removeItem('refreshToken');
+      navigate('/login');
+      console.error('Error checking profile existence:', error);
     } finally {
       setLoading(false);
     }
