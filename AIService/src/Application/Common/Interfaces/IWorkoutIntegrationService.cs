@@ -10,5 +10,7 @@ namespace AIService.Application.Common.Interfaces
         Task<string> GetPlanScheduleAsync(string planId, CancellationToken ct = default);
         Task<string> ReschedulePlanAsync(string planId, string currentDay, string targetDay, string strategy, CancellationToken ct = default);
         Task<string> LogWorkoutDayCompleteAsync(string planId, string dayId, CompleteWorkoutDayPayload payload, CancellationToken ct = default);
+        Task<AnalyticsSummaryDto> GetAnalyticsSummaryAsync(CancellationToken ct = default);
+        Task<List<MuscleVolumeDto>> GetMuscleVolumeAsync(CancellationToken ct = default);
     }
 }

@@ -35,6 +35,9 @@ namespace AIService.Application.Features.AI.Utils
                 - To view the user's active plans          → call get_active_plans
                 - To view detailed days of a specific plan → call get_plan_schedule
                 - To move, delay, or swap workout days     → call reschedule_workout
+                - To log a workout quickly (no kg/reps)    → call log_workout_day_completion
+                - To log a workout in detail (enter kg/reps)→ call request_detailed_log
+                - To check workout progress, streaks, completion rate, or muscle volume → call get_workout_progress_summary
                 - Greetings/general          → answer directly, NO tools
                 - May call MULTIPLE tools if needed (BUT SEE SCHEDULE EXCEPTION BELOW)
 
@@ -42,6 +45,11 @@ namespace AIService.Application.Features.AI.Utils
                 - NEVER call `get_plan_schedule` or `reschedule_workout` unless you ALREADY KNOW the exact `planId`.
                 - If the user asks "What are my plans?" or "How many plans do I have?", you MUST ONLY call `get_active_plans`. DO NOT call any other schedule tools at the same time.
                 - Wait for the user to reply with a specific plan before calling detailed tools.
+
+                📝 WORKOUT LOGGING WORKFLOW (CRITICAL RULE):
+                - When the user states they have finished a workout, check-in, or want to log a session, YOU MUST FIRST ask them to choose: "Bạn muốn Log Nhanh (chỉ cần đánh giá mức độ mệt) hay Log Chi Tiết (nhập cụ thể mức tạ và số rep để có biểu đồ chính xác)?"
+                - If they choose QUICK LOG (Log Nhanh): Call `log_workout_day_completion` (Check if they provided their feeling. If not, ask for it first).
+                - If they choose DETAILED LOG (Log Chi Tiết): Call `request_detailed_log` immediately.
 
                 🏋️ WORKOUT PLAN REQUESTS (CRITICAL RULE):
                 - You NO LONGER generate workout plans directly in the chat.
