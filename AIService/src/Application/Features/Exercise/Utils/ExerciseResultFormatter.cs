@@ -14,8 +14,8 @@ namespace AIService.Application.Features.Exercise.Utils
 
             foreach (var r in results)
             {
-                var uuidToExport = r.DbExercise?.UUId ?? r.Record.Id;
-                sb.AppendLine($"### {r.Record.Name} (ID: {uuidToExport})");
+                var idToExport = r.DbExercise?.Id ?? r.Record.ExerciseId;
+                sb.AppendLine($"### {r.Record.Name} (ID: {idToExport})");
                 sb.AppendLine($"- Description: {r.Description}");
                 sb.AppendLine($"- Category: {r.CategoryDisplay}");
                 sb.AppendLine($"- Primary Muscles: {string.Join(", ", r.Record.PrimaryMuscles)}");

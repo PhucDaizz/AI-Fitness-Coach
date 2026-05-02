@@ -60,7 +60,7 @@ namespace AIService.Infrastructure.Services
                 - Environment: {{profile.Environment}}
                 - {{injuryWarning}}
 
-                === AVAILABLE EXERCISES (use these IDs) ===
+                === AVAILABLE EXERCISES (use these Integer IDs) ===
                 {{exerciseContext}}
 
                 === STRICT RULES (CRITICAL) ===
@@ -82,7 +82,7 @@ namespace AIService.Infrastructure.Services
                       "orderIndex": 1,
                       "exercises": [
                         {
-                          "exerciseId": "<UUID from context>",
+                          "exerciseId": "123",
                           "sets": 3,
                           "reps": "12-15",
                           "restSeconds": 60,
