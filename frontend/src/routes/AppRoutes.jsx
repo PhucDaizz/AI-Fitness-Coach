@@ -3,6 +3,7 @@ import { Navigate, Route, BrowserRouter as Router, Routes } from 'react-router-d
 
 import ProtectedRoute from '../components/routes/ProtectedRoute';
 import Home from '../pages/Home';
+import OnboardingPage from '../pages/Onboarding/OnboardingPage';
 import PrivacyPolicy from '../pages/PrivacyPolicy';
 import TermsOfService from '../pages/TermsOfService';
 import EquipmentPage from '../pages/admin/EquipmentPage';
@@ -20,7 +21,6 @@ import SecurityPage from '../pages/auth/SecurityPage';
 import SignUp from '../pages/auth/SignUp';
 import VerifyEmail from '../pages/auth/VerifyEmail';
 import ChatPage from '../pages/customer/ChatPage';
-import OnboardingPage from '../pages/customer/OnboardingPage';
 import OnboardingRoute from './OnboardingRoute';
 
 const AppRoutes = () => {
