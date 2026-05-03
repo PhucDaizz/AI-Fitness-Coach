@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import WorkoutLogForm from './WorkoutLogForm';
+import AnalyticsSummary from './AnalyticsSummary';
 
-const ChatMessage = ({ id, role, content, timestamp, isStreaming, isThinking }) => {
+const ChatMessage = ({ messageId, role, content, timestamp, isStreaming, isThinking }) => {
   const isAI = role === 'AI' || role === 'Assistant';
   const [copied, setCopied] = useState(false);
   const [liked, setLiked] = useState(false);
@@ -15,6 +17,27 @@ const ChatMessage = ({ id, role, content, timestamp, isStreaming, isThinking }) 
 
   const handleLike = () => {
     setLiked(!liked);
+  };
+
+  const markdownComponents = {
+    p: ({ children }) => <p className="mb-3 last:mb-0">{children}</p>,
+    ul: ({ children }) => <ul className="list-disc pl-4 mb-3 space-y-1">{children}</ul>,
+    ol: ({ children }) => <ol className="list-decimal pl-4 mb-3 space-y-1">{children}</ol>,
+    li: ({ children }) => <li className="marker:text-primary">{children}</li>,
+    h1: ({ children }) => <h1 className="text-lg font-bold mb-2 text-primary">{children}</h1>,
+    h2: ({ children }) => <h2 className="text-base font-bold mb-2 text-primary-container">{children}</h2>,
+    code: ({ children }) => <code className="bg-surface-container-highest px-1.5 py-0.5 rounded text-primary-container font-mono text-[13px]">{children}</code>,
+    pre: ({ children }) => <pre className="bg-surface-container-highest p-3 rounded-xl overflow-x-auto mb-3 border border-white/5 shadow-inner">{children}</pre>,
+    table: ({ children }) => (
+      <div className="overflow-x-auto mb-3">
+        <table className="w-full border-collapse border border-white/10 rounded-lg overflow-hidden">
+          {children}
+        </table>
+      </div>
+    ),
+    th: ({ children }) => <th className="bg-surface-container-highest p-2 text-left text-xs font-bold border border-white/10">{children}</th>,
+    td: ({ children }) => <td className="p-2 text-xs border border-white/10">{children}</td>,
+    blockquote: ({ children }) => <blockquote className="border-l-4 border-primary pl-4 italic opacity-80 mb-3 bg-primary/5 py-1">{children}</blockquote>,
   };
   
   // Render Thinking State
@@ -43,8 +66,8 @@ const ChatMessage = ({ id, role, content, timestamp, isStreaming, isThinking }) 
 
   return (
     <div 
-      id={id} 
-      className={`flex ${isAI ? 'justify-start' : 'justify-end'} w-full animate-in fade-in slide-in-from-bottom-3 duration-500 scroll-mt-24`}
+      data-message-id={messageId}
+      className={`flex ${isAI ? 'justify-start' : 'justify-end'} w-full animate-in fade-in slide-in-from-bottom-3 duration-500`}
     >
       <div className={`flex flex-col gap-1 max-w-[85%] md:max-w-[80%]`}>
         {isAI && (
@@ -67,35 +90,68 @@ const ChatMessage = ({ id, role, content, timestamp, isStreaming, isThinking }) 
           {isAI && <div className="absolute inset-0 bg-surface-container-low/20 backdrop-blur-sm pointer-events-none rounded-2xl"></div>}
           
           <div className="relative z-10 font-body text-sm leading-relaxed prose prose-invert prose-sm max-w-none">
-            {isAI ? (
-              <ReactMarkdown 
-                remarkPlugins={[remarkGfm]}
-                components={{
-                  p: ({ children }) => <p className="mb-3 last:mb-0">{children}</p>,
-                  ul: ({ children }) => <ul className="list-disc pl-4 mb-3 space-y-1">{children}</ul>,
-                  ol: ({ children }) => <ol className="list-decimal pl-4 mb-3 space-y-1">{children}</ol>,
-                  li: ({ children }) => <li className="marker:text-primary">{children}</li>,
-                  h1: ({ children }) => <h1 className="text-lg font-bold mb-2 text-primary">{children}</h1>,
-                  h2: ({ children }) => <h2 className="text-base font-bold mb-2 text-primary-container">{children}</h2>,
-                  code: ({ children }) => <code className="bg-surface-container-highest px-1.5 py-0.5 rounded text-primary-container font-mono text-[13px]">{children}</code>,
-                  pre: ({ children }) => <pre className="bg-surface-container-highest p-3 rounded-xl overflow-x-auto mb-3 border border-white/5 shadow-inner">{children}</pre>,
-                  table: ({ children }) => (
-                    <div className="overflow-x-auto mb-3">
-                      <table className="w-full border-collapse border border-white/10 rounded-lg overflow-hidden">
-                        {children}
-                      </table>
-                    </div>
-                  ),
-                  th: ({ children }) => <th className="bg-surface-container-highest p-2 text-left text-xs font-bold border border-white/10">{children}</th>,
-                  td: ({ children }) => <td className="p-2 text-xs border border-white/10">{children}</td>,
-                  blockquote: ({ children }) => <blockquote className="border-l-4 border-primary pl-4 italic opacity-80 mb-3 bg-primary/5 py-1">{children}</blockquote>,
-                }}
-              >
-                {content}
-              </ReactMarkdown>
-            ) : (
-              <div className="whitespace-pre-wrap">{content}</div>
-            )}
+            {(() => {
+              if (!isAI) {
+                return <div className="whitespace-pre-wrap">{content}</div>;
+              }
+
+              const actionRegex = /(\[UI_ACTION:(?:SHOW_ANALYTICS|DETAILED_LOG\|[^\]]+)\])/g;
+              const parts = content.split(actionRegex);
+              
+              if (parts.length === 1) {
+                let cleanContent = content;
+                if (isStreaming) {
+                  cleanContent = cleanContent.replace(/\[UI_ACTION:[^\]]*$/, '');
+                }
+                
+                return (
+                  <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
+                    {cleanContent}
+                  </ReactMarkdown>
+                );
+              }
+
+              return (
+                <div className="flex flex-col gap-4">
+                  {parts.map((part, index) => {
+                    if (!part || part.trim() === '') return null;
+
+                    // Check for SHOW_ANALYTICS
+                    if (part === '[UI_ACTION:SHOW_ANALYTICS]') {
+                      return (
+                        <div key={index} className="my-2">
+                          <AnalyticsSummary />
+                        </div>
+                      );
+                    }
+
+                    // Check for DETAILED_LOG
+                    if (part.startsWith('[UI_ACTION:DETAILED_LOG|')) {
+                      // Parse: [UI_ACTION:DETAILED_LOG|planId|dayId|date]
+                      const logMatch = part.match(/\[UI_ACTION:DETAILED_LOG\|([^|]+)\|([^|]+)\|([^\]]+)\]/);
+                      if (logMatch) {
+                        return (
+                          <div key={index} className="my-2">
+                            <WorkoutLogForm 
+                              planId={logMatch[1]} 
+                              dayId={logMatch[2]} 
+                              scheduledDate={logMatch[3]} 
+                            />
+                          </div>
+                        );
+                      }
+                    }
+
+                    // Render normal markdown text
+                    return (
+                      <ReactMarkdown key={index} remarkPlugins={[remarkGfm]} components={markdownComponents}>
+                        {part}
+                      </ReactMarkdown>
+                    );
+                  })}
+                </div>
+              );
+            })()}
             
             {isStreaming && (
               <span className="inline-block w-1.5 h-4 bg-primary ml-1 animate-pulse align-middle"></span>

@@ -30,6 +30,7 @@ namespace AIService.Application.Features.Sessions.Queries.GetAllSession
                 {
                     Id = x.Id,
                     UserId = x.UserId,
+                    CreatedAt = x.CreatedAt,
                     Title = x.Title
                 }).ToListAsync(cancellationToken);
 

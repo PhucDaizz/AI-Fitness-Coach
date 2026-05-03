@@ -49,6 +49,7 @@ namespace AIService.Application.Features.Sessions.Queries.GetSessionMessages
                 .Take(request.PageSize + 1)
                 .Select(m => new ChatMessageDto
                 (
+                    m.Id,
                     m.Role.ToString(),
                     m.Content,
                     m.CreatedAt

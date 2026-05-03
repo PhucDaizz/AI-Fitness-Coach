@@ -33,8 +33,8 @@ const AppRoutes = () => {
         <Route path="/oauth-callback" element={<OAuthCallback />} />
 
         {/* Customer Routes */}
-        <Route
-          path="/chat"
+        <Route 
+          path="/chat/:sessionId?" 
           element={
             <ProtectedRoute allowedRoles={['Customer', 'SysAdmin', 'Admin']}>
               <ChatPage />

@@ -71,6 +71,20 @@ namespace AIService.Infrastructure.Services
             return string.Join("\n", result.Data.Select(p => $"PlanId: {p._Id} | Tên: {p.Title} | Bắt đầu: {p.StartsAt:yyyy-MM-dd}"));
         }
 
+        public async Task<AnalyticsSummaryDto> GetAnalyticsSummaryAsync(CancellationToken ct = default)
+        {
+            using var client = CreateClientWithToken();
+            var response = await client.GetFromJsonAsync<ApiResponse<AnalyticsSummaryDto>>("/api/v1/analytics/summary", ct);
+            return response?.Data;
+        }
+
+        public async Task<List<MuscleVolumeDto>> GetMuscleVolumeAsync(CancellationToken ct = default)
+        {
+            using var client = CreateClientWithToken();
+            var response = await client.GetFromJsonAsync<ApiResponse<List<MuscleVolumeDto>>>("/api/v1/analytics/muscle-volume", ct);
+            return response?.Data ?? new List<MuscleVolumeDto>();
+        }
+
         public async Task<string> GetPlanScheduleAsync(string planId, CancellationToken ct = default)
         {
             using var client = CreateClientWithToken();

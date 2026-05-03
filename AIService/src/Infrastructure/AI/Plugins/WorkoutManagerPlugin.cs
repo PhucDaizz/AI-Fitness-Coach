@@ -1,5 +1,6 @@
 ﻿using AIService.Application.Common.Interfaces;
 using AIService.Application.DTOs.Workout;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
@@ -112,6 +113,101 @@ namespace AIService.Infrastructure.AI.Plugins
             {
                 logger.LogError(ex, "Failed to log workout day complete for Plan {PlanId}, Day {DayId}", planId, dayId);
                 return "Error: An unexpected error occurred while logging the workout.";
+            }
+        }
+
+        [KernelFunction("request_detailed_log")]
+        [Description("""
+            Trigger the detailed workout logging UI on the frontend.
+            Use when user wants to log specific weights, reps, sets for each exercise.
+            Use when user says: muốn log chi tiết, nhập kg, nhập số rep, log đầy đủ.
+
+            IMPORTANT: This function does NOT save data.
+            It returns a UI trigger marker for the frontend to render the input form.
+            After calling this, tell the user the form is ready.
+            """)]
+        public async Task<string> RequestDetailedLogAsync(
+            [Description("Plan ID")] string planId,
+            [Description("Day ID")] string dayId,
+            [Description("Scheduled date of this workout day yyyy-MM-dd")] string scheduledDate,
+            CancellationToken cancellationToken = default)
+        {
+            await using var scope = _sp.CreateAsyncScope();
+
+            return $@"INSTRUCTION TO AI: Tell the user that the detailed log form is ready, and YOU MUST APPEND THIS EXACT STRING at the very end of your response: [UI_ACTION:DETAILED_LOG|{planId}|{dayId}|{scheduledDate}]";
+        }
+
+
+        [KernelFunction("get_workout_progress_summary")]
+        [Description("""
+            Get the user's workout progress summary, including current streak, completion rate, total volume, and analysis of worked vs. unworked muscle groups.
+            Call this when the user asks about their progress, stats, streak, or what muscles they haven't trained yet.
+            """)]
+        public async Task<string> GetWorkoutProgressSummaryAsync(CancellationToken cancellationToken = default)
+        {
+            await using var scope = _sp.CreateAsyncScope();
+            var logger = scope.ServiceProvider.GetRequiredService<ILogger<WorkoutPlanPlugin>>();
+            var workoutIntegration = scope.ServiceProvider.GetRequiredService<IWorkoutIntegrationService>();
+            var dbContext = scope.ServiceProvider.GetRequiredService<IApplicationDbContext>();
+
+            try
+            {
+                var summaryTask = workoutIntegration.GetAnalyticsSummaryAsync(cancellationToken);
+                var muscleTask = workoutIntegration.GetMuscleVolumeAsync(cancellationToken);
+
+                await Task.WhenAll(summaryTask, muscleTask);
+
+                var summary = summaryTask.Result;
+                var muscles = muscleTask.Result;
+
+                if (summary == null) return "System error: Cannot retrieve analytics data at the moment.";
+
+                var allMusclesFromDb = await dbContext.MuscleGroups
+                    .AsNoTracking()
+                    .ToListAsync(cancellationToken);
+
+                var workedMusclesEN = muscles.Select(m => m.MuscleGroup).ToList();
+
+                var workedMusclesTextList = allMusclesFromDb
+                .Where(m => workedMusclesEN.Contains(m.NameEN))
+                .Select(m =>
+                {
+                    var volume = muscles.First(x => x.MuscleGroup == m.NameEN).TotalVolume;
+                    return $"{m.NameVN ?? m.NameEN} ({volume}kg)";
+                });
+                var workedMusclesText = string.Join(", ", workedMusclesTextList);
+
+                var unworkedMusclesDb = allMusclesFromDb
+                .Where(m => !workedMusclesEN.Contains(m.NameEN))
+                .ToList();
+
+                var unworkedMusclesText = unworkedMusclesDb.Any()
+                    ? string.Join(", ", unworkedMusclesDb.Select(m => m.NameVN ?? m.NameEN))
+                    : "None (Tuyệt vời! Toàn thân đã được kích thích!)";
+
+                var sb = new System.Text.StringBuilder();
+                sb.AppendLine("=== USER WORKOUT ANALYTICS SUMMARY ===");
+                sb.AppendLine($"- Current Streak: {summary.CurrentStreak} days");
+                sb.AppendLine($"- Longest Streak: {summary.LongestStreak} days");
+                sb.AppendLine($"- Sessions This Week: {summary.SessionsThisWeek}");
+                sb.AppendLine($"- Total Volume: {summary.TotalVolumeKg} kg");
+                sb.AppendLine($"- Plan Completion Rate: {summary.CompletionRate}%");
+                sb.AppendLine($"- Active Plan ID: {summary.ActivePlanId ?? "None"}");
+                sb.AppendLine("--- MUSCLE ANALYSIS ---");
+                sb.AppendLine($"- Worked Muscles (with volume): {workedMusclesText}");
+                sb.AppendLine($"- ⚠️ UNWORKED Muscles: {unworkedMusclesText}");
+                sb.AppendLine("======================================");
+                sb.AppendLine(@"INSTRUCTION TO AI: 
+                1. Congratulate the user on their current progress/streak in a short, friendly sentence.
+                2. Explicitly warn them about the UNWORKED muscles and suggest focusing on them next time. 
+                3. YOU MUST APPEND THIS EXACT STRING at the very end of your response: [UI_ACTION:SHOW_ANALYTICS]");
+
+                return sb.ToString();
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Failed to get analytics summary.");
+                return "Error: Could not fetch progress summary. Tell the user to try again later.";
             }
         }
     }
