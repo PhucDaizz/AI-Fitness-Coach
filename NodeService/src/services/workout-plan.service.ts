@@ -307,7 +307,7 @@ export class WorkoutPlanService {
   ): Promise<void> {
     await this._assertPlanOwner(userId, planId);
 
-    await workoutPlanRepository.softDeletePlan(planId);
+    await workoutPlanRepository.softDeletePlan(userId, planId);
   }
 
   // ─── Private helpers ──────────────────────────────────────────────────────────

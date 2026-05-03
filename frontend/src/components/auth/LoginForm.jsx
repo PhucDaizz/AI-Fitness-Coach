@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { login, getGoogleLoginUrl } from '../../services/api/auth.service';
+import { Link, useNavigate } from 'react-router-dom';
+
+import { getGoogleLoginUrl, login } from '../../services/api/auth.service';
+import { checkProfileExists } from '../../services/profile.service';
 import { isAdmin } from '../../utils/authUtils';
 
 const LoginForm = () => {
@@ -18,19 +20,30 @@ const LoginForm = () => {
     setLoading(true);
     setError(null);
 
+    let token;
     try {
-      const data = await login(email, password);
-      console.log('Login successful:', data);
-      
-      const token = localStorage.getItem('token');
-      if (isAdmin(token)) {
-        navigate('/admin');
-      } else {
-        navigate('/chat'); 
-      }
-    } catch (err) {
-      console.error('Login failed:', err);
-      setError(err.message);
+      await login(email, password);
+      token = localStorage.getItem('token');
+      console.log('Login successful, token:', token);
+    } catch (error) {
+      setError(error.message || 'Login failed. Please try again.');
+      setLoading(false);
+      return;
+    }
+
+    if (isAdmin(token)) {
+      navigate('/admin');
+      return;
+    }
+
+    try {
+      const exists = await checkProfileExists();
+      navigate(exists ? '/chat' : '/onboarding');
+    } catch (error) {
+      localStorage.removeItem('token');
+      localStorage.removeItem('refreshToken');
+      navigate('/login');
+      console.error('Error checking profile existence:', error);
     } finally {
       setLoading(false);
     }
@@ -84,8 +97,18 @@ const LoginForm = () => {
         {/* Password Field */}
         <div className="space-y-2">
           <div className="flex justify-between items-end ml-1">
-            <label className="text-[0.6875rem] font-bold uppercase tracking-widest text-on-surface-variant" htmlFor="password">Password</label>
-            <Link className="text-[0.6875rem] font-bold uppercase tracking-widest text-secondary hover:opacity-80 transition-opacity" to="/forgot-password">Forgot Password?</Link>
+            <label
+              className="text-[0.6875rem] font-bold uppercase tracking-widest text-on-surface-variant"
+              htmlFor="password"
+            >
+              Password
+            </label>
+            <Link
+              className="text-[0.6875rem] font-bold uppercase tracking-widest text-secondary hover:opacity-80 transition-opacity"
+              to="/forgot-password"
+            >
+              Forgot Password?
+            </Link>
           </div>
           <div className="relative group">
             <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant group-focus-within:text-primary transition-colors pointer-events-none z-10">
@@ -138,8 +161,8 @@ const LoginForm = () => {
         </div>
       </div>
 
-      <button 
-        type="button" 
+      <button
+        type="button"
         onClick={handleGoogleLogin}
         className="w-full flex items-center justify-center gap-3 bg-surface-container-highest border border-outline-variant/20 hover:bg-surface-bright transition-colors text-on-surface font-semibold py-4 rounded-full"
       >

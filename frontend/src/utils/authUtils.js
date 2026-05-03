@@ -11,9 +11,11 @@ export const getDecodedToken = (token) => {
 export const getUserRole = (token) => {
   const decoded = getDecodedToken(token);
   if (!decoded) return null;
-  
+
   // Handling different potential role claim keys
-  return decoded["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"] || decoded.role || null;
+  return (
+    decoded['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'] || decoded.role || null
+  );
 };
 
 export const isAdmin = (token) => {
