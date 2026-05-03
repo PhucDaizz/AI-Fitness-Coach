@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { getWorkoutPlanDays, submitWorkoutLog } from '../../services/api/workoutPlan.service';
+import { getWorkoutPlanDays, submitWorkoutLog, getWorkoutLogStatus } from '../../services/api/workoutPlan.service';
 import { getExerciseById } from '../../services/api/exercise.service';
 
 const WorkoutLogForm = ({ planId, dayId, scheduledDate }) => {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [loggedInfo, setLoggedInfo] = useState(null);
   const [dayData, setDayData] = useState(null);
   const [exercisesInfo, setExercisesInfo] = useState({});
   const [error, setError] = useState(null);
@@ -23,6 +24,14 @@ const WorkoutLogForm = ({ planId, dayId, scheduledDate }) => {
         setLoading(true);
         setError(null);
         
+        // 0. Check log status first
+        const statusRes = await getWorkoutLogStatus(planId, dayId);
+        if (statusRes.isLogged) {
+          setLoggedInfo(statusRes.log);
+          setLoading(false);
+          return;
+        }
+
         // 1. Fetch days for plan
         const days = await getWorkoutPlanDays(planId);
         
@@ -125,14 +134,23 @@ const WorkoutLogForm = ({ planId, dayId, scheduledDate }) => {
     );
   }
 
-  if (submitted) {
+  if (submitted || loggedInfo) {
+    const info = loggedInfo || {};
     return (
-      <div className="p-6 rounded-2xl bg-primary/10 border border-primary/20 text-center space-y-3">
-        <div className="w-12 h-12 rounded-full bg-primary/20 text-primary flex items-center justify-center mx-auto mb-2">
-          <span className="material-symbols-outlined text-2xl">check_circle</span>
+      <div className="w-full max-w-md mt-3 p-6 rounded-2xl bg-secondary/10 border border-secondary/20 text-center space-y-3 animate-in fade-in duration-500">
+        <div className="w-12 h-12 rounded-full bg-secondary/20 text-secondary flex items-center justify-center mx-auto mb-2">
+          <span className="material-symbols-outlined text-2xl">verified</span>
         </div>
-        <h4 className="text-primary font-bold text-lg">Workout Logged!</h4>
-        <p className="text-sm text-on-surface-variant">Great job completing your workout. Your data has been synchronized.</p>
+        <h4 className="text-secondary font-black uppercase tracking-tighter text-lg italic">Workout Completed</h4>
+        <div className="bg-white/5 rounded-xl p-3 inline-block">
+           <p className="text-[10px] text-on-surface-variant font-bold uppercase tracking-widest">
+             Logged on: <span className="text-white">{info.loggedDate || scheduledDate}</span>
+           </p>
+           <p className="text-[10px] text-on-surface-variant font-bold uppercase tracking-widest mt-1">
+             Duration: <span className="text-white">{info.durationMinutes} mins</span> • Difficulty: <span className="text-white uppercase">{info.difficultyFeedback}</span>
+           </p>
+        </div>
+        <p className="text-[10px] text-on-surface-variant font-medium opacity-70">This session has been archived in your performance matrix.</p>
       </div>
     );
   }
