@@ -70,5 +70,5 @@ export const streamChat = async (question, sessionId) => {
 };
 
 export const deleteSession = async (sessionId) => {
-  return await handleResponse(workoutApi.delete(`/Session/${sessionId}`));
+  return await handleResponse(workoutApi.delete('/Session', { params: { sessionId } }));
 };

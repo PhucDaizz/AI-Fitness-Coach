@@ -1,4 +1,5 @@
 using AIService.Application.DTOs.Meal;
+using AIService.Application.Features.Embeddings.Commands.SyncMealEmbedding;
 using AIService.Application.Features.Meal.Commands.CreateMeal;
 using AIService.Application.Features.Meal.Commands.DeleteMeal;
 using AIService.Application.Features.Meal.Commands.UpdateMeal;
@@ -158,6 +159,24 @@ namespace AIService.API.Controllers
             }
             
             return Ok(ApiResponse<string>.SuccessResponse("Xoá món ăn thành công"));
+        }
+
+        /// <summary>
+        /// Đồng bộ lại dữ liệu Vector cho một món ăn cụ thể
+        /// </summary>
+        /// <param name="id">ID của món ăn</param>
+        [HttpPost("{id}/sync-embedding")]
+        [Authorize] // Nên thêm [Authorize(Roles = "Admin")] sau này
+        public async Task<IActionResult> SyncMealEmbedding(int id, CancellationToken cancellationToken)
+        {
+            var result = await _mediator.Send(new SyncMealEmbeddingCommand(id), cancellationToken);
+
+            if (!result)
+            {
+                return BadRequest(new { success = false, message = "Không tìm thấy món ăn hoặc có lỗi khi nhúng dữ liệu." });
+            }
+
+            return Ok(new { success = true, message = "Đã đồng bộ Vector Món ăn thành công." });
         }
     }
 }

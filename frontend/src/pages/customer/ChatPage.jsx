@@ -7,7 +7,7 @@ import ChatInput from '../../components/customer/ChatInput';
 import ChatWelcome from '../../components/customer/ChatWelcome';
 import ChatScrollSpy from '../../components/customer/ChatScrollSpy';
 import useChatSignalR from '../../hooks/useChatSignalR';
-import { getSessions, getSessionMessages, streamChat, changeTitle } from '../../services/api/chat.service';
+import { getSessions, getSessionMessages, streamChat, changeTitle, deleteSession } from '../../services/api/chat.service';
 import { getDecodedToken } from '../../utils/authUtils';
 import { logout } from '../../services/api/auth.service';
 
@@ -241,6 +241,23 @@ const ChatPage = () => {
     }
   };
 
+  const handleDeleteSession = async (id) => {
+    try {
+      await deleteSession(id);
+      // Remove from local state
+      setSessions(prev => prev.filter(s => s.id !== id));
+      
+      // If the deleted session is the currently active one, clear it
+      if (currentSessionId === id) {
+        handleSelectSession(null);
+      }
+    } catch (err) {
+      console.error('Failed to delete session', err);
+      // On failure, refetch to ensure sync
+      fetchSessions();
+    }
+  };
+
   const handleLogout = () => {
     logout();
     navigate('/');
@@ -272,6 +289,7 @@ const ChatPage = () => {
           currentSessionId={currentSessionId}
           onSelectSession={handleSelectSession}
           onRenameSession={handleRenameSession}
+          onDeleteSession={handleDeleteSession}
           onLogout={handleLogout}
           isOpen={isSidebarOpen}
           onClose={() => setIsSidebarOpen(false)}

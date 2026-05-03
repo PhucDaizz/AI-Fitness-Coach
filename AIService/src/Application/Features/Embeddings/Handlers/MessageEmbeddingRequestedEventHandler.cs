@@ -11,15 +11,18 @@ namespace AIService.Application.Features.Embeddings.Handlers
     public class MessageEmbeddingRequestedEventHandler : INotificationHandler<MessageEmbeddingRequestedEvent>
     {
         private readonly IEmbeddingService _embeddingService;
+        private readonly IUnitOfWork _unitOfWork;
         private readonly VectorStoreCollection<Guid, ChatMessageVectorRecord> _messageVectors;
         private readonly ILogger<MessageEmbeddingRequestedEventHandler> _logger;
 
         public MessageEmbeddingRequestedEventHandler(
             IEmbeddingService embeddingService,
+            IUnitOfWork unitOfWork,
             VectorStoreCollection<Guid, ChatMessageVectorRecord> messageVectors,
             ILogger<MessageEmbeddingRequestedEventHandler> logger)
         {
             _embeddingService = embeddingService;
+            _unitOfWork = unitOfWork;
             _messageVectors = messageVectors;
             _logger = logger;
         }
@@ -28,6 +31,13 @@ namespace AIService.Application.Features.Embeddings.Handlers
         {
             try
             {
+                var sessionExists = await _unitOfWork.SessionRepository.ExistsAsync(notification.SessionId, cancellationToken);
+                if (!sessionExists)
+                {
+                    _logger.LogInformation("[VectorDB] Bỏ qua nhúng Vector vì Session {Id} đã bị xoá.", notification.SessionId);
+                    return;
+                }
+
                 await _messageVectors.EnsureCollectionExistsAsync(cancellationToken);
 
                 string payloadText = GenerateTextForAI(notification.Role, notification.Content);

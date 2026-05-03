@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { syncMealEmbedding } from '../../../services/api/meal.service';
 
 const CUISINES = [
   "american", "south east asian", "chinese", "italian", "french", 
@@ -21,6 +22,8 @@ const MealModal = ({ isOpen, onClose, onSave, initialData }) => {
     fat: 0,
     dietTags: []
   });
+
+  const [syncing, setSyncing] = useState(false);
 
   const [tagInput, setTagInput] = useState('');
   const [previewUrl, setPreviewUrl] = useState(DEFAULT_PREVIEW);
@@ -95,6 +98,21 @@ const MealModal = ({ isOpen, onClose, onSave, initialData }) => {
     onSave(formData);
   };
 
+  const handleSyncEmbedding = async () => {
+    if (!formData.id) return;
+    
+    try {
+      setSyncing(true);
+      await syncMealEmbedding(formData.id);
+      alert('Đã đồng bộ Vector Món ăn thành công.');
+    } catch (err) {
+      console.error('Failed to sync meal embedding:', err);
+      alert(err.message || 'Có lỗi khi đồng bộ Vector Món ăn.');
+    } finally {
+      setSyncing(false);
+    }
+  };
+
   if (!isOpen) return null;
 
   return (
@@ -108,12 +126,27 @@ const MealModal = ({ isOpen, onClose, onSave, initialData }) => {
               {formData.id ? 'Optimizing' : 'Initializing'} <span className="text-primary">Meal</span>
             </h3>
           </div>
-          <button 
-            onClick={onClose}
-            className="w-12 h-12 rounded-full bg-surface-container-highest flex items-center justify-center text-white hover:bg-error hover:scale-110 transition-all shadow-lg"
-          >
-            <span className="material-symbols-outlined font-bold">close</span>
-          </button>
+          <div className="flex items-center gap-3">
+            {formData.id && (
+              <button 
+                type="button" 
+                onClick={handleSyncEmbedding}
+                disabled={syncing}
+                className="h-12 px-6 rounded-full bg-primary/10 text-primary font-black text-[10px] uppercase tracking-[0.2em] hover:bg-primary/20 transition-all border border-primary/20 disabled:opacity-50 flex items-center gap-2 shadow-lg"
+              >
+                <span className={`material-symbols-outlined text-[18px] ${syncing ? 'animate-spin' : ''}`}>
+                  {syncing ? 'sync' : 'database'}
+                </span>
+                {syncing ? 'Syncing...' : 'Sync Embedding'}
+              </button>
+            )}
+            <button 
+              onClick={onClose}
+              className="w-12 h-12 rounded-full bg-surface-container-highest flex items-center justify-center text-white hover:bg-error hover:scale-110 transition-all shadow-lg"
+            >
+              <span className="material-symbols-outlined font-bold">close</span>
+            </button>
+          </div>
         </div>
 
         <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-12 gap-10">
@@ -274,6 +307,7 @@ const MealModal = ({ isOpen, onClose, onSave, initialData }) => {
               >
                 Abort Changes
               </button>
+
               <button 
                 type="submit"
                 className="flex-1 py-4 bg-gradient-to-r from-primary to-secondary text-black font-black rounded-full shadow-[0_0_30px_rgba(177,255,36,0.4)] transition-all hover:scale-[1.02] active:scale-[0.98] uppercase tracking-widest text-[10px]"
