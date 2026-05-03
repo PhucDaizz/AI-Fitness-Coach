@@ -1,7 +1,7 @@
 import React from 'react';
 import { getDecodedToken } from '../../utils/authUtils';
 
-const ChatSidebar = ({ sessions, currentSessionId, onSelectSession, onRenameSession, onLogout, isOpen, onClose }) => {
+const ChatSidebar = ({ sessions, currentSessionId, onSelectSession, onRenameSession, onDeleteSession, onLogout, isOpen, onClose }) => {
   const [editingSessionId, setEditingSessionId] = React.useState(null);
   const [editTitle, setEditTitle] = React.useState('');
   const inputRef = React.useRef(null);
@@ -91,13 +91,28 @@ const ChatSidebar = ({ sessions, currentSessionId, onSelectSession, onRenameSess
           </span>
         )}
 
-        {/* Edit button - Always visible for better mobile UX */}
+        {/* Actions - Always visible for active, visible on hover otherwise */}
         {editingSessionId !== session.id && (
-          <div 
-            className={`shrink-0 transition-opacity ${currentSessionId === session.id ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}
-            onClick={(e) => handleEditStart(e, session)}
-          >
-            <span className="material-symbols-outlined text-[16px] hover:text-primary">edit</span>
+          <div className={`flex items-center shrink-0 transition-opacity ${currentSessionId === session.id ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>
+            <div 
+              className="text-on-surface-variant hover:text-primary transition-colors p-0.5"
+              onClick={(e) => handleEditStart(e, session)}
+              title="Rename"
+            >
+              <span className="material-symbols-outlined text-[15px]">edit</span>
+            </div>
+            <div 
+              className="text-on-surface-variant hover:text-error transition-colors p-0.5"
+              onClick={(e) => {
+                e.stopPropagation();
+                if (window.confirm('Are you sure you want to delete this conversation?')) {
+                  onDeleteSession(session.id);
+                }
+              }}
+              title="Delete"
+            >
+              <span className="material-symbols-outlined text-[15px]">delete</span>
+            </div>
           </div>
         )}
       </div>

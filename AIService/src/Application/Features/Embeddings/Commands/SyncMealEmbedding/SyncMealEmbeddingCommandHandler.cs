@@ -1,6 +1,5 @@
 ﻿using AIService.Application.Common.Interfaces;
 using AIService.Application.Common.Models;
-using AIService.Application.Features.Embeddings.Events;
 using AIService.Domain.Enum;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -9,20 +8,20 @@ using Microsoft.Extensions.VectorData;
 using System.Security.Cryptography;
 using System.Text;
 
-namespace AIService.Application.Features.Embeddings.Handlers
+namespace AIService.Application.Features.Embeddings.Commands.SyncMealEmbedding
 {
-    public class MealEmbeddingRequestedEventHandler : INotificationHandler<MealEmbeddingRequestedEvent>
+    public class SyncMealEmbeddingCommandHandler : IRequestHandler<SyncMealEmbeddingCommand, bool>
     {
         private readonly IApplicationDbContext _context;
         private readonly IEmbeddingService _embeddingService;
         private readonly VectorStoreCollection<Guid, MealVectorRecord> _mealVectors;
-        private readonly ILogger<MealEmbeddingRequestedEventHandler> _logger;
+        private readonly ILogger<SyncMealEmbeddingCommandHandler> _logger;
 
-        public MealEmbeddingRequestedEventHandler(
+        public SyncMealEmbeddingCommandHandler(
             IApplicationDbContext context,
             IEmbeddingService embeddingService,
             VectorStoreCollection<Guid, MealVectorRecord> mealVectors,
-            ILogger<MealEmbeddingRequestedEventHandler> logger)
+            ILogger<SyncMealEmbeddingCommandHandler> logger)
         {
             _context = context;
             _embeddingService = embeddingService;
@@ -30,14 +29,15 @@ namespace AIService.Application.Features.Embeddings.Handlers
             _logger = logger;
         }
 
-        public async Task Handle(MealEmbeddingRequestedEvent notification, CancellationToken cancellationToken)
+        public async Task<bool> Handle(SyncMealEmbeddingCommand request, CancellationToken cancellationToken)
         {
             var meal = await _context.Meals
-                .FirstOrDefaultAsync(m => m.Id == notification.MealId, cancellationToken);
+                .FirstOrDefaultAsync(m => m.Id == request.MealId, cancellationToken);
 
-            if (meal == null || meal.EmbedStatus == EmbedStatus.embedded)
+            if (meal == null)
             {
-                return; 
+                _logger.LogWarning("[SyncEmbedding] Món ăn không tồn tại: {Id}", request.MealId);
+                return false;
             }
 
             try
@@ -46,17 +46,15 @@ namespace AIService.Application.Features.Embeddings.Handlers
 
                 string payloadText = GenerateTextForAI(meal);
 
-                var vectorArray = await _embeddingService
-                    .GenerateEmbeddingAsync(payloadText, cancellationToken);
+                var vectorArray = await _embeddingService.GenerateEmbeddingAsync(payloadText, cancellationToken);
 
                 if (vectorArray == null || vectorArray.Length == 0)
                 {
-                    _logger.LogWarning("[Handler] Vector rong cho mon: {Name}", meal.Name);
-                    return;
+                    _logger.LogWarning("[SyncEmbedding] Vector rỗng cho món: {Name}", meal.Name);
+                    return false;
                 }
 
-                var qdrantId = new Guid(MD5.HashData(
-                    Encoding.UTF8.GetBytes($"meal:{meal.Id}")));
+                var qdrantId = new Guid(MD5.HashData(Encoding.UTF8.GetBytes($"meal:{meal.Id}")));
 
                 var record = new MealVectorRecord
                 {
@@ -72,7 +70,7 @@ namespace AIService.Application.Features.Embeddings.Handlers
                     DietTags = meal.DietTags ?? new List<string>(),
                     HasImage = !string.IsNullOrEmpty(meal.ImageUrl),
                     ImageUrl = meal.ImageUrl ?? "",
-                    EmbedVersion = 1,
+                    EmbedVersion = 1, 
                     EmbeddedAt = DateTimeOffset.UtcNow.ToUnixTimeSeconds()
                 };
 
@@ -81,12 +79,12 @@ namespace AIService.Application.Features.Embeddings.Handlers
                 meal.UpdateEmbedStatus(EmbedStatus.embedded);
                 await _context.SaveChangesAsync(cancellationToken);
 
-                _logger.LogInformation($"[Handler] Xu ly Embedding Mon an thanh cong: {meal.Name}");
-                
+                _logger.LogInformation($"[SyncEmbedding] Hoàn tất nhúng lại Món ăn: {meal.Name}");
+                return true;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"[Handler] Loi khi xu ly Mon an {meal.Name}");
+                _logger.LogError(ex, $"[SyncEmbedding] Lỗi khi xử lý Món ăn {meal.Name}");
                 throw;
             }
         }

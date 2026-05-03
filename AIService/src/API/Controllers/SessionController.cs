@@ -2,6 +2,7 @@
 using AIService.Application.DTOs.ChatMessage;
 using AIService.Application.DTOs.Session;
 using AIService.Application.Features.Sessions.Commands.ChangeTitle;
+using AIService.Application.Features.Sessions.Commands.DeleteSession;
 using AIService.Application.Features.Sessions.Queries.GetAllSession;
 using AIService.Application.Features.Sessions.Queries.GetSessionMessages;
 using AIService.Domain.Common.Models;
@@ -90,6 +91,19 @@ namespace AIService.API.Controllers
                 return BadRequest(ApiResponse<string>.ErrorResponse(result.Error.Message));
             }
             return Ok(ApiResponse<CursorPagedResult<ChatMessageDto>>.SuccessResponse(result.Value));
+        }
+
+        [HttpDelete]
+        public async Task<IActionResult> DeleteSession(Guid sessionId)
+        {
+            var userId = _currentUser.UserId;
+            var command = new DeleteFitnessChatSessionCommand(sessionId, userId!);
+            var result = await _mediator.Send(command);
+            if (result.IsFailure)
+            {
+                return BadRequest(ApiResponse<string>.ErrorResponse(result.Error.Message));
+            }
+            return Ok(ApiResponse<string>.SuccessResponse("Session deleted successfully"));
         }
     }
 }

@@ -20,7 +20,7 @@ const SystemStatistics = () => {
 
           {/* Footer Meta Info */}
           <div className="flex flex-col md:flex-row justify-between items-center text-[10px] text-on-surface-variant font-bold uppercase tracking-[0.2em] py-8 opacity-50">
-            <p>© 2024 Kinetic AI Systems LLC.</p>
+            <p>© 2026 Kinetic AI Systems LLC.</p>
             <div className="flex gap-6 mt-4 md:mt-0">
               <a className="hover:text-primary" href="#">System Status</a>
               <a className="hover:text-primary" href="#">API Documentation</a>
@@ -44,28 +44,6 @@ const SystemStatistics = () => {
         </div>
       </main>
 
-      {/* Mobile Nav Bar */}
-      <nav className="md:hidden fixed bottom-0 left-0 w-full bg-[#0e0e0e]/90 backdrop-blur-xl flex justify-around items-center py-4 z-[100]">
-        <span className="text-primary flex flex-col items-center">
-          <span className="material-symbols-outlined">dashboard</span>
-          <span className="text-[8px] font-bold uppercase tracking-tighter mt-1">Dash</span>
-        </span>
-        <span className="text-on-surface-variant flex flex-col items-center">
-          <span className="material-symbols-outlined">monitoring</span>
-          <span className="text-[8px] font-bold uppercase tracking-tighter mt-1">Metrics</span>
-        </span>
-        <div className="bg-primary text-on-primary w-12 h-12 rounded-full flex items-center justify-center -translate-y-6 shadow-lg shadow-primary/30">
-          <span className="material-symbols-outlined">add</span>
-        </div>
-        <span className="text-on-surface-variant flex flex-col items-center">
-          <span className="material-symbols-outlined">group</span>
-          <span className="text-[8px] font-bold uppercase tracking-tighter mt-1">Users</span>
-        </span>
-        <span className="text-on-surface-variant flex flex-col items-center">
-          <span className="material-symbols-outlined">settings</span>
-          <span className="text-[8px] font-bold uppercase tracking-tighter mt-1">Admin</span>
-        </span>
-      </nav>
     </div>
   );
 };

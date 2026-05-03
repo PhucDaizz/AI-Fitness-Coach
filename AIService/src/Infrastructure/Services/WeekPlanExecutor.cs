@@ -67,6 +67,7 @@ namespace AIService.Infrastructure.Services
                 1. You MUST generate an object inside the "days" array for EVERY SINGLE DAY listed in "Days to schedule". Do not skip any days!
                 2. For each day, you MUST select 4-6 exercises from the AVAILABLE EXERCISES.
                 3. DO NOT just copy the output example. You must generate the full plan for all requested days.
+                4. CRITICAL: 'exerciseId' MUST BE A STRING wrapped in double quotes (e.g., "123"). DO NOT output raw numbers!
 
                 === OUTPUT FORMAT ===
                 {
@@ -166,10 +167,16 @@ namespace AIService.Infrastructure.Services
 
             _logger.LogInformation("[Executor] RAW JSON Week {W}:\n{Json}", weekNumber, cleaned);
 
-            var payload = JsonSerializer.Deserialize<WorkoutPlanPayloadDto>(cleaned,
-                new JsonSerializerOptions { PropertyNameCaseInsensitive = true })
+
+            var options = new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            };
+            options.Converters.Add(new StringOrIntConverter());
+
+            var payload = JsonSerializer.Deserialize<WorkoutPlanPayloadDto>(cleaned, options)
                 ?? throw new InvalidOperationException(
-                    $"LLM2 trả về JSON không hợp lệ cho tuần {weekNumber}.");
+                    $"LLM trả về JSON không hợp lệ cho tuần {weekNumber}.");
 
             if (!payload.Days.Any())
                 throw new InvalidOperationException($"Tuần {weekNumber} không có ngày tập.");

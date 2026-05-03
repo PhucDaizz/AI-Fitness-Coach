@@ -67,3 +67,7 @@ export const updateMeal = async (id, mealData) => {
 export const deleteMeal = async (id) => {
   return await handleResponse(workoutApi.delete(`/meals/${id}`));
 };
+
+export const syncMealEmbedding = async (id) => {
+  return await handleResponse(workoutApi.post(`/meals/${id}/sync-embedding`));
+};

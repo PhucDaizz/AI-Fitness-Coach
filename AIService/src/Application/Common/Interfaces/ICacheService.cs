@@ -10,5 +10,6 @@
         Task<long> DecrementOnlineUserAsync(string userId);
         Task RemoveOnlineUserAsync(string userId);
         Task<long> GetOnlineUsersCountAsync();
+        Task DeleteChatHistoryAsync(Guid sessionId);
     }
 }

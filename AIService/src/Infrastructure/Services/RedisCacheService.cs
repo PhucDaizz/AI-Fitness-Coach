@@ -84,5 +84,11 @@ namespace AIService.Infrastructure.Services
         {
             await _database.HashDeleteAsync(OnlineUsersKey, userId);
         }
+
+        public async Task DeleteChatHistoryAsync(Guid sessionId)
+        {
+            string key = $"chat_history:{sessionId}";
+            await _database.KeyDeleteAsync(key);
+        }
     }
 }

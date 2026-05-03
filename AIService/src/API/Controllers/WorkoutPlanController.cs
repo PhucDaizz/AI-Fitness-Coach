@@ -3,6 +3,7 @@ using AIService.Application.Features.Workout.Commands.GeneratePlan;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Nexus.BuildingBlocks.Model;
 
 namespace AIService.API.Controllers
 {
@@ -25,7 +26,15 @@ namespace AIService.API.Controllers
         {
             var command = new GenerateWorkoutPlanCommand(req.TotalWeeks, req.StartsAt);
             var result = await _mediator.Send(command, cancellationToken);
-            return Ok(result);
+
+            var response = new ApiResponse<GenerateWorkoutPlanResult>
+            {
+                Success = true,
+                Message = "Tạo kế hoạch tập luyện tự động thành công!",
+                Data = result
+            };
+
+            return Ok(response);
         }
     }
 }

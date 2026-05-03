@@ -1,11 +1,11 @@
 using AIService.Application.DTOs.Exercise;
+using AIService.Application.Features.Embeddings.Commands.SyncExerciseEmbedding;
 using AIService.Application.Features.Exercise.Commands.CreateExercise;
 using AIService.Application.Features.Exercise.Commands.DeleteExercise;
 using AIService.Application.Features.Exercise.Commands.UpdateExercise;
 using AIService.Application.Features.Exercise.Queries.GetExerciseById;
 using AIService.Application.Features.Exercise.Queries.GetExercises;
 using AIService.Domain.Common;
-using AIService.Domain.Entities;
 using AIService.Domain.Enum;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -159,6 +159,24 @@ namespace AIService.API.Controllers
             }
             
             return Ok(ApiResponse<string>.SuccessResponse("Xoá bài tập thành công"));
+        }
+
+        /// <summary>
+        /// Đồng bộ lại dữ liệu Vector cho một bài tập cụ thể
+        /// </summary>
+        /// <param name="id">ID của bài tập</param>
+        [HttpPost("{id}/sync-embedding")]
+        [Authorize] // Nên giới hạn role Admin nếu có: [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> SyncExerciseEmbedding(int id, CancellationToken cancellationToken)
+        {
+            var result = await _mediator.Send(new SyncExerciseEmbeddingCommand(id), cancellationToken);
+
+            if (!result)
+            {
+                return BadRequest(new { success = false, message = "Không tìm thấy bài tập hoặc có lỗi khi nhúng dữ liệu." });
+            }
+
+            return Ok(new { success = true, message = "Đã đồng bộ Vector thành công." });
         }
     }
 }

@@ -45,3 +45,7 @@ export const getExercises = async (params = {}) => {
 export const getExerciseById = async (id) => {
   return await handleResponse(workoutApi.get(`/exercises/${id}`));
 };
+
+export const syncExerciseEmbedding = async (id) => {
+  return await handleResponse(workoutApi.post(`/exercises/${id}/sync-embedding`));
+};

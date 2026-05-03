@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { syncExerciseEmbedding } from '../../../services/api/exercise.service';
 
 const DEFAULT_PREVIEW = 'https://images.unsplash.com/photo-1517836357463-d25dfeac3438?q=80&w=400&auto=format&fit=crop';
 
@@ -15,6 +16,8 @@ const ExerciseModal = ({ isOpen, onClose, onSave, initialData, categories, allMu
     muscles: [], // List<MuscleInputDto> { muscleId, isPrimary }
     equipmentIds: []
   });
+
+  const [syncing, setSyncing] = useState(false);
 
   const [previewUrl, setPreviewUrl] = useState(DEFAULT_PREVIEW);
 
@@ -101,6 +104,21 @@ const ExerciseModal = ({ isOpen, onClose, onSave, initialData, categories, allMu
     }
   };
 
+  const handleSyncEmbedding = async () => {
+    if (!initialData?.id) return;
+    
+    try {
+      setSyncing(true);
+      await syncExerciseEmbedding(initialData.id);
+      alert('Đã đồng bộ Vector thành công.');
+    } catch (err) {
+      console.error('Failed to sync embedding:', err);
+      alert(err.message || 'Có lỗi khi đồng bộ Vector.');
+    } finally {
+      setSyncing(false);
+    }
+  };
+
   return (
     <div className="fixed inset-0 z-[110] bg-black/95 backdrop-blur-xl flex items-center justify-center p-4">
       <div className="bg-surface-container w-full max-w-6xl max-h-[95vh] overflow-y-auto rounded-[2.5rem] border border-white/10 shadow-[0_0_80px_rgba(0,0,0,0.9)] no-scrollbar animate-in fade-in zoom-in duration-300">
@@ -113,9 +131,24 @@ const ExerciseModal = ({ isOpen, onClose, onSave, initialData, categories, allMu
               {initialData ? 'Update' : 'Initialize'} <span className="text-primary">Protocol</span>
             </h3>
           </div>
-          <button onClick={onClose} className="w-12 h-12 flex items-center justify-center rounded-full bg-white/5 hover:bg-error hover:text-white hover:scale-110 transition-all shadow-lg text-on-surface-variant font-bold">
-            <span className="material-symbols-outlined">close</span>
-          </button>
+          <div className="flex items-center gap-3">
+            {initialData && (
+              <button 
+                type="button" 
+                onClick={handleSyncEmbedding}
+                disabled={syncing}
+                className="h-12 px-6 rounded-full bg-primary/10 text-primary font-black text-[10px] uppercase tracking-[0.2em] hover:bg-primary/20 transition-all border border-primary/20 disabled:opacity-50 flex items-center gap-2 shadow-lg"
+              >
+                <span className={`material-symbols-outlined text-[18px] ${syncing ? 'animate-spin' : ''}`}>
+                  {syncing ? 'sync' : 'database'}
+                </span>
+                {syncing ? 'Syncing...' : 'Sync Embedding'}
+              </button>
+            )}
+            <button onClick={onClose} className="w-12 h-12 flex items-center justify-center rounded-full bg-white/5 hover:bg-error hover:text-white hover:scale-110 transition-all shadow-lg text-on-surface-variant font-bold">
+              <span className="material-symbols-outlined">close</span>
+            </button>
+          </div>
         </div>
 
         <div className="p-10">
@@ -356,6 +389,7 @@ const ExerciseModal = ({ isOpen, onClose, onSave, initialData, categories, allMu
                 >
                   Abort
                 </button>
+
                 <button 
                   type="submit"
                   className="flex-1 py-4 rounded-full bg-gradient-to-r from-primary to-secondary text-black font-black text-[10px] uppercase tracking-[0.2em] hover:scale-[1.02] active:scale-[0.98] transition-all shadow-[0_0_30px_rgba(177,255,36,0.3)]"

@@ -21,6 +21,8 @@ import SecurityPage from '../pages/auth/SecurityPage';
 import SignUp from '../pages/auth/SignUp';
 import VerifyEmail from '../pages/auth/VerifyEmail';
 import ChatPage from '../pages/customer/ChatPage';
+import WorkoutPlansPage from '../pages/customer/WorkoutPlansPage';
+import WorkoutPlanDetailsPage from '../pages/customer/WorkoutPlanDetailsPage';
 import OnboardingRoute from './OnboardingRoute';
 
 const AppRoutes = () => {
@@ -49,6 +51,24 @@ const AppRoutes = () => {
               <OnboardingRoute>
                 <OnboardingPage />
               </OnboardingRoute>
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/plans"
+          element={
+            <ProtectedRoute allowedRoles={['Customer']}>
+              <WorkoutPlansPage />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/plans/:planId"
+          element={
+            <ProtectedRoute allowedRoles={['Customer']}>
+              <WorkoutPlanDetailsPage />
             </ProtectedRoute>
           }
         />

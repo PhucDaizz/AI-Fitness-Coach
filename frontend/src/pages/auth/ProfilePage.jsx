@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { getCurrentUser } from '../../services/api/auth.service';
 import { getDecodedToken, isAdmin } from '../../utils/authUtils';
 import ProfileSidebar from '../../components/profile/ProfileSidebar';
@@ -73,6 +74,15 @@ const ProfilePage = () => {
       />
 
       <main className="flex-1 md:ml-64 pt-24 md:pt-12 px-4 md:px-12 lg:px-24 pb-24 max-w-7xl mx-auto w-full">
+        {!isUserAdmin && (
+          <Link 
+            to="/chat" 
+            className="inline-flex items-center gap-2 mb-6 text-on-surface-variant hover:text-primary transition-colors font-bold uppercase tracking-widest text-[10px]"
+          >
+            <span className="material-symbols-outlined text-sm">arrow_back</span>
+            Back
+          </Link>
+        )}
         <header className="mb-12">
           <h1 className="text-[2.25rem] md:text-[3.5rem] font-headline font-bold tracking-[-0.04em] leading-tight mb-2">Profile Details</h1>
           <p className="text-on-surface-variant font-body font-medium">Manage your identity and biometric anchor points.</p>
