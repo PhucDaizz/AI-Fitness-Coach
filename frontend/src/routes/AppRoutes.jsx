@@ -23,6 +23,8 @@ import VerifyEmail from '../pages/auth/VerifyEmail';
 import ChatPage from '../pages/customer/ChatPage';
 import WorkoutPlansPage from '../pages/customer/WorkoutPlansPage';
 import WorkoutPlanDetailsPage from '../pages/customer/WorkoutPlanDetailsPage';
+import CustomerExercisesPage from '../pages/customer/CustomerExercisesPage';
+import CustomerMealsPage from '../pages/customer/CustomerMealsPage';
 import OnboardingRoute from './OnboardingRoute';
 
 const AppRoutes = () => {
@@ -69,6 +71,22 @@ const AppRoutes = () => {
           element={
             <ProtectedRoute allowedRoles={['Customer']}>
               <WorkoutPlanDetailsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/exercises"
+          element={
+            <ProtectedRoute allowedRoles={['Customer', 'SysAdmin', 'Admin']}>
+              <CustomerExercisesPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/meals"
+          element={
+            <ProtectedRoute allowedRoles={['Customer', 'SysAdmin', 'Admin']}>
+              <CustomerMealsPage />
             </ProtectedRoute>
           }
         />

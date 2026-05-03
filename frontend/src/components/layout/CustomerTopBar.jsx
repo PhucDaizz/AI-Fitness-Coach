@@ -8,6 +8,8 @@ const CustomerTopBar = ({ title = "KINETIC AI" }) => {
     { label: 'Coach', path: '/chat', icon: 'chat_bubble' },
     { label: 'Stats', path: '/stats', icon: 'monitoring' },
     { label: 'Plans', path: '/plans', icon: 'fitness_center' },
+    { label: 'Exercises', path: '/exercises', icon: 'exercise' },
+    { label: 'Meals', path: '/meals', icon: 'restaurant' },
     { label: 'Profile', path: '/profile', icon: 'person' },
   ];
 
