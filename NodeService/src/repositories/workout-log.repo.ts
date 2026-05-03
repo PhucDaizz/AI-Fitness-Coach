@@ -53,6 +53,20 @@ export class WorkoutLogRepository {
       .lean<WorkoutLogLean>()
       .session(session ?? null);
   }
+/**
+ * Lấy log theo userId và dayId
+ */
+  async findByUserAndDayId(
+  userId: string,
+  dayId: string,
+): Promise<WorkoutLogLean | null> {
+  return WorkoutLogModel
+    .findOne({
+      userId,
+      dayId: new Types.ObjectId(dayId),
+    })
+    .lean<WorkoutLogLean>();
+}
 
   async create(
     data: Partial<WorkoutLogLean>,

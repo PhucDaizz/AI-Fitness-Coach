@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import { workoutLogService } from '../services/workout-log.service';
+import { workoutLogService, LogStatusResult } from '../services/workout-log.service';
 import {
   createWorkoutLogSchema,
   listWorkoutLogsQuerySchema,
@@ -116,6 +116,84 @@ export async function listWorkoutLogs(
     const query = listWorkoutLogsQuerySchema.parse(req.query);
     const { logs, pagination } = await workoutLogService.listLogs(userId, query);
     sendSuccess(res, logs, 'Lấy lịch sử buổi tập thành công', 200, pagination);
+  } catch (error) {
+    next(error);
+  }
+}
+
+// ─── GET /workout-plans/{planId}/days/{dayId}/log-status ─────────────────────────
+/**
+ * @openapi
+ * /workout-plans/{planId}/days/{dayId}/log-status:
+ *   get:
+ *     tags: [Workout Log]
+ *     summary: Kiểm tra user đã log buổi tập của day này chưa
+ *     description: |
+ *       Trả về `isLogged: true/false` kèm thông tin log nếu đã tập.
+ *       Dùng để FE hiển thị trạng thái nút "Log buổi tập" / "Đã tập".
+ *       Không quan tâm user log bằng cách nào (manual hay quick-log).
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: planId
+ *         required: true
+ *         schema:
+ *           type: string
+ *       - in: path
+ *         name: dayId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Trạng thái log của buổi tập
+ *         content:
+ *           application/json:
+ *             schema:
+ *               allOf:
+ *                 - $ref: '#/components/schemas/ApiSuccess'
+ *                 - type: object
+ *                   properties:
+ *                     data:
+ *                       type: object
+ *                       properties:
+ *                         isLogged:
+ *                           type: boolean
+ *                           example: true
+ *                         log:
+ *                           nullable: true
+ *                           type: object
+ *                           properties:
+ *                             logId:
+ *                               type: string
+ *                             loggedDate:
+ *                               type: string
+ *                               format: date
+ *                             difficultyFeedback:
+ *                               type: string
+ *                               nullable: true
+ *                               enum: [easy, ok, hard]
+ *                             durationMinutes:
+ *                               type: integer
+ *                               nullable: true
+ *       400:
+ *         description: dayId không thuộc plan này
+ *       403:
+ *         description: Không có quyền truy cập plan
+ *       404:
+ *         description: Không tìm thấy plan
+ */
+export async function checkDayLogStatus(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): Promise<void> {
+  try {
+    const userId = (req as AuthRequest).user.sub;
+    const { planId, dayId } = req.params as { planId: string; dayId: string };
+    const data = await workoutLogService.checkLogStatus(userId, planId, dayId);
+    sendSuccess(res, data);
   } catch (error) {
     next(error);
   }

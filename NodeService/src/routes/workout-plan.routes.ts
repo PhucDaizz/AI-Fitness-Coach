@@ -9,6 +9,7 @@ import {
   deleteWorkoutPlan,
 } from '../controllers/workout-plan.controller';
 import { rescheduleWorkoutDay } from '../controllers/reschedule.controller';
+import { checkDayLogStatus } from '../controllers/workout-log.controller';
 
 const router = Router();
 
@@ -36,6 +37,9 @@ router.post('/:id/reschedule', rescheduleWorkoutDay);
 
 // POST /workout-plans/:planId/days/:dayId/complete — quick-log cả ngày 1 lượt
 router.post('/:planId/days/:dayId/complete', completeWorkoutDay);
+
+// GET /workout-plans/:planId/days/:dayId/log-status — check đã log chưa
+router.get('/:planId/days/:dayId/log-status', checkDayLogStatus);
 
 // DELETE /workout-plans/:id — xóa plan
 router.delete('/:id', deleteWorkoutPlan);

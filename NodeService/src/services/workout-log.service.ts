@@ -9,6 +9,16 @@ import {
 } from '../validations/workout-log.valid';
 import { buildPagination } from '../utils/response';
 
+export type LogStatusResult = {
+  isLogged: boolean;
+  log: {
+    logId: string;
+    loggedDate: string;
+    difficultyFeedback: string | null;
+    durationMinutes: number | null;
+  } | null;
+};
+
 // ─── WorkoutLogService ───────────────────────────────────────────────────────────
 
 export class WorkoutLogService {
@@ -105,6 +115,46 @@ export class WorkoutLogService {
     return {
       logs,
       pagination: buildPagination(total, page, limit),
+    };
+  }
+
+  /**
+   * GET /workout-plans/{planId}/days/{dayId}/log-status
+   * Kiểm tra user đã log buổi tập của day này chưa.
+   */
+  async checkLogStatus(
+    userId: string,
+    planId: string,
+    dayId: string,
+  ): Promise<LogStatusResult> {
+    const plan = await workoutPlanRepository.findById(planId);
+    if (!plan) {
+      throw new AppError('Không tìm thấy workout plan', HTTP_STATUS.NOT_FOUND);
+    }
+    if (plan.userId !== userId) {
+      throw new AppError('Bạn không có quyền truy cập plan này', HTTP_STATUS.FORBIDDEN);
+    }
+
+    const day = await workoutPlanRepository.findDayById(dayId);
+    if (!day || String(day.planId) !== planId) {
+      throw new AppError(
+        'dayId không hợp lệ hoặc không thuộc plan này',
+        HTTP_STATUS.BAD_REQUEST,
+      );
+    }
+    const log = await workoutLogRepository.findByUserAndDayId(userId, dayId);
+    if (!log) {
+      return { isLogged: false, log: null };
+    }
+
+    return {
+      isLogged: true,
+      log: {
+        logId: String(log._id),
+        loggedDate: log.loggedDate.toISOString().slice(0, 10),
+        difficultyFeedback: log.difficultyFeedback ?? null,
+        durationMinutes: log.durationMinutes ?? null,
+      },
     };
   }
 }
