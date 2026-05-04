@@ -7,6 +7,7 @@ import {
   updateWorkoutPlanStatus,
   completeWorkoutDay,
   deleteWorkoutPlan,
+  replaceWorkoutDay,
 } from '../controllers/workout-plan.controller';
 import { rescheduleWorkoutDay } from '../controllers/reschedule.controller';
 import { checkDayLogStatus } from '../controllers/workout-log.controller';
@@ -40,6 +41,10 @@ router.post('/:planId/days/:dayId/complete', completeWorkoutDay);
 
 // GET /workout-plans/:planId/days/:dayId/log-status — check đã log chưa
 router.get('/:planId/days/:dayId/log-status', checkDayLogStatus);
+
+// PUT /workout-plans/:planId/days/:dayId/replace — thay thế nguyên ngày tập bằng 1 ngày tập mới 
+// (có thể dùng khi user muốn đổi hẳn bài tập trong ngày đó, chứ không phải chỉ dời lịch như reschedule)
+router.put('/:planId/days/:dayId/replace', replaceWorkoutDay);
 
 // DELETE /workout-plans/:id — xóa plan
 router.delete('/:id', deleteWorkoutPlan);

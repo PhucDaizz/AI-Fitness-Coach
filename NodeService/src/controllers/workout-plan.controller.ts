@@ -5,6 +5,7 @@ import {
   updatePlanStatusSchema,
   listWorkoutPlansQuerySchema,
   completeDaySchema,
+  replaceDaySchema,
 } from "../validations/workout-plan.valid";
 import { sendSuccess, sendCreated } from "../utils/response";
 import { AuthRequest } from "../types";
@@ -350,6 +351,27 @@ export async function deleteWorkoutPlan(
     const { id } = req.params as { id: string };
     await workoutPlanService.deletePlan(userId, id);
     sendSuccess(res, null, 'Xóa workout plan thành công');
+  } catch (error) {
+    next(error);
+  }
+}
+
+export async function replaceWorkoutDay(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): Promise<void> {
+  try {
+    const userId = (req as AuthRequest).user.sub;
+    const { planId, dayId } = req.params as { planId: string; dayId: string };
+    const dto = replaceDaySchema.parse(req.body);
+    const data = await workoutPlanService.replaceDay(
+      userId,
+      planId,
+      dayId,
+      dto,
+    );
+    sendSuccess(res, data, 'Thay thế ngày tập thành công');
   } catch (error) {
     next(error);
   }

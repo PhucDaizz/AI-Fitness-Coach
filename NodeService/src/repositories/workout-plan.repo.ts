@@ -157,6 +157,30 @@ export class WorkoutPlanRepository {
     await ExerciseInDayModel.insertMany(records, session ? { session } : {});
   }
 
+  async deleteExercisesByDayId(
+    dayId: string,
+    session?: ClientSession,
+  ): Promise<void> {
+    await ExerciseInDayModel.deleteMany(
+      { dayId: new Types.ObjectId(dayId) },
+      session ? { session } : {},
+    );
+  }
+
+  async updateDayMuscleFocus(
+    dayId: string,
+    muscleFocus: string,
+    session?: ClientSession,
+  ): Promise<WorkoutDayLean | null> {
+    return WorkoutDayModel
+      .findByIdAndUpdate(
+        dayId,
+        { $set: { muscleFocus } },
+        { new: true, ...(session ? { session } : {}) },
+      )
+      .lean<WorkoutDayLean>();
+  }
+
   // ─── Compound: lấy days kèm exercises (dùng cho GET /:id/days) ─────────────────
 
   async findDaysWithExercises(
@@ -227,6 +251,18 @@ export class WorkoutPlanRepository {
     const exists = await WorkoutLogModel.exists({
       userId,
       planId: new Types.ObjectId(planId),
+    });
+    return exists !== null;
+  }
+
+  async hasAnyLogForDay(
+    userId: string,
+    dayId: string,
+  ): Promise<boolean> {
+    const { WorkoutLogModel } = await import('../models/workout-log.model');
+    const exists = await WorkoutLogModel.exists({
+      userId,
+      dayId: new Types.ObjectId(dayId),
     });
     return exists !== null;
   }

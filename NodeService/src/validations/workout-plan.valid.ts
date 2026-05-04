@@ -76,9 +76,17 @@ export const completeDaySchema = z.object({
   notes: z.string().optional(),
 })
 
+export const replaceDaySchema = z.object({
+  muscleFocus: z.string().min(1, 'muscleFocus không được để trống').trim().optional(),
+  exercises: z
+  .array(exerciseInDaySchema)
+  .min(1, 'Cần ít nhất 1 bài tập'),
+})
+
 // ─── TypeScript types ────────────────────────────────────────────────────────────
 
 export type CreateWorkoutPlanDto = z.infer<typeof createWorkoutPlanSchema>;
 export type UpdatePlanStatusDto = z.infer<typeof updatePlanStatusSchema>;
 export type ListWorkoutPlansQuery = z.infer<typeof listWorkoutPlansQuerySchema>;
 export type CompleteDayDto = z.infer<typeof completeDaySchema>;
+export type ReplaceDayDto = z.infer<typeof replaceDaySchema>;
