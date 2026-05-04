@@ -12,6 +12,7 @@ import {
   UpdatePlanStatusDto,
   ListWorkoutPlansQuery,
   CompleteDayDto,
+  ReplaceDayDto,
 } from '../validations/workout-plan.valid';
 import { buildPagination } from '../utils/response';
 
@@ -290,6 +291,58 @@ export class WorkoutPlanService {
       dayOfWeek:   day.dayOfWeek,
       muscleFocus: day.muscleFocus,
       exercises:   exerciseRecords,
+    };
+  }
+
+  async replaceDay(
+    userId: string,
+    planId: string,
+    dayId: string,
+    dto: ReplaceDayDto,
+  ) {
+    // 1. Validate plan ownership
+    await this._assertPlanOwner(userId, planId);
+
+    // 2. Validate day thuộc plan
+    const day = await workoutPlanRepository.findDayById(dayId);
+    if (!day || String(day.planId) !== planId) {
+      throw new AppError(
+        'dayId không hợp lệ hoặc không thuộc plan này',
+        HTTP_STATUS.BAD_REQUEST,
+      )
+    }
+
+    const hasLog = await workoutPlanRepository.hasAnyLogForDay(userId, dayId);
+    if (hasLog) {
+      throw new AppError(
+        'Không thể thay thế ngày tập đã có log — vui lòng xóa log trước khi thay thế',
+        HTTP_STATUS.CONFLICT,
+      );
+    }
+
+    // 3. Cập nhật muscleFocus của day
+    const updateDay = dto.muscleFocus
+      ? await workoutPlanRepository.updateDayMuscleFocus(dayId, dto.muscleFocus)
+      : day;
+
+    await workoutPlanRepository.deleteExercisesByDayId(dayId);
+
+    const exerciseRecords = dto.exercises.map((ex) => ({
+      dayId: new Types.ObjectId(dayId),
+      exerciseId: ex.exerciseId,
+      sets: ex.sets,
+      reps: ex.reps,
+      restSeconds: ex.restSeconds ?? 60,
+      notes: ex.notes ?? undefined,
+      orderIndex: ex.orderIndex,
+    }));
+
+    await workoutPlanRepository.createExercisesInDay(exerciseRecords);
+
+    const newExercises = await workoutPlanRepository.findExercisesByDayId(dayId);
+    return {
+      day: updateDay,
+      exercises: newExercises,
     };
   }
 
