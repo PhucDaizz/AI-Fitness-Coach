@@ -12,5 +12,14 @@ namespace AIService.Application.Common.Interfaces
         Task<string> LogWorkoutDayCompleteAsync(string planId, string dayId, CompleteWorkoutDayPayload payload, CancellationToken ct = default);
         Task<AnalyticsSummaryDto> GetAnalyticsSummaryAsync(CancellationToken ct = default);
         Task<List<MuscleVolumeDto>> GetMuscleVolumeAsync(CancellationToken ct = default);
+        
+        // Lấy plan đang Active
+        Task<string> GetActivePlanIdAsync(CancellationToken ct);
+
+        // Lấy calendar để biết ngày nào sắp tập
+        Task<List<CalendarDayDto>> GetPlanCalendarAsync(string planId, CancellationToken ct);
+
+        // Gửi JSON đè cả ngày
+        Task<bool> ReplaceEntireDayAsync(string planId, string dayId, ReplaceDayRequestDto payload, CancellationToken ct);
     }
 }
