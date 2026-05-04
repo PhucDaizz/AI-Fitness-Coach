@@ -218,6 +218,7 @@ namespace AIService.Infrastructure
             services.AddScoped<IIntegrationEventService, IntegrationEventService>();
             services.AddScoped<IWorkoutPlanOrchestrator, WorkoutPlanOrchestrator>();
             services.AddScoped<IWeekPlanExecutor, WeekPlanExecutor>();
+            services.AddScoped<IDayPlanExecutor, DayPlanExecutor>();
 
             services.AddScoped<IChatSessionManager, ChatSessionManager>();
             services.AddScoped<IChatContextBuilder, ChatContextBuilder>();

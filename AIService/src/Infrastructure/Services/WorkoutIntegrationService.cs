@@ -59,6 +59,44 @@ namespace AIService.Infrastructure.Services
             }
         }
 
+        public async Task<string> GetActivePlanIdAsync(CancellationToken ct)
+        {
+            try
+            {
+                using var client = CreateClientWithToken();
+                var response = await client.GetAsync("/api/v1/workout-plans?status=active&page=1&limit=1", ct);
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    var error = await response.Content.ReadAsStringAsync(ct);
+                    _logger.LogError("[WorkoutService] Node Error (GetActivePlan): {Status} - {Body}", response.StatusCode, error);
+                    return null;
+                }
+
+                var result = await response.Content.ReadFromJsonAsync<ApiResponse<List<ActivePlanResponse>>>(
+                    new JsonSerializerOptions { PropertyNameCaseInsensitive = true },
+                    cancellationToken: ct);
+
+                if (result != null && result.Success && result.Data != null && result.Data.Any())
+                {
+                    return result.Data.First().PlanId;
+                }
+
+                _logger.LogWarning("[WorkoutService] Lấy Active Plan thành công nhưng data rỗng. Message: {Message}", result?.Message);
+                return null;
+            }
+            catch (HttpRequestException ex)
+            {
+                _logger.LogError(ex, "[WorkoutService] Không thể kết nối tới Node service (GetActivePlan)");
+                return null;
+            }
+            catch (JsonException ex)
+            {
+                _logger.LogError(ex, "[WorkoutService] Lỗi parse JSON từ Node service (GetActivePlan)");
+                return null;
+            }
+        }
+
         public async Task<string> GetActivePlansAsync(CancellationToken ct = default)
         {
             using var client = CreateClientWithToken();
@@ -83,6 +121,44 @@ namespace AIService.Infrastructure.Services
             using var client = CreateClientWithToken();
             var response = await client.GetFromJsonAsync<ApiResponse<List<MuscleVolumeDto>>>("/api/v1/analytics/muscle-volume", ct);
             return response?.Data ?? new List<MuscleVolumeDto>();
+        }
+
+        public async Task<List<CalendarDayDto>> GetPlanCalendarAsync(string planId, CancellationToken ct)
+        {
+            try
+            {
+                using var client = CreateClientWithToken();
+                var response = await client.GetAsync($"/api/v1/workout-plans/{planId}/calendar", ct);
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    var error = await response.Content.ReadAsStringAsync(ct);
+                    _logger.LogError("[WorkoutService] Node Error (GetCalendar): {Status} - {Body}", response.StatusCode, error);
+                    return new List<CalendarDayDto>();
+                }
+
+                var result = await response.Content.ReadFromJsonAsync<ApiResponse<List<CalendarDayDto>>>(
+                    new JsonSerializerOptions { PropertyNameCaseInsensitive = true },
+                    cancellationToken: ct);
+
+                if (result != null && result.Success && result.Data != null)
+                {
+                    return result.Data;
+                }
+
+                _logger.LogWarning("[WorkoutService] Lấy Calendar thành công nhưng data rỗng. Message: {Message}", result?.Message);
+                return new List<CalendarDayDto>();
+            }
+            catch (HttpRequestException ex)
+            {
+                _logger.LogError(ex, "[WorkoutService] Không thể kết nối tới Node service (GetCalendar)");
+                return new List<CalendarDayDto>();
+            }
+            catch (JsonException ex)
+            {
+                _logger.LogError(ex, "[WorkoutService] Lỗi parse JSON từ Node service (GetCalendar)");
+                return new List<CalendarDayDto>();
+            }
         }
 
         public async Task<string> GetPlanScheduleAsync(string planId, CancellationToken ct = default)
@@ -151,6 +227,34 @@ namespace AIService.Infrastructure.Services
             }
 
             return $"FAILED: {responseString}";
+        }
+
+        public async Task<bool> ReplaceEntireDayAsync(string planId, string dayId, ReplaceDayRequestDto payload, CancellationToken ct)
+        {
+            try
+            {
+                using var client = CreateClientWithToken();
+                var response = await client.PutAsJsonAsync($"/api/v1/workout-plans/{planId}/days/{dayId}/replace", payload, ct);
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    var error = await response.Content.ReadAsStringAsync(ct);
+                    _logger.LogError("[WorkoutService] Node Error (ReplaceDay): {Status} - {Body}", response.StatusCode, error);
+                    return false;
+                }
+
+                return true;
+            }
+            catch (HttpRequestException ex)
+            {
+                _logger.LogError(ex, "[WorkoutService] Không thể kết nối tới Node service (ReplaceDay)");
+                return false;
+            }
+            catch (JsonException ex)
+            {
+                _logger.LogError(ex, "[WorkoutService] Lỗi parse JSON từ Node service (ReplaceDay)");
+                return false;
+            }
         }
 
         public async Task<string> ReschedulePlanAsync(string planId, string currentDay, string targetDay, string strategy, CancellationToken ct = default)

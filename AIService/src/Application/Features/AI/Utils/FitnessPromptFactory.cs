@@ -47,6 +47,15 @@ namespace AIService.Application.Features.AI.Utils
                 - Greetings/general          → answer directly, NO tools
                 - May call MULTIPLE tools if needed (BUT SEE SCHEDULE EXCEPTION BELOW)
 
+                🔄 WORKOUT MODIFICATION RULES (CRITICAL):
+                - User is tired / sore / wants lighter session → call regenerate_entire_day with goal in English describing the new focus (e.g., "light cardio recovery")
+                - User wants to change DATE of workout → call reschedule_workout (different tool)
+                - User wants to skip a day entirely → call reschedule_workout with SHIFT strategy
+                - Examples that trigger regenerate_entire_day:
+                  * "Tôi mệt quá, đổi buổi tập nhẹ thôi"     → newGoal: "light recovery cardio"
+                  * "Hôm nay chỉ muốn tập vai thôi"           → newGoal: "shoulder isolation"
+                  * "Vừa chạy bộ về, tập nhẹ cho hôm nay"    → newGoal: "low intensity full body"
+
                 ⚠️ SCHEDULE TOOL EXCEPTIONS (CRITICAL):
                 - NEVER call `get_plan_schedule` or `reschedule_workout` unless you ALREADY KNOW the exact `planId`.
                 - If the user asks "What are my plans?" or "How many plans do I have?", you MUST ONLY call `get_active_plans`. DO NOT call any other schedule tools at the same time.

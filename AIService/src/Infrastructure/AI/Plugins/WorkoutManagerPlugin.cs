@@ -210,5 +210,57 @@ namespace AIService.Infrastructure.AI.Plugins
                 return "Error: Could not fetch progress summary. Tell the user to try again later.";
             }
         }
+
+
+        [KernelFunction("regenerate_entire_day")]
+        [Description("""
+            Regenerate the user's next upcoming workout day with a completely new goal.
+            Use when user says they are tired, sore, want a lighter session,
+            or want to change the focus of their next workout.
+
+            WORKFLOW:
+            1. Identify the new goal from the user's message
+               (e.g., 'light cardio recovery', 'upper body only', 'stretching')
+            2. Call this function with the new goal in English or Vietnamese.
+            3. The system will automatically find the next upcoming day and replace it.
+
+            DO NOT call this for rescheduling dates — use reschedule_workout instead.
+            DO NOT call this if user only wants to skip a day — use a different tool.
+        """)]
+        public async Task<string> RegenerateDayAsync(
+        [Description("""
+            The new training goal for the upcoming session.
+            Examples: 'light cardio and recovery', 'upper body strength',
+            'full body stretching and mobility', 'low intensity leg day'
+        """)]
+            string newGoal,
+            CancellationToken cancellationToken = default)
+        {
+            await using var scope = _sp.CreateAsyncScope();
+            var sp = scope.ServiceProvider;
+
+            var logger = sp.GetRequiredService<ILogger<WorkoutManagerPlugin>>();
+            var dayExecutor = sp.GetRequiredService<IDayPlanExecutor>();
+
+            logger.LogInformation(
+                "[Plugin] regenerate_entire_day called. Goal: {Goal}", newGoal);
+
+            try
+            {
+                var success = await dayExecutor.RegenerateDayAsync(newGoal, cancellationToken);
+
+                return success
+                    ? $"SUCCESS: The next workout session has been updated to '{newGoal}'. " +
+                      $"The plan has been adjusted to match your current condition."
+                    : "FAILED: Could not find an upcoming workout day to update, " +
+                      "or no exercises matched the new goal.";
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex,
+                    "[Plugin] regenerate_entire_day failed. Goal: {Goal}", newGoal);
+                return "ERROR: An unexpected error occurred while updating the workout day.";
+            }
+        }
     }
 }

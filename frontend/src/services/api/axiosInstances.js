@@ -25,8 +25,12 @@ const createInstance = (baseURL) => {
   // Request interceptor for Auth Token
   instance.interceptors.request.use(
     (config) => {
+      // List of endpoints that should NOT carry the Auth header
+      const publicEndpoints = ['/Auth/Login', '/Auth/Register', '/Auth/Refreshtoken'];
+      const isPublic = publicEndpoints.some(url => config.url?.includes(url));
+
       const token = localStorage.getItem('token');
-      if (token) {
+      if (token && !isPublic) {
         config.headers.Authorization = `Bearer ${token}`;
       }
       return config;
