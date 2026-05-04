@@ -356,6 +356,116 @@ export async function deleteWorkoutPlan(
   }
 }
 
+// ─── PUT /workout-plans/:planId/days/:dayId ─────────────────────────────────────────
+/**
+ * @openapi
+ * /workout-plans/{planId}/days/{dayId}/replace:
+ *   put:
+ *     tags: [Workout Plan]
+ *     summary: Thay thế toàn bộ bài tập trong 1 ngày — do .NET AI gọi
+ *     description: |
+ *       .NET AI gọi endpoint này sau khi LLM sinh ra danh sách bài tập mới
+ *       cho 1 ngày cụ thể (VD: user feedback bài quá dễ, muốn đổi sang Cardio...).
+ *
+ *       Logic:
+ *       - Xóa toàn bộ ExerciseInDay cũ của dayId
+ *       - Insert list exercises mới từ body
+ *       - Nếu có muscleFocus → cập nhật tiêu đề ngày
+ *
+ *       **Điều kiện:** Ngày tập chưa được log (chưa có WorkoutLog).
+ *       Nếu đã log → 409 Conflict.
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: planId
+ *         required: true
+ *         schema:
+ *           type: string
+ *       - in: path
+ *         name: dayId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - exercises
+ *             properties:
+ *               muscleFocus:
+ *                 type: string
+ *                 description: Tiêu đề mới cho ngày tập (optional)
+ *                 example: "Cardio nhẹ nhàng & Phục hồi"
+ *               exercises:
+ *                 type: array
+ *                 minItems: 1
+ *                 items:
+ *                   type: object
+ *                   required: [exerciseId, sets, reps, orderIndex]
+ *                   properties:
+ *                     exerciseId:
+ *                       type: string
+ *                       example: "993"
+ *                     sets:
+ *                       type: integer
+ *                       example: 3
+ *                     reps:
+ *                       type: string
+ *                       example: "10-12"
+ *                     restSeconds:
+ *                       type: integer
+ *                       default: 60
+ *                     notes:
+ *                       type: string
+ *                       nullable: true
+ *                       example: "Chạy bộ chậm trên máy"
+ *                     orderIndex:
+ *                       type: integer
+ *                       example: 1
+ *     responses:
+ *       200:
+ *         description: Thay thế thành công — trả về day + exercises mới
+ *         content:
+ *           application/json:
+ *             schema:
+ *               allOf:
+ *                 - $ref: '#/components/schemas/ApiSuccess'
+ *                 - type: object
+ *                   properties:
+ *                     data:
+ *                       type: object
+ *                       properties:
+ *                         day:
+ *                           type: object
+ *                           properties:
+ *                             _id:
+ *                               type: string
+ *                             dayOfWeek:
+ *                               type: string
+ *                             muscleFocus:
+ *                               type: string
+ *                             scheduledDate:
+ *                               type: string
+ *                               format: date
+ *                         exercises:
+ *                           type: array
+ *                           items:
+ *                             type: object
+ *       400:
+ *         description: dayId không thuộc plan này
+ *       403:
+ *         description: Không có quyền truy cập plan
+ *       404:
+ *         description: Không tìm thấy plan
+ *       409:
+ *         description: Ngày tập đã được log — không thể thay thế
+ *       422:
+ *         description: Dữ liệu không hợp lệ
+ */
 export async function replaceWorkoutDay(
   req: Request,
   res: Response,

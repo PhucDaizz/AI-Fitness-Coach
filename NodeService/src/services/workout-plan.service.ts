@@ -294,6 +294,11 @@ export class WorkoutPlanService {
     };
   }
 
+  /**
+   * PUT /workout-plans/:planId/days/:dayId/replace
+   * Thay thế nguyên ngày tập bằng 1 ngày tập mới 
+   * (có thể dùng khi user muốn đổi hẳn bài tập trong ngày đó, chứ không phải chỉ dời lịch như reschedule)
+   */
   async replaceDay(
     userId: string,
     planId: string,
@@ -351,7 +356,6 @@ export class WorkoutPlanService {
    * Xóa plan nếu:
    * - Thuộc user hiện tại
    * - Chưa có WorkoutLog nào (user chưa tập)
-   *
    * Không cascade — WorkoutDay + ExerciseInDay giữ nguyên.
    */
   async deletePlan(
