@@ -4,32 +4,32 @@ import { getDecodedToken } from '../../utils/authUtils';
 const ChatWelcome = ({ onSelectPrompt }) => {
   const suggestions = [
     {
-      title: "Leg Day Protocol",
-      desc: "Focus on explosive power.",
+      title: "Xem Tiến Độ Tập",
+      desc: "Tổng quan quá trình tập.",
+      icon: "monitoring",
+      color: "primary",
+      prompt: "Cho tôi xem tổng quan tiến độ tập luyện, streak và tỉ lệ hoàn thành hiện tại của tôi."
+    },
+    {
+      title: "Tính TDEE & BMR",
+      desc: "Lên kế hoạch dinh dưỡng.",
+      icon: "calculate",
+      color: "secondary",
+      prompt: "Hãy tính chỉ số TDEE và BMR của tôi để biết tôi cần nạp bao nhiêu calo mỗi ngày."
+    },
+    {
+      title: "Tra Cứu Dinh Dưỡng",
+      desc: "Kiểm tra calo, macros món ăn.",
+      icon: "restaurant_menu",
+      color: "tertiary-fixed",
+      prompt: "Giúp tôi tra cứu lượng calo và thành phần dinh dưỡng (macro) của món Phở bò."
+    },
+    {
+      title: "Tìm Kiếm Bài Tập",
+      desc: "Hướng dẫn kỹ thuật, nhóm cơ.",
       icon: "fitness_center",
       color: "primary",
-      prompt: "Generate a high-intensity Leg Day protocol focused on explosive power and high volume."
-    },
-    {
-      title: "Nutrition Review",
-      desc: "Analyze yesterday's macros.",
-      icon: "restaurant_menu",
-      color: "secondary",
-      prompt: "Can you review my nutrition and analyze my macros based on my activity yesterday?"
-    },
-    {
-      title: "Sleep Quality",
-      desc: "Check recovery scores.",
-      icon: "bedtime",
-      color: "tertiary-fixed",
-      prompt: "How was my sleep quality? Please check my recovery pulse and readiness score."
-    },
-    {
-      title: "Stretch Routine",
-      desc: "10-min mobility flow.",
-      icon: "bolt",
-      color: "primary",
-      prompt: "Show me a quick 10-minute dynamic mobility stretching routine."
+      prompt: "Gợi ý cho tôi một số bài tập hiệu quả để phát triển nhóm cơ ngực và tay sau."
     }
   ];
 

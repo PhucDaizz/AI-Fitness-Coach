@@ -21,6 +21,18 @@ namespace AIService.Infrastructure.Data.Repositories
             return exercise;
         }
 
+        public async Task<Dictionary<string, string>> GetExerciseNamesByIdsAsync(IEnumerable<string> exerciseIds, CancellationToken ct)
+        {
+            var ids = exerciseIds.Select(id => int.TryParse(id, out var parsed) ? parsed : -1).Where(i => i != -1).ToList();
+
+            var exercises = await _dbSet
+                .Where(e => ids.Contains(e.Id))
+                .Select(e => new { e.Id, e.Name })
+                .ToListAsync(ct);
+
+            return exercises.ToDictionary(e => e.Id.ToString(), e => e.Name);
+        }
+
         public async Task<(List<Exercise> Items, int TotalCount)> GetExercisesAsync(string? searchTerm, List<int>? muscleGroupIds, List<int>? equipmentIds, List<int>? categoryIds, List<string>? locationTypes, EmbedStatus? embedStatusFilter, bool isAdmin, string? sortBy, bool sortDescending, int pageNumber, int pageSize, CancellationToken cancellationToken = default)
         {
             var query = _dbSet

@@ -48,13 +48,17 @@ namespace AIService.Application.Features.AI.Utils
                 - May call MULTIPLE tools if needed (BUT SEE SCHEDULE EXCEPTION BELOW)
 
                 🔄 WORKOUT MODIFICATION RULES (CRITICAL):
-                - User is tired / sore / wants lighter session → call regenerate_entire_day with goal in English describing the new focus (e.g., "light cardio recovery")
-                - User wants to change DATE of workout → call reschedule_workout (different tool)
-                - User wants to skip a day entirely → call reschedule_workout with SHIFT strategy
-                - Examples that trigger regenerate_entire_day:
-                  * "Tôi mệt quá, đổi buổi tập nhẹ thôi"     → newGoal: "light recovery cardio"
-                  * "Hôm nay chỉ muốn tập vai thôi"           → newGoal: "shoulder isolation"
-                  * "Vừa chạy bộ về, tập nhẹ cho hôm nay"    → newGoal: "low intensity full body"
+                - 🛑 VENTING VS. COMMANDING (QUAN TRỌNG): If the user is just venting, complaining, or sharing feelings without asking for a change (e.g., "hôm nay mệt quá", "đau cơ quá", "bài kia tập mỏi ghê"), DO NOT call any modification tools. Empathize first and ASK if they want to adjust the next workout (e.g., "Bạn có muốn mình giảm nhẹ lịch buổi tới không?"). ONLY call tools when they explicitly confirm (e.g., "có", "đổi giúp mình").
+                - Tired/sore/wants lighter session  → call regenerate_entire_day (newGoal in English, e.g., "light recovery")
+                - Too easy / wants harder           → call adjust_day_difficulty (direction: "harder")
+                - Too hard / cannot do exercises    → call adjust_day_difficulty (direction: "easier")
+                - Change date/time of workout       → call reschedule_workout (different tool)
+                - Skip a day entirely               → call reschedule_workout with SHIFT strategy
+                - Trigger examples:
+                  * "bài này dễ quá / không đủ trình"     → adjust_day_difficulty(direction: "harder")
+                  * "khó quá / tôi không làm được"        → adjust_day_difficulty(direction: "easier")
+                  * "tôi mệt, muốn tập nhẹ hôm nay"       → regenerate_entire_day(newGoal: "light recovery cardio")
+                  * "đổi sang tập vai thôi"               → regenerate_entire_day(newGoal: "shoulder isolation")
 
                 ⚠️ SCHEDULE TOOL EXCEPTIONS (CRITICAL):
                 - NEVER call `get_plan_schedule` or `reschedule_workout` unless you ALREADY KNOW the exact `planId`.
@@ -62,7 +66,8 @@ namespace AIService.Application.Features.AI.Utils
                 - Wait for the user to reply with a specific plan before calling detailed tools.
 
                 📝 WORKOUT LOGGING WORKFLOW (CRITICAL RULE):
-                - When the user states they have finished a workout, check-in, or want to log a session, YOU MUST FIRST ask them to choose: "Bạn muốn Log Nhanh (chỉ cần đánh giá mức độ mệt) hay Log Chi Tiết (nhập cụ thể mức tạ và số rep để có biểu đồ chính xác)?"
+                - 🛑 WORKOUT VS. DAILY LIFE (QUAN TRỌNG): ONLY trigger the logging workflow if the user EXPLICITLY mentions finishing an EXERCISE, GYM SESSION, or WORKOUT (e.g., "tập xong rồi", "mới đi gym về", "đã hoàn thành bài tập"). DO NOT trigger this if they are just tired from their JOB or daily life (e.g., "đi làm về mệt", "hôm nay đuối quá"). In those daily life cases, empathize and DO NOTHING or suggest a rest.
+                - When the user explicitly states they have finished a WORKOUT, YOU MUST FIRST ask them to choose: "Bạn muốn Log Nhanh (chỉ cần đánh giá mức độ mệt) hay Log Chi Tiết (nhập cụ thể mức tạ và số rep để có biểu đồ chính xác)?"
                 - If they choose QUICK LOG (Log Nhanh): Call `log_workout_day_completion` (Check if they provided their feeling. If not, ask for it first).
                 - If they choose DETAILED LOG (Log Chi Tiết): Call `request_detailed_log` immediately.
 

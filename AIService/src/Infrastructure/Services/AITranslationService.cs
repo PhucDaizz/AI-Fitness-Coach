@@ -17,13 +17,22 @@ namespace AIService.Infrastructure.Services
         public async Task<string> TranslateVietnameseToEnglishAsync(string question, CancellationToken cancellationToken = default)
         {
             var history = new ChatHistory("""
-                Translate Vietnamese to English. Output only the translation.
-    
+                You are a translation AI. Your ONLY task is to output the text in English.
+                - If the input is in Vietnamese or any other language, translate it to English.
+                - If the input is ALREADY in English, output it EXACTLY as it is without any translation.
+                - Output ONLY the result. No explanations, no prefixes.
+
                 Input: Tôi muốn ăn cơm
                 Output: I want to eat rice
-    
+
                 Input: Thời tiết hôm nay thế nào?
                 Output: What is the weather like today?
+
+                Input: light recovery cardio
+                Output: light recovery cardio
+
+                Input: Bài tập vai nhẹ nhàng
+                Output: Light shoulder workout
                 """);
 
             history.AddUserMessage($"Translate: {question}");

@@ -1,4 +1,4 @@
-﻿using AIService.Application.Common.Contexts;
+using AIService.Application.Common.Contexts;
 using AIService.Application.Common.Interfaces;
 using AIService.Application.DTOs.ChatMessage;
 using AIService.Application.Features.AI.Utils;
@@ -91,20 +91,21 @@ namespace AIService.Application.Features.AI.Commands.StreamFitnessChat
                     lastChunk = chunk;
                 }
 
-                await _notifier.SendMessageCompletedAsync(request.UserId, request.MessageId);
-
-                // 7. Parse & Save
+                // 7. Parse & Save 
                 var (promptTokens, completionTokens) = TokenUsageParser.Parse(lastChunk);
                 _logger.LogInformation("[Handler] Done. MsgId: {Id}, Len: {Len}",
                     request.MessageId, fullResponse.Length);
 
-                _ = _responseSaver.SaveAsync(new ChatSaveRequest(
+                await _responseSaver.SaveAsync(new ChatSaveRequest(
                     Guid.Parse(request.SessionId),
                     request.UserId,
                     request.MessageId,
                     fullResponse.ToString(),
                     promptTokens,
                     completionTokens));
+
+                // 8. Only notify client AFTER DB save is confirmed
+                await _notifier.SendMessageCompletedAsync(request.UserId, request.MessageId);
                 
             }
             catch (OperationCanceledException)

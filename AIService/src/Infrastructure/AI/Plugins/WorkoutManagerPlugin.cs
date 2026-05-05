@@ -212,6 +212,48 @@ namespace AIService.Infrastructure.AI.Plugins
         }
 
 
+        [KernelFunction("adjust_day_difficulty")]
+        [Description("""
+            Adjust the difficulty of the user's next upcoming workout day.
+            Keep the same muscle focus but replace exercises with easier or harder alternatives.
+
+            Use when user says:
+            - Too easy: "bài này dễ quá", "không đủ trình", "muốn tập nặng hơn", "tăng độ khó"
+            - Too hard: "khó quá", "tôi không làm được", "giảm nhẹ xuống"
+
+            DO NOT use for changing muscle groups — use regenerate_entire_day instead.
+        """)]
+        public async Task<string> AdjustDayDifficultyAsync(
+            [Description("Direction to adjust: 'harder' or 'easier'")]
+            string direction,
+            CancellationToken cancellationToken = default)
+        {
+            await using var scope = _sp.CreateAsyncScope();
+            var sp = scope.ServiceProvider;
+
+            var logger = sp.GetRequiredService<ILogger<WorkoutManagerPlugin>>();
+            var dayExecutor = sp.GetRequiredService<IDayPlanExecutor>();
+
+            logger.LogInformation(
+                "[Plugin] adjust_day_difficulty called. Direction: {Dir}", direction);
+
+            try
+            {
+                var success = await dayExecutor.AdjustDifficultyAsync(direction, cancellationToken);
+
+                return success
+                    ? $"SUCCESS: Next workout adjusted to be {direction}. " +
+                      $"Exercises have been replaced with {direction} alternatives."
+                    : "FAILED: Could not adjust the workout. No upcoming day found or no matching exercises.";
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "[Plugin] adjust_day_difficulty failed.");
+                return "ERROR: An unexpected error occurred while adjusting difficulty.";
+            }
+        }
+
+
         [KernelFunction("regenerate_entire_day")]
         [Description("""
             Regenerate the user's next upcoming workout day with a completely new goal.

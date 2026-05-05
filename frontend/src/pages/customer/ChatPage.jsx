@@ -14,12 +14,12 @@ import { logout } from '../../services/api/auth.service';
 const ChatPage = () => {
   const { sessionId: urlSessionId } = useParams();
   const navigate = useNavigate();
-  
+
   const [sessions, setSessions] = useState([]);
   const [currentSessionId, setCurrentSessionId] = useState(urlSessionId || null);
   const [messages, setMessages] = useState([]);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  
+
   // Pagination states
   const [hasMore, setHasMore] = useState(false);
   const [nextCursor, setNextCursor] = useState(null);
@@ -30,11 +30,13 @@ const ChatPage = () => {
   const [isThinking, setIsThinking] = useState(false);
   const [streamingContent, setStreamingContent] = useState('');
   const [activeStreamingId, setActiveStreamingId] = useState(null);
-  
+
   const scrollRef = useRef(null);
   const userId = useRef(getDecodedToken(localStorage.getItem('token'))?.nameid || 'unknown');
   const isInitialLoad = useRef(true);
   const prevScrollHeight = useRef(0);
+  const isNearBottomRef = useRef(true); // Track if user is at the bottom of the chat
+  const streamingContentRef = useRef(''); // Holds latest streamed content to avoid stale closures
 
   // Fetch session history
   const fetchSessions = useCallback(async () => {
@@ -62,11 +64,11 @@ const ChatPage = () => {
       const data = await getSessionMessages(sessionId);
       const items = data?.items || [];
       const sorted = [...items].sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
-      
+
       setMessages(sorted);
       setHasMore(data?.hasMore || false);
       setNextCursor(data?.nextCursor || null);
-      
+
       // For initial load, scroll to bottom
       setTimeout(() => {
         if (scrollRef.current) {
@@ -89,7 +91,7 @@ const ChatPage = () => {
       const data = await getSessionMessages(currentSessionId, nextCursor);
       const newItems = data?.items || [];
       const sortedNew = [...newItems].sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
-      
+
       setMessages(prev => [...sortedNew, ...prev]);
       setHasMore(data?.hasMore || false);
       setNextCursor(data?.nextCursor || null);
@@ -109,9 +111,13 @@ const ChatPage = () => {
     }
   }, [currentSessionId, hasMore, nextCursor, isLoadingMore]);
 
-  // Scroll detection for infinite load
+  // Scroll detection for infinite load and auto-scroll logic
   const handleScroll = (e) => {
-    const { scrollTop } = e.currentTarget;
+    const { scrollTop, scrollHeight, clientHeight } = e.currentTarget;
+    
+    // Track if user is within 150px of the bottom
+    isNearBottomRef.current = scrollHeight - scrollTop - clientHeight < 150;
+
     if (scrollTop === 0 && hasMore && !isLoadingMore) {
       loadMoreMessages();
     }
@@ -126,36 +132,64 @@ const ChatPage = () => {
   // Listen for sessionId changes
   useEffect(() => {
     if (isInitialLoad.current) {
-       loadMessages(currentSessionId);
+      loadMessages(currentSessionId);
     }
   }, [currentSessionId, loadMessages]);
 
-  // Scroll to bottom when new messages arrive (only if already near bottom or AI is typing)
+  // Smart Scroll: Only auto-scroll if the user is already near the bottom
   useEffect(() => {
     if (scrollRef.current && (isStreaming || isThinking)) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+      if (isNearBottomRef.current) {
+        scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+      }
     }
-  }, [messages.length, streamingContent, isThinking]);
+  }, [messages.length, streamingContent, isThinking, isStreaming]);
 
   // SignalR Handlers
   const onReceiveChunk = useCallback((messageId, chunk) => {
     setIsThinking(false);
     setIsStreaming(true);
     setActiveStreamingId(messageId);
-    setStreamingContent(prev => prev + chunk);
+    
+    // Update both state (for rendering) and ref (for reliable final read)
+    streamingContentRef.current += chunk;
+    setStreamingContent(streamingContentRef.current);
   }, []);
 
   const onMessageCompleted = useCallback((messageId) => {
+    // Read final content from ref — guaranteed to be the latest, no stale closure
+    const finalContent = streamingContentRef.current;
+
+    // 1. Clear streaming state FIRST to hide the streaming bubble
     setIsStreaming(false);
     setIsThinking(false);
     setActiveStreamingId(null);
     setStreamingContent('');
-    
-    if (currentSessionId) {
-      loadMessages(currentSessionId);
-      fetchSessions();
+    streamingContentRef.current = '';
+
+    // 2. Then append the completed message to the permanent list locally
+    if (finalContent) {
+      setMessages(prev => {
+        const exists = prev.some(m => m.id === messageId);
+        if (exists) return prev;
+        return [...prev, {
+          id: messageId,
+          role: 'AI',
+          content: finalContent,
+          createdAt: new Date().toISOString()
+        }];
+      });
     }
-  }, [currentSessionId, loadMessages, fetchSessions]);
+
+    // 3. Sync sidebar session list and trigger silent DB sync
+    if (currentSessionId) {
+      fetchSessions();
+      
+      setTimeout(() => {
+        loadMessages(currentSessionId);
+      }, 1500);
+    }
+  }, [currentSessionId, fetchSessions, loadMessages]);
 
   const onTitleUpdated = useCallback((sessionId, newTitle) => {
     setSessions(prev => {
@@ -193,14 +227,14 @@ const ChatPage = () => {
       setCurrentSessionId(sessionId);
     }
 
-    const userMsg = { 
-      id: `temp-u-${Date.now()}`, 
-      role: 'User', 
-      content: text, 
-      createdAt: new Date().toISOString() 
+    const userMsg = {
+      id: `temp-u-${Date.now()}`,
+      role: 'User',
+      content: text,
+      createdAt: new Date().toISOString()
     };
     setMessages(prev => [...prev, userMsg]);
-    
+
     setIsThinking(true);
     setStreamingContent('');
 
@@ -210,11 +244,11 @@ const ChatPage = () => {
       console.error('API Error:', err);
       if (!isStreaming) {
         setIsThinking(false);
-        setMessages(prev => [...prev, { 
-          id: `err-${Date.now()}`, 
-          role: 'AI', 
-          content: 'Uplink synchronization failed.', 
-          createdAt: new Date().toISOString() 
+        setMessages(prev => [...prev, {
+          id: `err-${Date.now()}`,
+          role: 'AI',
+          content: 'Uplink synchronization failed.',
+          createdAt: new Date().toISOString()
         }]);
       }
     }
@@ -246,7 +280,7 @@ const ChatPage = () => {
       await deleteSession(id);
       // Remove from local state
       setSessions(prev => prev.filter(s => s.id !== id));
-      
+
       // If the deleted session is the currently active one, clear it
       if (currentSessionId === id) {
         handleSelectSession(null);
@@ -284,7 +318,7 @@ const ChatPage = () => {
   return (
     <CustomerLayout title="KINETIC AI" fullWidth={true}>
       <div className="flex flex-grow h-[calc(100vh-64px)] overflow-hidden relative">
-        <ChatSidebar 
+        <ChatSidebar
           sessions={sessions}
           currentSessionId={currentSessionId}
           onSelectSession={handleSelectSession}
@@ -296,25 +330,25 @@ const ChatPage = () => {
         />
 
         {/* Scrollspy Navigation */}
-        <ChatScrollSpy 
-          messages={messages} 
-          onScrollTo={handleScrollToMessage} 
-          onScrollTop={handleScrollTop} 
+        <ChatScrollSpy
+          messages={messages}
+          onScrollTo={handleScrollToMessage}
+          onScrollTop={handleScrollTop}
         />
 
         <div className="flex-grow flex flex-col min-w-0 bg-background relative h-full">
           {!isSidebarOpen && (
             <div className="absolute top-20 left-4 z-[700] md:top-20">
-               <button 
-                 onClick={() => setIsSidebarOpen(true)}
-                 className="w-10 h-10 rounded-full bg-surface-container-highest/90 backdrop-blur-xl flex items-center justify-center border border-white/10 shadow-2xl hover:border-primary/40 transition-all active:scale-90 group"
-               >
-                  <span className="material-symbols-outlined text-on-surface group-hover:text-primary text-xl">menu</span>
-               </button>
+              <button
+                onClick={() => setIsSidebarOpen(true)}
+                className="w-10 h-10 rounded-full bg-surface-container-highest/90 backdrop-blur-xl flex items-center justify-center border border-white/10 shadow-2xl hover:border-primary/40 transition-all active:scale-90 group"
+              >
+                <span className="material-symbols-outlined text-on-surface group-hover:text-primary text-xl">menu</span>
+              </button>
             </div>
           )}
 
-          <div 
+          <div
             ref={scrollRef}
             onScroll={handleScroll}
             className="flex-grow overflow-y-auto px-4 md:px-[10%] lg:px-[15%] py-6 space-y-4 pb-32 custom-scrollbar pt-20"
@@ -332,7 +366,7 @@ const ChatPage = () => {
             {messages.map((msg, index) => {
               const uniqueId = msg.id || `msg-${msg.createdAt}-${index}`;
               return (
-                <ChatMessage 
+                <ChatMessage
                   key={uniqueId}
                   messageId={uniqueId}
                   role={msg.role}
@@ -343,7 +377,7 @@ const ChatPage = () => {
             })}
 
             {isThinking && (
-              <ChatMessage 
+              <ChatMessage
                 role="AI"
                 content=""
                 isThinking={true}
@@ -351,7 +385,7 @@ const ChatPage = () => {
             )}
 
             {isStreaming && (
-              <ChatMessage 
+              <ChatMessage
                 key={activeStreamingId || 'streaming'}
                 role="AI"
                 content={streamingContent}
@@ -360,9 +394,9 @@ const ChatPage = () => {
             )}
           </div>
 
-          <ChatInput 
-            onSend={handleSendMessage} 
-            isLoading={isStreaming || isThinking} 
+          <ChatInput
+            onSend={handleSendMessage}
+            isLoading={isStreaming || isThinking}
             isWelcome={messages.length === 0 && !isStreaming && !isThinking}
           />
         </div>

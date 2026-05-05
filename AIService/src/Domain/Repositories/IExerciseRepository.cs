@@ -20,5 +20,7 @@ namespace AIService.Domain.Repositories
             int pageNumber,
             int pageSize,
             CancellationToken cancellationToken = default);
+
+        Task<Dictionary<string, string>> GetExerciseNamesByIdsAsync(IEnumerable<string> exerciseIds, CancellationToken ct);
     }
 }
