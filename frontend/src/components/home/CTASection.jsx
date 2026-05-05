@@ -1,6 +1,9 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 
 const CTASection = () => {
+  const { t } = useTranslation();
+
   return (
     <section className="relative py-32 px-6 overflow-hidden">
       {/* Background Glows */}
@@ -9,20 +12,19 @@ const CTASection = () => {
 
       <div className="relative z-10 max-w-4xl mx-auto text-center">
         <h2 className="text-4xl md:text-6xl font-black italic tracking-tighter mb-8 uppercase leading-[1.1]">
-          NO MORE EXPENSIVE TRAINER FEES. <br />{' '}
-          <span className="text-primary">NO MORE EXCUSES.</span>
+          {t('home.cta.title')} <br />{' '}
+          <span className="text-primary">{t('home.cta.title_highlight')}</span>
         </h2>
         <p className="text-on-surface-variant text-xl mb-12 max-w-2xl mx-auto">
-          Follow your personalized path and enjoy the results. Your high-performance journey starts
-          with a single tap.
+          {t('home.cta.subtitle')}
         </p>
         <div className="flex flex-col items-center gap-6">
           <button className="group relative px-12 py-6 bg-primary text-on-primary rounded-full font-black text-xl tracking-tight shadow-[0_0_30px_rgba(177,255,36,0.4)] hover:shadow-[0_0_50px_rgba(177,255,36,0.6)] transition-all overflow-hidden">
-            <span className="relative z-10">GET KINETIC AI NOW</span>
+            <span className="relative z-10">{t('home.cta.button')}</span>
             <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform"></div>
           </button>
           <p className="text-xs uppercase tracking-[0.3em] text-[#adaaaa]">
-            Available on iOS and Android
+            {t('home.cta.availability')}
           </p>
         </div>
       </div>

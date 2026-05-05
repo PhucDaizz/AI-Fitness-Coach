@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import CustomerLayout from '../../components/layout/CustomerLayout';
 import MealFilter from '../../components/common/meal/MealFilter';
 import MealDetailModal from '../../components/customer/MealDetailModal';
@@ -24,6 +25,7 @@ const INITIAL_FILTERS = {
 const DEFAULT_MEAL_IMAGE = 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?q=80&w=1000&auto=format&fit=crop';
 
 const CustomerMealsPage = () => {
+  const { t } = useTranslation();
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState(INITIAL_FILTERS);
@@ -107,10 +109,10 @@ const CustomerMealsPage = () => {
     <CustomerLayout title="KINETIC AI">
       <header className="mb-10">
         <h1 className="text-[2.5rem] font-headline font-black italic tracking-tighter uppercase leading-none mb-2">
-          Culinary <span className="text-primary">Vault</span>
+          {t('meals.title')} <span className="text-primary">{t('meals.title_highlight')}</span>
         </h1>
         <p className="text-on-surface-variant font-medium text-sm tracking-wide opacity-70">
-          Fuel your performance with precision-engineered nutrition and gourmet protocols.
+          {t('meals.subtitle')}
         </p>
       </header>
 
@@ -124,12 +126,12 @@ const CustomerMealsPage = () => {
         {loading ? (
           <div className="flex flex-col items-center justify-center py-20 opacity-30">
             <div className="w-12 h-12 border-2 border-primary border-t-transparent rounded-full animate-spin mb-4"></div>
-            <p className="text-[10px] font-black uppercase tracking-widest">Accessing Nutritional Grid...</p>
+            <p className="text-[10px] font-black uppercase tracking-widest">{t('meals.loading')}</p>
           </div>
         ) : items.length === 0 ? (
           <div className="text-center py-20 bg-white/5 rounded-[2rem] border border-dashed border-white/10">
             <span className="material-symbols-outlined text-4xl text-on-surface-variant mb-4 opacity-20">no_food</span>
-            <p className="text-on-surface-variant font-bold text-sm">No culinary elements match your current search parameters.</p>
+            <p className="text-on-surface-variant font-bold text-sm">{t('meals.empty')}</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -155,7 +157,7 @@ const CustomerMealsPage = () => {
                     />
                   )}
                   <div className="absolute top-4 left-4 bg-black/60 backdrop-blur-md px-3 py-1 rounded-full border border-white/10">
-                    <p className="text-[8px] font-black uppercase text-primary tracking-widest">{meal.cuisineType || 'Universal'}</p>
+                    <p className="text-[8px] font-black uppercase text-primary tracking-widest">{meal.cuisineType || t('meals.cuisine_universal')}</p>
                   </div>
                   
                   {/* Macros Preview Overlay */}
@@ -175,7 +177,7 @@ const CustomerMealsPage = () => {
                         </div>
                      </div>
                      <div className="text-right">
-                        <p className="text-[6px] font-black uppercase text-white/50 tracking-tighter">Energy</p>
+                        <p className="text-[6px] font-black uppercase text-white/50 tracking-tighter">{t('meals.macros.energy')}</p>
                         <p className="text-sm font-black text-white italic">{meal.calories}<span className="text-[8px] ml-0.5 not-italic opacity-50">KCAL</span></p>
                      </div>
                   </div>

@@ -46,7 +46,7 @@ const VerificationAlert = ({ email }) => {
           {error && <p className="text-error text-[10px] mt-2 font-bold uppercase tracking-widest">{error}</p>}
         </div>
       </div>
-      <button 
+      <button
         onClick={handleVerify}
         disabled={loading}
         className="relative z-10 shrink-0 bg-surface-container-highest text-on-surface hover:text-primary border border-outline-variant/30 px-6 py-3 rounded-full font-bold text-sm uppercase tracking-widest transition-all flex items-center gap-2 group disabled:opacity-50"

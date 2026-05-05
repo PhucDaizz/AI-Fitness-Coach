@@ -1,7 +1,9 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { getDecodedToken } from '../../utils/authUtils';
 
 const ChatSidebar = ({ sessions, currentSessionId, onSelectSession, onRenameSession, onDeleteSession, onLogout, isOpen, onClose }) => {
+  const { t } = useTranslation();
   const [editingSessionId, setEditingSessionId] = React.useState(null);
   const [editTitle, setEditTitle] = React.useState('');
   const inputRef = React.useRef(null);
@@ -40,7 +42,7 @@ const ChatSidebar = ({ sessions, currentSessionId, onSelectSession, onRenameSess
   const handleEditStart = (e, session) => {
     e.stopPropagation();
     setEditingSessionId(session.id);
-    setEditTitle(session.title || 'New Conversation');
+    setEditTitle(session.title || t('chat.sidebar.new_conversation'));
     setTimeout(() => inputRef.current?.focus(), 50);
   };
 
@@ -87,7 +89,7 @@ const ChatSidebar = ({ sessions, currentSessionId, onSelectSession, onRenameSess
           />
         ) : (
           <span className="text-[13px] font-medium truncate flex-grow">
-            {session.title || 'New Conversation'}
+            {session.title || t('chat.sidebar.new_conversation')}
           </span>
         )}
 
@@ -97,7 +99,7 @@ const ChatSidebar = ({ sessions, currentSessionId, onSelectSession, onRenameSess
             <div 
               className="text-on-surface-variant hover:text-primary transition-colors p-0.5"
               onClick={(e) => handleEditStart(e, session)}
-              title="Rename"
+              title={t('chat.sidebar.rename')}
             >
               <span className="material-symbols-outlined text-[15px]">edit</span>
             </div>
@@ -105,11 +107,11 @@ const ChatSidebar = ({ sessions, currentSessionId, onSelectSession, onRenameSess
               className="text-on-surface-variant hover:text-error transition-colors p-0.5"
               onClick={(e) => {
                 e.stopPropagation();
-                if (window.confirm('Are you sure you want to delete this conversation?')) {
+                if (window.confirm(t('chat.sidebar.confirm_delete'))) {
                   onDeleteSession(session.id);
                 }
               }}
-              title="Delete"
+              title={t('chat.sidebar.delete')}
             >
               <span className="material-symbols-outlined text-[15px]">delete</span>
             </div>
@@ -143,28 +145,28 @@ const ChatSidebar = ({ sessions, currentSessionId, onSelectSession, onRenameSess
               <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center border border-primary/20 group-hover:bg-primary group-hover:text-on-primary transition-all">
                 <span className="material-symbols-outlined text-sm">add</span>
               </div>
-              <span className="text-[13px] font-bold uppercase tracking-wider">New Chat</span>
+              <span className="text-[13px] font-bold uppercase tracking-wider">{t('chat.sidebar.new_chat')}</span>
             </button>
           </div>
 
           <div className="flex-grow overflow-y-auto px-2 py-2 space-y-6 custom-scrollbar">
             {categorizedSessions.today.length > 0 && (
               <div className="space-y-1">
-                <h3 className="px-3 text-[10px] font-black uppercase tracking-[0.2em] text-on-surface-variant/50 mb-2">Today</h3>
+                <h3 className="px-3 text-[10px] font-black uppercase tracking-[0.2em] text-on-surface-variant/50 mb-2">{t('chat.sidebar.today')}</h3>
                 {categorizedSessions.today.map(renderSessionItem)}
               </div>
             )}
 
             {categorizedSessions.sevenDays.length > 0 && (
               <div className="space-y-1">
-                <h3 className="px-3 text-[10px] font-black uppercase tracking-[0.2em] text-on-surface-variant/50 mb-2">Previous 7 Days</h3>
+                <h3 className="px-3 text-[10px] font-black uppercase tracking-[0.2em] text-on-surface-variant/50 mb-2">{t('chat.sidebar.last_7_days')}</h3>
                 {categorizedSessions.sevenDays.map(renderSessionItem)}
               </div>
             )}
 
             {categorizedSessions.older.length > 0 && (
               <div className="space-y-1">
-                <h3 className="px-3 text-[10px] font-black uppercase tracking-[0.2em] text-on-surface-variant/50 mb-2">Older</h3>
+                <h3 className="px-3 text-[10px] font-black uppercase tracking-[0.2em] text-on-surface-variant/50 mb-2">{t('chat.sidebar.older')}</h3>
                 {categorizedSessions.older.map(renderSessionItem)}
               </div>
             )}
@@ -172,7 +174,7 @@ const ChatSidebar = ({ sessions, currentSessionId, onSelectSession, onRenameSess
             {sessions.length === 0 && (
               <div className="text-center py-12 opacity-20">
                 <span className="material-symbols-outlined text-3xl mb-2">history</span>
-                <p className="text-[10px] font-bold uppercase tracking-widest">Empty</p>
+                <p className="text-[10px] font-bold uppercase tracking-widest">{t('chat.sidebar.empty')}</p>
               </div>
             )}
           </div>
@@ -186,12 +188,12 @@ const ChatSidebar = ({ sessions, currentSessionId, onSelectSession, onRenameSess
                 </div>
                 <div className="flex-grow min-w-0">
                    <p className="text-[11px] font-bold text-on-surface truncate">{userName}</p>
-                   <p className="text-[8px] text-primary font-black uppercase tracking-widest opacity-60">Verified</p>
+                   <p className="text-[8px] text-primary font-black uppercase tracking-widest opacity-60">{t('chat.sidebar.verified')}</p>
                 </div>
                 <button 
                   onClick={onLogout}
                   className="p-1.5 rounded-lg hover:bg-error/10 text-on-surface-variant hover:text-error transition-all active:scale-90"
-                  title="Logout"
+                  title={t('chat.sidebar.logout')}
                 >
                    <span className="material-symbols-outlined text-lg">logout</span>
                 </button>

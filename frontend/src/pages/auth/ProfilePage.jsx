@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { getCurrentUser } from '../../services/api/auth.service';
 import { getDecodedToken, isAdmin } from '../../utils/authUtils';
@@ -8,6 +9,7 @@ import BiometricsForm from '../../components/profile/BiometricsForm';
 import VerificationAlert from '../../components/profile/VerificationAlert';
 
 const ProfilePage = () => {
+  const { t } = useTranslation();
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [success, setSuccess] = useState(false);
@@ -80,17 +82,21 @@ const ProfilePage = () => {
             className="inline-flex items-center gap-2 mb-6 text-on-surface-variant hover:text-primary transition-colors font-bold uppercase tracking-widest text-[10px]"
           >
             <span className="material-symbols-outlined text-sm">arrow_back</span>
-            Back
+            {t('profile.back')}
           </Link>
         )}
         <header className="mb-12">
-          <h1 className="text-[2.25rem] md:text-[3.5rem] font-headline font-bold tracking-[-0.04em] leading-tight mb-2">Profile Details</h1>
-          <p className="text-on-surface-variant font-body font-medium">Manage your identity and biometric anchor points.</p>
+          <h1 className="text-[2.25rem] md:text-[3.5rem] font-headline font-bold tracking-[-0.04em] leading-tight mb-2">
+            {t('profile.title')}
+          </h1>
+          <p className="text-on-surface-variant font-body font-medium">
+            {t('profile.subtitle')}
+          </p>
         </header>
 
         {success && (
           <div className="mb-6 bg-primary/10 border border-primary/20 p-4 rounded-lg text-primary text-sm font-bold flex items-center gap-2">
-            <span className="material-symbols-outlined">check_circle</span> Profile updated successfully!
+            <span className="material-symbols-outlined">check_circle</span> {t('profile.update_success')}
           </div>
         )}
 

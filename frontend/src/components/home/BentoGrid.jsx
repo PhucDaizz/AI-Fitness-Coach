@@ -1,11 +1,14 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 
 const BentoGrid = () => {
+  const { t } = useTranslation();
+
   return (
     <section className="py-24 px-6 max-w-7xl mx-auto">
       <div className="mb-16">
         <h2 className="text-primary font-black italic text-4xl mb-2 tracking-tighter">
-          ENGINEERED FOR SUCCESS
+          {t('home.bento.header')}
         </h2>
         <div className="w-20 h-1 bg-primary"></div>
       </div>
@@ -25,12 +28,10 @@ const BentoGrid = () => {
               fitness_center
             </span>
             <h3 className="text-3xl font-black italic tracking-tighter mb-4 text-white uppercase">
-              Bespoke Lifestyles in 30 Seconds
+              {t('home.bento.card1.title')}
             </h3>
             <p className="text-on-surface-variant max-w-md">
-              Instead of a lifeless PDF, our system analyzes everything—from your biometrics to old
-              injuries—to design a plan optimized for maximum results, whether you're in a
-              world-class gym or at home.
+              {t('home.bento.card1.desc')}
             </p>
           </div>
         </div>
@@ -41,17 +42,15 @@ const BentoGrid = () => {
             <span className="material-symbols-outlined text-secondary">psychology</span>
           </div>
           <h3 className="text-2xl font-black italic tracking-tighter mb-4 text-white uppercase leading-tight">
-            An AI That Takes Action
+            {t('home.bento.card2.title')}
           </h3>
           <p className="text-on-surface-variant mb-8">
-            Experience 'Active Intelligence'. Message the AI to move workouts or adjust intensity.
-            It automatically reorganizes your entire schedule based on your actual strength and
-            feedback.
+            {t('home.bento.card2.desc')}
           </p>
           <div className="mt-auto glass-panel p-4 rounded-lg flex items-center gap-4">
             <div className="w-2 h-2 rounded-full bg-secondary animate-pulse"></div>
             <span className="text-xs font-bold text-secondary tracking-widest uppercase">
-              Coach Pulse: Active
+              {t('home.bento.card2.status')}
             </span>
           </div>
         </div>
@@ -60,11 +59,10 @@ const BentoGrid = () => {
         <div className="md:col-span-5 bg-surface-container p-10 rounded-lg border border-outline-variant/10 flex flex-col hover:bg-surface-container-highest transition-colors">
           <span className="material-symbols-outlined text-primary mb-6 text-3xl">verified</span>
           <h3 className="text-2xl font-black italic tracking-tighter mb-4 text-white uppercase leading-tight">
-            Vast, Expert-Verified Knowledge
+            {t('home.bento.card3.title')}
           </h3>
           <p className="text-on-surface-variant">
-            Access a library of exercises strictly vetted for professional accuracy. Train correctly
-            and safely with expert-backed data, never 'guessing' again.
+            {t('home.bento.card3.desc')}
           </p>
         </div>
 
@@ -83,17 +81,16 @@ const BentoGrid = () => {
                 restaurant_menu
               </span>
               <h3 className="text-3xl font-black italic tracking-tighter mb-4 text-white uppercase leading-tight">
-                Seamless Nutrition Mastery
+                {t('home.bento.card4.title')}
               </h3>
               <p className="text-on-surface-variant max-w-sm">
-                The system automatically determines your daily calorie and protein needs. From pho
-                to salads, get perfect meal suggestions to build muscle or lose fat fast.
+                {t('home.bento.card4.desc')}
               </p>
             </div>
             <div className="w-full md:w-48 aspect-square rounded-full border-4 border-dashed border-primary/20 flex items-center justify-center relative">
               <div className="absolute inset-2 rounded-full border-2 border-primary flex flex-col items-center justify-center">
                 <span className="text-primary font-black text-2xl">2400</span>
-                <span className="text-[8px] uppercase tracking-widest">Kcal Goal</span>
+                <span className="text-[8px] uppercase tracking-widest">{t('home.bento.card4.goal')}</span>
               </div>
             </div>
           </div>

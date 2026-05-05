@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { getCurrentUser } from '../../services/api/auth.service';
 import { isAdmin } from '../../utils/authUtils';
 import ProfileSidebar from '../../components/profile/ProfileSidebar';
@@ -8,6 +9,7 @@ import RecoveryCard from '../../components/profile/RecoveryCard';
 import VerificationAlert from '../../components/profile/VerificationAlert';
 
 const SecurityPage = () => {
+  const { t } = useTranslation();
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -62,11 +64,11 @@ const SecurityPage = () => {
         {/* Header Section */}
         <div className="px-6 md:px-12 pt-4 pb-8 relative z-10">
           <h1 className="font-headline font-bold text-[2.25rem] md:text-[3.5rem] tracking-tight leading-none text-on-surface relative">
-            Account Security
+            {t('security.title')}
             <span className="absolute -z-10 right-0 top-0 text-[8rem] font-black text-surface-container-highest/10 select-none hidden md:block">02</span>
           </h1>
           <p className="font-body text-on-surface-variant text-base mt-4 max-w-2xl">
-            Manage your credentials, monitor active sessions, and reinforce your account defenses.
+            {t('security.subtitle')}
           </p>
         </div>
 

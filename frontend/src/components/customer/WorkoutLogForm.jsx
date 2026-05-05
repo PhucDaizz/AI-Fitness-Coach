@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { getWorkoutPlanDays, submitWorkoutLog, getWorkoutLogStatus } from '../../services/api/workoutPlan.service';
 import { getExerciseById } from '../../services/api/exercise.service';
 
 const WorkoutLogForm = ({ planId, dayId, scheduledDate }) => {
+  const { t } = useTranslation();
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
@@ -141,16 +143,16 @@ const WorkoutLogForm = ({ planId, dayId, scheduledDate }) => {
         <div className="w-12 h-12 rounded-full bg-secondary/20 text-secondary flex items-center justify-center mx-auto mb-2">
           <span className="material-symbols-outlined text-2xl">verified</span>
         </div>
-        <h4 className="text-secondary font-black uppercase tracking-tighter text-lg italic">Workout Completed</h4>
+        <h4 className="text-secondary font-black uppercase tracking-tighter text-lg italic">{t('workout_log.completed')}</h4>
         <div className="bg-white/5 rounded-xl p-3 inline-block">
            <p className="text-[10px] text-on-surface-variant font-bold uppercase tracking-widest">
-             Logged on: <span className="text-white">{info.loggedDate || scheduledDate}</span>
+             {t('workout_log.logged_on')}: <span className="text-white">{info.loggedDate || scheduledDate}</span>
            </p>
            <p className="text-[10px] text-on-surface-variant font-bold uppercase tracking-widest mt-1">
-             Duration: <span className="text-white">{info.durationMinutes} mins</span> • Difficulty: <span className="text-white uppercase">{info.difficultyFeedback}</span>
+             {t('workout_log.duration')}: <span className="text-white">{info.durationMinutes} {t('workout_log.mins')}</span> • {t('workout_log.difficulty')}: <span className="text-white uppercase">{t(`workout_log.${info.difficultyFeedback || 'ok'}`)}</span>
            </p>
         </div>
-        <p className="text-[10px] text-on-surface-variant font-medium opacity-70">This session has been archived in your performance matrix.</p>
+        <p className="text-[10px] text-on-surface-variant font-medium opacity-70">{t('workout_log.archived')}</p>
       </div>
     );
   }
@@ -161,7 +163,7 @@ const WorkoutLogForm = ({ planId, dayId, scheduledDate }) => {
         <div>
           <h3 className="text-sm font-bold text-primary flex items-center gap-1.5">
             <span className="material-symbols-outlined text-[16px]">fitness_center</span>
-            Log Workout
+            {t('workout_log.title')}
           </h3>
           {dayData && (
             <p className="text-[9px] text-on-surface-variant mt-0.5">
@@ -176,7 +178,7 @@ const WorkoutLogForm = ({ planId, dayId, scheduledDate }) => {
         {/* General Info */}
         <div className="grid grid-cols-2 gap-3">
           <div className="space-y-1">
-            <label className="text-[9px] font-bold uppercase tracking-wider text-on-surface-variant">Duration (mins)</label>
+            <label className="text-[9px] font-bold uppercase tracking-wider text-on-surface-variant">{t('workout_log.duration')} ({t('workout_log.mins')})</label>
             <input 
               type="number" 
               value={formData.durationMinutes}
@@ -186,15 +188,15 @@ const WorkoutLogForm = ({ planId, dayId, scheduledDate }) => {
             />
           </div>
           <div className="space-y-1">
-            <label className="text-[9px] font-bold uppercase tracking-wider text-on-surface-variant">Difficulty</label>
+            <label className="text-[9px] font-bold uppercase tracking-wider text-on-surface-variant">{t('workout_log.difficulty')}</label>
             <select 
               value={formData.difficultyFeedback}
               onChange={(e) => setFormData({...formData, difficultyFeedback: e.target.value})}
               className="w-full bg-surface-container-high border border-white/10 rounded-md p-1.5 text-xs text-on-surface focus:outline-none focus:border-primary/50"
             >
-              <option value="easy">Easy</option>
-              <option value="ok">OK</option>
-              <option value="hard">Hard</option>
+              <option value="easy">{t('workout_log.easy')}</option>
+              <option value="ok">{t('workout_log.ok')}</option>
+              <option value="hard">{t('workout_log.hard')}</option>
             </select>
           </div>
         </div>
@@ -221,11 +223,11 @@ const WorkoutLogForm = ({ planId, dayId, scheduledDate }) => {
                     )}
                     <div className="min-w-0">
                       <p className="text-xs font-bold text-on-surface truncate">{info?.name || 'Loading...'}</p>
-                      <p className="text-[9px] text-primary truncate">Target: {planEx?.sets}x{planEx?.reps}</p>
+                      <p className="text-[9px] text-primary truncate">{t('workout_log.target')}: {planEx?.sets}x{planEx?.reps}</p>
                     </div>
                   </div>
                   <label className="flex items-center gap-1 cursor-pointer shrink-0">
-                    <span className="text-[10px] text-on-surface-variant">Done</span>
+                    <span className="text-[10px] text-on-surface-variant">{t('workout_log.done')}</span>
                     <input 
                       type="checkbox"
                       checked={ex.isCompleted}
@@ -239,7 +241,7 @@ const WorkoutLogForm = ({ planId, dayId, scheduledDate }) => {
                 {ex.isCompleted && (
                   <div className="flex gap-2 items-center pl-8">
                     <div className="flex items-center gap-1">
-                      <label className="text-[9px] text-on-surface-variant w-6">Sets</label>
+                      <label className="text-[9px] text-on-surface-variant w-6">{t('workout_log.sets')}</label>
                       <input 
                         type="number" 
                         value={ex.setsDone}
@@ -248,7 +250,7 @@ const WorkoutLogForm = ({ planId, dayId, scheduledDate }) => {
                       />
                     </div>
                     <div className="flex items-center gap-1 flex-grow">
-                      <label className="text-[9px] text-on-surface-variant shrink-0">Reps</label>
+                      <label className="text-[9px] text-on-surface-variant shrink-0">{t('workout_log.reps')}</label>
                       <input 
                         type="text" 
                         value={ex.repsDone}
@@ -258,7 +260,7 @@ const WorkoutLogForm = ({ planId, dayId, scheduledDate }) => {
                       />
                     </div>
                     <div className="flex items-center gap-1">
-                      <label className="text-[9px] text-on-surface-variant shrink-0">Wt (kg)</label>
+                      <label className="text-[9px] text-on-surface-variant shrink-0">{t('workout_log.weight')}</label>
                       <input 
                         type="number" 
                         value={ex.weightKg}
@@ -275,12 +277,12 @@ const WorkoutLogForm = ({ planId, dayId, scheduledDate }) => {
 
         {/* Notes */}
         <div className="space-y-1">
-          <label className="text-[9px] font-bold uppercase tracking-wider text-on-surface-variant">Notes</label>
+          <label className="text-[9px] font-bold uppercase tracking-wider text-on-surface-variant">{t('workout_log.notes')}</label>
           <textarea 
             value={formData.notes}
             onChange={(e) => setFormData({...formData, notes: e.target.value})}
             className="w-full bg-surface-container-high border border-white/10 rounded-md p-2 text-xs text-on-surface focus:outline-none focus:border-primary/50 resize-y min-h-[40px]"
-            placeholder="How did you feel?"
+            placeholder={t('workout_log.how_feel')}
           ></textarea>
         </div>
 
@@ -292,12 +294,12 @@ const WorkoutLogForm = ({ planId, dayId, scheduledDate }) => {
           {submitting ? (
             <>
               <span className="material-symbols-outlined animate-spin text-[14px]">progress_activity</span>
-              Saving...
+              {t('workout_log.saving')}
             </>
           ) : (
             <>
               <span className="material-symbols-outlined text-[14px]">check_circle</span>
-              Submit Workout Log
+              {t('workout_log.submit')}
             </>
           )}
         </button>

@@ -1,7 +1,14 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 
 const ExerciseDetailModal = ({ exercise, isOpen, onClose }) => {
+  const { t, i18n } = useTranslation();
   if (!isOpen || !exercise) return null;
+
+  const getLocalizedName = (obj) => {
+    if (!obj) return '';
+    return i18n.language === 'vi' ? (obj.nameVN || obj.nameEN || obj.name) : (obj.nameEN || obj.name || obj.nameVN);
+  };
 
   return (
     <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4 md:p-6">
@@ -39,7 +46,9 @@ const ExerciseDetailModal = ({ exercise, isOpen, onClose }) => {
               
               {/* Floating Muscle Tag */}
               <div className="absolute bottom-6 left-6 bg-primary/20 backdrop-blur-md border border-primary/30 px-4 py-2 rounded-2xl">
-                 <p className="text-[10px] font-black uppercase tracking-[0.2em] text-primary">Target: {exercise.category?.nameVN || exercise.category?.name || 'Full Body'}</p>
+                 <p className="text-[10px] font-black uppercase tracking-[0.2em] text-primary">
+                   {t('exercises.detail.target')}: {getLocalizedName(exercise.category) || t('exercises.detail.full_body')}
+                 </p>
               </div>
             </div>
 
@@ -53,7 +62,7 @@ const ExerciseDetailModal = ({ exercise, isOpen, onClose }) => {
                 <div className="flex flex-wrap gap-2">
                   {exercise.equipments?.map(eq => (
                     <span key={eq.id} className="px-3 py-1 bg-white/5 border border-white/5 rounded-full text-[8px] font-bold text-on-surface-variant uppercase tracking-widest">
-                      {eq.nameVN || eq.name}
+                      {getLocalizedName(eq)}
                     </span>
                   ))}
                 </div>
@@ -64,12 +73,12 @@ const ExerciseDetailModal = ({ exercise, isOpen, onClose }) => {
                 <div className="space-y-4">
                   <div className="flex items-center gap-2 mb-2">
                     <span className="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
-                    <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-on-surface-variant">Primary Muscles</h3>
+                    <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-on-surface-variant">{t('exercises.detail.primary')}</h3>
                   </div>
                   <div className="flex flex-wrap gap-2">
                     {exercise.primaryMuscles?.map(m => (
                       <span key={m.id} className="text-sm font-bold text-white px-4 py-2 bg-white/5 rounded-2xl border border-white/5">
-                        {m.nameVN || m.nameEN}
+                        {i18n.language === 'vi' ? (m.nameVN || m.nameEN) : (m.nameEN || m.nameVN)}
                       </span>
                     ))}
                   </div>
@@ -79,12 +88,12 @@ const ExerciseDetailModal = ({ exercise, isOpen, onClose }) => {
                   <div className="space-y-4">
                     <div className="flex items-center gap-2 mb-2">
                       <span className="w-2 h-2 rounded-full bg-secondary animate-pulse"></span>
-                      <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-on-surface-variant">Assisting Muscles</h3>
+                      <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-on-surface-variant">{t('exercises.detail.assisting')}</h3>
                     </div>
                     <div className="flex flex-wrap gap-2">
                       {exercise.secondaryMuscles?.map(m => (
                         <span key={m.id} className="text-[12px] font-bold text-white/70 px-3 py-1.5 bg-white/5 rounded-xl">
-                          {m.nameVN || m.nameEN}
+                          {i18n.language === 'vi' ? (m.nameVN || m.nameEN) : (m.nameEN || m.nameVN)}
                         </span>
                       ))}
                     </div>
@@ -96,10 +105,10 @@ const ExerciseDetailModal = ({ exercise, isOpen, onClose }) => {
               <div className="space-y-4 pt-8 border-t border-white/5">
                 <div className="flex items-center gap-2">
                    <span className="material-symbols-outlined text-primary text-lg">description</span>
-                   <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-on-surface-variant">Execution Protocol</h3>
+                   <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-on-surface-variant">{t('exercises.detail.protocol')}</h3>
                 </div>
                 <div className="text-on-surface-variant text-sm leading-relaxed font-medium space-y-4 opacity-80 whitespace-pre-line">
-                  {exercise.description || 'No detailed instructions available for this movement.'}
+                  {exercise.description || t('exercises.detail.no_desc')}
                 </div>
               </div>
 
@@ -108,7 +117,7 @@ const ExerciseDetailModal = ({ exercise, isOpen, onClose }) => {
                 {exercise.locationTypes?.map(loc => (
                   <div key={loc} className="flex items-center gap-2 text-on-surface-variant">
                     <span className="material-symbols-outlined text-sm">{loc === 'Gym' ? 'business' : 'home'}</span>
-                    <span className="text-[10px] font-black uppercase tracking-widest">{loc} Ready</span>
+                    <span className="text-[10px] font-black uppercase tracking-widest">{t(`exercises.filter.env_${loc.toLowerCase()}`)} {t('exercises.detail.ready')}</span>
                   </div>
                 ))}
               </div>

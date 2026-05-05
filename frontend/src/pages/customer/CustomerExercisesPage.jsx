@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import CustomerLayout from '../../components/layout/CustomerLayout';
 import ExerciseFilter from '../../components/common/exercise/ExerciseFilter';
 import ExerciseDetailModal from '../../components/customer/ExerciseDetailModal';
@@ -19,6 +20,7 @@ const INITIAL_FILTERS = {
 };
 
 const CustomerExercisesPage = () => {
+  const { t, i18n } = useTranslation();
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [lookups, setLookups] = useState({
@@ -118,10 +120,10 @@ const CustomerExercisesPage = () => {
     <CustomerLayout title="KINETIC AI">
       <header className="mb-10">
         <h1 className="text-[2.5rem] font-headline font-black italic tracking-tighter uppercase leading-none mb-2">
-          Movement <span className="text-primary">Library</span>
+          {t('exercises.title')} <span className="text-primary">{t('exercises.title_highlight')}</span>
         </h1>
         <p className="text-on-surface-variant font-medium text-sm tracking-wide opacity-70">
-          Discover advanced protocols and perfect your form with our neural database.
+          {t('exercises.subtitle')}
         </p>
       </header>
 
@@ -136,12 +138,12 @@ const CustomerExercisesPage = () => {
         {loading ? (
           <div className="flex flex-col items-center justify-center py-20 opacity-30">
             <div className="w-12 h-12 border-2 border-primary border-t-transparent rounded-full animate-spin mb-4"></div>
-            <p className="text-[10px] font-black uppercase tracking-widest">Accessing Neural Archive...</p>
+            <p className="text-[10px] font-black uppercase tracking-widest">{t('exercises.loading')}</p>
           </div>
         ) : items.length === 0 ? (
           <div className="text-center py-20 bg-white/5 rounded-[2rem] border border-dashed border-white/10">
             <span className="material-symbols-outlined text-4xl text-on-surface-variant mb-4 opacity-20">search_off</span>
-            <p className="text-on-surface-variant font-bold text-sm">No protocols match your current search parameters.</p>
+            <p className="text-on-surface-variant font-bold text-sm">{t('exercises.empty')}</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -162,7 +164,9 @@ const CustomerExercisesPage = () => {
                     <span className="material-symbols-outlined text-6xl opacity-5">fitness_center</span>
                   )}
                   <div className="absolute top-4 left-4 bg-black/60 backdrop-blur-md px-3 py-1 rounded-full border border-white/10">
-                    <p className="text-[8px] font-black uppercase text-primary tracking-widest">{ex.category?.nameVN || ex.category?.name}</p>
+                    <p className="text-[8px] font-black uppercase text-primary tracking-widest">
+                      {i18n.language === 'vi' ? (ex.category?.nameVN || ex.category?.name) : (ex.category?.name || ex.category?.nameVN)}
+                    </p>
                   </div>
                 </div>
                 
@@ -173,7 +177,7 @@ const CustomerExercisesPage = () => {
                   <div className="flex flex-wrap gap-1.5">
                     {ex.primaryMuscles?.slice(0, 2).map(m => (
                       <span key={m.id} className="text-[8px] font-bold text-on-surface-variant uppercase tracking-widest px-2 py-1 bg-white/5 rounded-md">
-                        {m.nameVN || m.nameEN}
+                        {i18n.language === 'vi' ? (m.nameVN || m.nameEN) : (m.nameEN || m.nameVN)}
                       </span>
                     ))}
                     {ex.primaryMuscles?.length > 2 && (

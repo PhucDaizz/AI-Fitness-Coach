@@ -1,69 +1,125 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { Link, useNavigate } from 'react-router-dom';
 
-const ProfileSidebar = ({ isAdmin, fullName, avatarUrl, isOpen, onClose, activeTab = 'profile' }) => {
+const ProfileSidebar = ({ isAdmin: isUserAdmin, fullName, avatarUrl, isOpen, onClose, activeTab = 'profile' }) => {
+  const { t, i18n } = useTranslation();
   const navigate = useNavigate();
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('refreshToken');
+    navigate('/login');
+  };
+
+  const toggleLanguage = () => {
+    const nextLng = i18n.language === 'vi' ? 'en' : 'vi';
+    i18n.changeLanguage(nextLng);
+  };
+
+  const menuItems = [
+    { 
+      id: 'profile', 
+      label: t('profile.sidebar.personal'), 
+      icon: 'person', 
+      path: '/profile' 
+    },
+    { 
+      id: 'security', 
+      label: t('profile.sidebar.security'), 
+      icon: 'shield', 
+      path: '/security' 
+    },
+    { 
+      id: 'settings', 
+      label: t('profile.sidebar.settings'), 
+      icon: 'settings', 
+      path: '#' 
+    },
+  ];
 
   return (
     <>
       {/* Overlay for mobile */}
       {isOpen && (
         <div 
-          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[65] md:hidden"
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 md:hidden transition-opacity duration-300"
           onClick={onClose}
-        ></div>
+        />
       )}
 
-      <aside className={`fixed left-0 top-0 h-screen w-64 bg-[#1a1919] border-r border-[#494847]/15 flex flex-col pt-16 py-8 gap-4 z-[70] transition-transform duration-300 md:translate-x-0 ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}>
-        <div className="px-8 mb-8">
-          <div className="flex justify-between items-center mb-12">
-            <div className="text-xl font-black text-white italic tracking-tighter">KINETIC AI</div>
-            <button onClick={onClose} className="md:hidden text-white">
-              <span className="material-symbols-outlined">close</span>
-            </button>
-          </div>
-          
-          <div className="flex items-center gap-4 mb-8">
-            <img 
-              alt="Athlete avatar" 
-              className="w-12 h-12 rounded-full object-cover border-2 border-primary" 
-              src={avatarUrl || "https://lh3.googleusercontent.com/aida-public/AB6AXuBor6rBEH2iA19JbFmpGI65HQfgXxl9JAsz54V7CJyBlO3sIrf0wf3GiN5jwnlW4Vzw_6jx2I3c_JUQHrW9ASxXLM5pvfuCHZbqTxxViVdcvN21N6Zvwxaf7ab1Y41o061gCagVNPiwz_W-Mz3zHMPe8-_HYNLeLGtFuXdRGOuWacmQErV1NCmII6QHrv5m2wDLbHEbDnikXMERgDkuVpQBQjl7BkaBEHsXyyT0rejwIGyMfjOYPKrOT-Bntzl8TcUaAHrER3FuwQ94"}
-            />
-            <div>
-              <div className="font-bold text-on-surface truncate w-32">{fullName || 'Athlete'}</div>
-              <div className="text-xs text-on-surface-variant uppercase tracking-widest font-bold">
-                {isAdmin ? 'System Admin' : 'Elite Level'}
+      <aside className={`fixed left-0 top-0 h-full w-64 bg-surface-container border-r border-outline-variant/10 z-50 transition-transform duration-300 ease-in-out ${isOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'} flex flex-col`}>
+        {/* Profile Info Header */}
+        <div className="p-8 border-b border-outline-variant/10">
+          <div className="flex flex-col items-center">
+            <div className="relative group mb-4">
+              <div className="w-20 h-20 rounded-full bg-surface-container-highest border-2 border-primary/20 p-1 kinetic-glow overflow-hidden">
+                {avatarUrl ? (
+                  <img src={avatarUrl} alt={fullName} className="w-full h-full object-cover rounded-full" />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center bg-primary/10 text-primary">
+                    <span className="material-symbols-outlined text-4xl">account_circle</span>
+                  </div>
+                )}
               </div>
+              <button className="absolute bottom-0 right-0 w-7 h-7 bg-primary text-on-primary rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-transform">
+                <span className="material-symbols-outlined text-sm">edit</span>
+              </button>
             </div>
+            <h3 className="font-headline font-bold text-lg text-on-surface text-center line-clamp-1">{fullName || 'Elite Athlete'}</h3>
+            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-primary mt-1">KINETIC_MEMBER</span>
           </div>
-          
-          {!isAdmin && (
-            <button className="w-full py-3 rounded-full bg-surface-container-highest text-primary font-bold text-xs uppercase tracking-widest hover:bg-surface-variant transition-colors border border-outline-variant/15 flex justify-center items-center gap-2 mb-8">
-              <span className="material-symbols-outlined text-[18px]">bolt</span>
-              UPGRADE TO PRO
-            </button>
+        </div>
+
+        {/* Navigation Menu */}
+        <nav className="flex-1 py-6 px-4 space-y-1 overflow-y-auto">
+          {menuItems.map((item) => (
+            <Link
+              key={item.id}
+              to={item.path}
+              className={`flex items-center gap-4 px-4 py-3 rounded-lg font-bold text-sm transition-all duration-200 group ${activeTab === item.id ? 'bg-primary text-on-primary kinetic-glow' : 'text-on-surface-variant hover:bg-white/5 hover:text-white'}`}
+            >
+              <span className={`material-symbols-outlined text-xl ${activeTab === item.id ? 'text-on-primary' : 'group-hover:text-primary transition-colors'}`}>
+                {item.icon}
+              </span>
+              {item.label}
+            </Link>
+          ))}
+
+          {isUserAdmin && (
+            <Link
+              to="/admin"
+              className="flex items-center gap-4 px-4 py-3 rounded-lg font-bold text-sm text-secondary hover:bg-white/5 transition-all mt-8 group border border-secondary/10"
+            >
+              <span className="material-symbols-outlined text-xl group-hover:rotate-12 transition-transform">
+                admin_panel_settings
+              </span>
+              {t('profile.sidebar.admin_panel')}
+            </Link>
           )}
-        </div>
-        
-        <div className="flex-1 px-4 flex flex-col gap-2 font-['Inter'] uppercase tracking-widest text-[0.75rem] font-bold">
-          <Link to={isAdmin ? "/admin" : "/"} className="flex items-center gap-4 px-4 py-3 rounded-lg text-[#adaaaa] hover:bg-[#1a1919] hover:text-white transition-all">
-            <span className="material-symbols-outlined">dashboard</span>
-            Dashboard
-          </Link>
-          <Link to="/profile" className={`flex items-center gap-4 px-4 py-3 rounded-lg transition-all ${activeTab === 'profile' ? 'text-[#b1ff24] border-l-4 border-[#b1ff24] bg-gradient-to-r from-[#b1ff24]/10 to-transparent' : 'text-[#adaaaa] hover:bg-[#1a1919] hover:text-white'}`}>
-            <span className="material-symbols-outlined" style={{ fontVariationSettings: activeTab === 'profile' ? "'FILL' 1" : "''" }}>person</span>
-            Profile
-          </Link>
-          <Link to="/security" className={`flex items-center gap-4 px-4 py-3 rounded-lg transition-all ${activeTab === 'security' ? 'text-[#b1ff24] border-l-4 border-[#b1ff24] bg-gradient-to-r from-[#b1ff24]/10 to-transparent' : 'text-[#adaaaa] hover:bg-[#1a1919] hover:text-white'}`}>
-            <span className="material-symbols-outlined" style={{ fontVariationSettings: activeTab === 'security' ? "'FILL' 1" : "''" }}>shield</span>
-            Security
-          </Link>
-        </div>
-        
-        <div className="px-4 mt-auto flex flex-col gap-2 font-['Inter'] uppercase tracking-widest text-[0.75rem] font-bold">
-          <button onClick={() => { localStorage.clear(); navigate('/login'); }} className="flex items-center gap-4 px-4 py-3 rounded-lg text-error hover:bg-surface-container-highest transition-all">
-            <span className="material-symbols-outlined">logout</span>
-            Logout
+        </nav>
+
+        {/* Bottom Actions */}
+        <div className="p-6 border-t border-outline-variant/10 space-y-2">
+          {/* Language Toggle in Sidebar */}
+          <button
+            onClick={toggleLanguage}
+            className="w-full flex items-center gap-4 px-4 py-3 rounded-lg text-sm font-bold text-on-surface-variant hover:text-white transition-all group"
+          >
+            <span className="material-symbols-outlined text-xl group-hover:text-primary transition-colors">
+              language
+            </span>
+            {i18n.language === 'vi' ? 'English (EN)' : 'Tiếng Việt (VI)'}
+          </button>
+
+          <button 
+            onClick={handleLogout}
+            className="w-full flex items-center gap-4 px-4 py-3 rounded-lg text-sm font-bold text-error hover:bg-error/10 transition-all group"
+          >
+            <span className="material-symbols-outlined text-xl group-hover:translate-x-1 transition-transform">
+              logout
+            </span>
+            {t('profile.sidebar.logout')}
           </button>
         </div>
       </aside>

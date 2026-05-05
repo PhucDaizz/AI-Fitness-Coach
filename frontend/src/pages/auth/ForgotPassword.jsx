@@ -1,11 +1,18 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { forgotPassword } from '../../services/api/auth.service';
 
 const ForgotPassword = () => {
+  const { t, i18n } = useTranslation();
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState({ type: '', text: '' });
+
+  const toggleLanguage = () => {
+    const nextLng = i18n.language === 'vi' ? 'en' : 'vi';
+    i18n.changeLanguage(nextLng);
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -13,19 +20,18 @@ const ForgotPassword = () => {
     
     try {
       setLoading(true);
-      // Construct the client URL for password reset (adjust as needed)
       const clientUrl = `${window.location.origin}/auth/resetpass`;
       
       await forgotPassword(email, clientUrl);
       setMessage({ 
         type: 'success', 
-        text: 'Request sent! Please check your email for the reset link.' 
+        text: t('auth.forgot_password.success_msg') 
       });
       setEmail('');
     } catch (err) {
       setMessage({ 
         type: 'error', 
-        text: err.message || 'Failed to send reset link. Please try again.' 
+        text: err.message || t('auth.forgot_password.error_msg') 
       });
     } finally {
       setLoading(false);
@@ -37,8 +43,18 @@ const ForgotPassword = () => {
       {/* Header */}
       <header className="flex justify-between items-center w-full px-6 py-8">
         <div className="text-2xl font-black italic tracking-tighter text-primary">KINETIC AI</div>
-        <div className="hidden md:block">
-          <span className="text-on-surface-variant text-xs font-label uppercase tracking-widest leading-none">High Performance Digital Cockpit</span>
+        <div className="hidden md:flex gap-6 items-center">
+          {/* Language Switcher */}
+          <button
+            onClick={toggleLanguage}
+            className="flex items-center gap-2 px-3 py-1 rounded-full border border-outline-variant/30 text-[10px] font-black hover:bg-white/5 transition-all text-on-surface-variant hover:text-primary uppercase tracking-widest"
+          >
+            <span className="material-symbols-outlined text-xs">language</span>
+            {i18n.language === 'vi' ? 'EN' : 'VI'}
+          </button>
+          <span className="text-on-surface-variant text-xs font-label uppercase tracking-widest leading-none">
+            {t('auth.signup.cockpit')}
+          </span>
         </div>
       </header>
 
@@ -52,14 +68,14 @@ const ForgotPassword = () => {
           {/* Back Action */}
           <Link to="/login" className="inline-flex items-center gap-2 text-on-surface-variant hover:text-primary transition-colors mb-12 group">
             <span className="material-symbols-outlined text-sm">arrow_back</span>
-            <span className="text-xs font-label uppercase tracking-widest">Back to login</span>
+            <span className="text-xs font-label uppercase tracking-widest">{t('auth.forgot_password.back_to_login')}</span>
           </Link>
 
           {/* Content Header */}
           <div className="mb-10">
-            <h2 className="text-4xl md:text-5xl font-black tracking-tight mb-4 leading-tight italic">Forgot Password?</h2>
+            <h2 className="text-4xl md:text-5xl font-black tracking-tight mb-4 leading-tight italic">{t('auth.forgot_password.title')}</h2>
             <p className="text-on-surface-variant text-base leading-relaxed max-w-[320px]">
-              Enter your email and we'll send you a link to reset your password.
+              {t('auth.forgot_password.subtitle')}
             </p>
           </div>
 
@@ -74,7 +90,9 @@ const ForgotPassword = () => {
           {/* Form Container */}
           <form onSubmit={handleSubmit} className="space-y-8">
             <div className="space-y-2">
-              <label className="text-[10px] font-label uppercase tracking-[0.2em] text-primary block ml-1" htmlFor="email">Email Address</label>
+              <label className="text-[10px] font-label uppercase tracking-[0.2em] text-primary block ml-1" htmlFor="email">
+                {t('auth.forgot_password.email_label')}
+              </label>
               <div className="relative group">
                 <input 
                   id="email"
@@ -99,7 +117,7 @@ const ForgotPassword = () => {
                   <span className="w-6 h-6 border-2 border-on-primary border-t-transparent rounded-full animate-spin"></span>
                 ) : (
                   <>
-                    Send Reset Link
+                    {t('auth.forgot_password.send_btn')}
                     <span className="material-symbols-outlined text-xl">bolt</span>
                   </>
                 )}
@@ -110,7 +128,7 @@ const ForgotPassword = () => {
           {/* Support Footer */}
           <div className="mt-16 text-center">
             <p className="text-xs text-on-surface-variant/60 font-label tracking-wide uppercase">
-              Having trouble? <a href="#" className="text-secondary hover:underline underline-offset-4">Contact Support</a>
+              {t('auth.forgot_password.trouble')} <a href="#" className="text-secondary hover:underline underline-offset-4">{t('auth.forgot_password.contact_support')}</a>
             </p>
           </div>
         </div>
@@ -119,7 +137,7 @@ const ForgotPassword = () => {
         <div className="absolute bottom-12 right-12 hidden lg:block">
           <div className="flex flex-col items-end">
             <div className="w-12 h-[2px] bg-primary mb-2"></div>
-            <span className="text-[10px] font-label text-on-surface-variant uppercase tracking-[0.3em]">Module_048 // Auth</span>
+            <span className="text-[10px] font-label text-on-surface-variant uppercase tracking-[0.3em]">{t('auth.forgot_password.module_auth')}</span>
           </div>
         </div>
       </main>
@@ -127,7 +145,7 @@ const ForgotPassword = () => {
       {/* System Status Visualizer */}
       <div className="fixed bottom-8 left-1/2 -translate-x-1/2 flex items-center gap-3 bg-surface-container-highest/40 backdrop-blur-md px-4 py-2 rounded-full border border-outline-variant/10">
         <div className="w-2 h-2 rounded-full bg-secondary animate-pulse shadow-[0_0_8px_#6a9cff]"></div>
-        <span className="text-[10px] font-label uppercase tracking-widest text-on-surface-variant">System Ready</span>
+        <span className="text-[10px] font-label uppercase tracking-widest text-on-surface-variant">{t('auth.forgot_password.system_ready')}</span>
       </div>
 
       {/* Background Layers */}

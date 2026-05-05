@@ -1,8 +1,10 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 
 const DEFAULT_MEAL_IMAGE = 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?q=80&w=1000&auto=format&fit=crop';
 
 const MealDetailModal = ({ meal, isOpen, onClose }) => {
+  const { t } = useTranslation();
   if (!isOpen || !meal) return null;
 
   const handleImageError = (e) => {
@@ -42,7 +44,7 @@ const MealDetailModal = ({ meal, isOpen, onClose }) => {
               
               {/* Floating Cuisine Tag */}
               <div className="absolute bottom-6 left-6 bg-primary/20 backdrop-blur-md border border-primary/30 px-4 py-2 rounded-2xl">
-                 <p className="text-[10px] font-black uppercase tracking-[0.2em] text-primary">{meal.cuisineType || 'Global Cuisine'}</p>
+                 <p className="text-[10px] font-black uppercase tracking-[0.2em] text-primary">{meal.cuisineType || t('meals.detail.cuisine_global')}</p>
               </div>
             </div>
 
@@ -65,19 +67,19 @@ const MealDetailModal = ({ meal, isOpen, onClose }) => {
               {/* Nutrition Matrix */}
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                 <div className="bg-white/5 rounded-2xl p-4 border border-white/5 text-center">
-                   <p className="text-[8px] font-black uppercase tracking-widest text-on-surface-variant mb-1">Calories</p>
+                   <p className="text-[8px] font-black uppercase tracking-widest text-on-surface-variant mb-1">{t('meals.macros.energy')}</p>
                    <p className="text-xl font-black text-white italic">{meal.calories}<span className="text-[10px] ml-1 not-italic opacity-40">kcal</span></p>
                 </div>
                 <div className="bg-white/5 rounded-2xl p-4 border border-white/5 text-center">
-                   <p className="text-[8px] font-black uppercase tracking-widest text-on-surface-variant mb-1">Protein</p>
+                   <p className="text-[8px] font-black uppercase tracking-widest text-on-surface-variant mb-1">{t('meals.macros.protein')}</p>
                    <p className="text-xl font-black text-white italic">{meal.protein}g</p>
                 </div>
                 <div className="bg-white/5 rounded-2xl p-4 border border-white/5 text-center">
-                   <p className="text-[8px] font-black uppercase tracking-widest text-on-surface-variant mb-1">Carbs</p>
+                   <p className="text-[8px] font-black uppercase tracking-widest text-on-surface-variant mb-1">{t('meals.macros.carbs')}</p>
                    <p className="text-xl font-black text-white italic">{meal.carbs}g</p>
                 </div>
                 <div className="bg-white/5 rounded-2xl p-4 border border-white/5 text-center">
-                   <p className="text-[8px] font-black uppercase tracking-widest text-on-surface-variant mb-1">Fat</p>
+                   <p className="text-[8px] font-black uppercase tracking-widest text-on-surface-variant mb-1">{t('meals.macros.fat')}</p>
                    <p className="text-xl font-black text-white italic">{meal.fat}g</p>
                 </div>
               </div>
@@ -87,10 +89,10 @@ const MealDetailModal = ({ meal, isOpen, onClose }) => {
                 <div className="space-y-4">
                   <div className="flex items-center gap-2">
                      <span className="material-symbols-outlined text-primary text-lg">description</span>
-                     <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-on-surface-variant">Culinary Profile</h3>
+                     <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-on-surface-variant">{t('meals.detail.profile')}</h3>
                   </div>
                   <div className="text-on-surface-variant text-sm leading-relaxed font-medium opacity-80 whitespace-pre-line">
-                    {meal.description || 'No detailed description available for this meal.'}
+                    {meal.description || t('meals.detail.no_desc')}
                   </div>
                 </div>
 
@@ -98,7 +100,7 @@ const MealDetailModal = ({ meal, isOpen, onClose }) => {
                    <div className="pt-4 flex items-center gap-2 text-on-surface-variant/40">
                       <span className="material-symbols-outlined text-sm">link</span>
                       <a href={meal.recipeSource} target="_blank" rel="noopener noreferrer" className="text-[10px] font-bold uppercase tracking-widest hover:text-primary transition-colors">
-                        View Full Recipe Source
+                        {t('meals.detail.recipe_source')}
                       </a>
                    </div>
                 )}

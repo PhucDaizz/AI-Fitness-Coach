@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { getWorkoutPlans, generateWorkoutPlan } from '../../services/api/workoutPlan.service';
 import CustomerLayout from '../../components/layout/CustomerLayout';
 import { Link } from 'react-router-dom';
 import GeneratePlanModal from '../../components/customer/GeneratePlanModal';
 
 const WorkoutPlansPage = () => {
+  const { t } = useTranslation();
   const [plans, setPlans] = useState([]);
   const [loading, setLoading] = useState(true);
   const [status, setStatus] = useState('active'); // active, completed, archived, all
@@ -43,7 +45,7 @@ const WorkoutPlansPage = () => {
       return result; // Return the data so the modal can show success summary
     } catch (err) {
       console.error("Failed to generate plan", err);
-      alert(err.message || "Failed to generate plan. Please ensure your profile is complete.");
+      alert(err.message || t('workout_plans.errors.generate_fail'));
       throw err; // Re-throw so modal doesn't transition to success state
     } finally {
       setIsGenerating(false);
@@ -64,10 +66,10 @@ const WorkoutPlansPage = () => {
       <header className="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div>
           <h1 className="text-[2.5rem] font-headline font-black italic tracking-tighter uppercase leading-none mb-2">
-            Training <span className="text-primary">Protocols</span>
+            {t('workout_plans.title')} <span className="text-primary">{t('workout_plans.title_highlight')}</span>
           </h1>
           <p className="text-on-surface-variant font-medium text-sm tracking-wide opacity-70">
-            Select an active strategy or review past performance matrices.
+            {t('workout_plans.subtitle')}
           </p>
         </div>
 
@@ -76,7 +78,7 @@ const WorkoutPlansPage = () => {
           className="bg-primary text-black px-8 py-4 rounded-full text-[10px] font-black uppercase tracking-[0.2em] shadow-[0_0_30px_rgba(177,255,36,0.3)] hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2"
         >
           <span className="material-symbols-outlined text-sm">add</span>
-          Initialize AI Protocol
+          {t('workout_plans.init_btn')}
         </button>
       </header>
 
@@ -92,7 +94,7 @@ const WorkoutPlansPage = () => {
               : 'bg-white/5 border-white/10 text-on-surface-variant hover:border-white/20'
             }`}
           >
-            {s}
+            {t(`workout_plans.filters.${s}`)}
           </button>
         ))}
       </div>
@@ -100,17 +102,17 @@ const WorkoutPlansPage = () => {
       {loading ? (
         <div className="flex flex-col items-center justify-center py-20 opacity-30">
            <div className="w-12 h-12 border-2 border-primary border-t-transparent rounded-full animate-spin mb-4"></div>
-           <p className="text-[10px] font-black uppercase tracking-widest">Accessing Neural Database...</p>
+           <p className="text-[10px] font-black uppercase tracking-widest">{t('workout_plans.loading')}</p>
         </div>
       ) : plans.length === 0 ? (
         <div className="text-center py-20 bg-white/5 rounded-[2rem] border border-dashed border-white/10">
           <span className="material-symbols-outlined text-4xl text-on-surface-variant mb-4 opacity-20">inventory_2</span>
-          <p className="text-on-surface-variant font-bold text-sm">No protocols found for this status.</p>
+          <p className="text-on-surface-variant font-bold text-sm">{t('workout_plans.empty')}</p>
           <button 
             onClick={() => setIsModalOpen(true)}
             className="text-primary text-[10px] font-black uppercase tracking-widest mt-4 inline-block hover:underline"
           >
-            Initialize New Plan via AI Coach
+            {t('workout_plans.empty_action')}
           </button>
         </div>
       ) : (
@@ -127,10 +129,10 @@ const WorkoutPlansPage = () => {
                 <div className="space-y-3">
                   <div className="flex items-center gap-3">
                     <span className={`px-3 py-1 rounded-full border text-[8px] font-black uppercase tracking-widest ${getStatusColor(plan.status)}`}>
-                      {plan.status}
+                      {t(`workout_plans.filters.${plan.status}`)}
                     </span>
                     <span className="text-[10px] text-on-surface-variant font-bold uppercase tracking-widest opacity-50">
-                      {plan.planType} • {plan.weekNumber} Weeks
+                      {plan.planType} • {plan.weekNumber} {t('workout_plans.card.weeks')}
                     </span>
                   </div>
                   <h3 className="text-2xl font-black text-white group-hover:text-primary transition-colors tracking-tight uppercase italic">
@@ -139,7 +141,7 @@ const WorkoutPlansPage = () => {
                   <div className="flex items-center gap-4 text-[10px] font-bold text-on-surface-variant opacity-60">
                      <span className="flex items-center gap-1.5">
                        <span className="material-symbols-outlined text-sm">calendar_today</span>
-                       Starts {new Date(plan.startsAt).toLocaleDateString()}
+                       {t('workout_plans.card.starts')} {new Date(plan.startsAt).toLocaleDateString()}
                      </span>
                      <span className="flex items-center gap-1.5">
                        <span className="material-symbols-outlined text-sm">smart_toy</span>
@@ -152,7 +154,7 @@ const WorkoutPlansPage = () => {
                   to={`/plans/${plan._id}`}
                   className="flex items-center justify-center w-full md:w-auto px-10 py-4 bg-white/5 border border-white/10 rounded-full text-[10px] font-black uppercase tracking-[0.2em] text-white hover:bg-primary hover:text-black hover:border-primary transition-all shadow-xl group/btn"
                 >
-                  Load Protocol
+                  {t('workout_plans.card.load_btn')}
                   <span className="material-symbols-outlined ml-2 text-sm group-hover/btn:translate-x-1 transition-transform">arrow_forward</span>
                 </Link>
               </div>

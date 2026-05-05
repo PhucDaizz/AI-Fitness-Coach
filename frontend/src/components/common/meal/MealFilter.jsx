@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 const CUISINES = [
   "american", "south east asian", "chinese", "italian", "french", 
@@ -8,6 +9,7 @@ const CUISINES = [
 ];
 
 const MealFilter = ({ filters, onFilterChange, isAdmin = false }) => {
+  const { t } = useTranslation();
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [localSearch, setLocalSearch] = useState(filters.searchTerm);
   const [tagInput, setTagInput] = useState('');
@@ -46,7 +48,7 @@ const MealFilter = ({ filters, onFilterChange, isAdmin = false }) => {
         <span className="material-symbols-outlined text-primary">search</span>
         <input 
           type="text" 
-          placeholder="Search performance meals... (Enter to confirm)"
+          placeholder={t('meals.filter.search_placeholder')}
           value={localSearch}
           onChange={e => setLocalSearch(e.target.value)}
           onKeyDown={handleKeyDown}
@@ -56,7 +58,7 @@ const MealFilter = ({ filters, onFilterChange, isAdmin = false }) => {
           <button 
             onClick={() => setShowAdvanced(!showAdvanced)}
             className={`p-2 rounded-xl transition-all ${showAdvanced ? 'bg-primary text-black' : 'text-on-surface-variant hover:bg-white/5'}`}
-            title="Advanced Filters"
+            title={t('meals.filter.advanced_title')}
           >
             <span className="material-symbols-outlined leading-none text-[20px]">tune</span>
           </button>
@@ -64,7 +66,7 @@ const MealFilter = ({ filters, onFilterChange, isAdmin = false }) => {
             onClick={handleSearchSubmit}
             className="bg-surface-container-highest text-white px-6 py-2 rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-primary hover:text-black transition-all shadow-lg"
           >
-            Go
+            {t('meals.filter.go')}
           </button>
         </div>
       </div>
@@ -73,29 +75,29 @@ const MealFilter = ({ filters, onFilterChange, isAdmin = false }) => {
       <div className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-6 gap-4 overflow-hidden transition-all duration-500 ${showAdvanced ? 'max-h-[1000px] opacity-100' : 'max-h-0 opacity-0'}`}>
         {/* Cuisine Select */}
         <div className="bg-surface-container p-3 rounded-xl border border-white/5 space-y-1">
-          <label className="block text-[9px] uppercase tracking-widest text-on-surface-variant font-black">Cuisine</label>
+          <label className="block text-[9px] uppercase tracking-widest text-on-surface-variant font-black">{t('meals.filter.cuisine')}</label>
           <select 
             value={filters.cuisineType}
             onChange={e => onFilterChange('cuisineType', e.target.value)}
             className="w-full bg-[#1a1919] border-none text-xs rounded-lg focus:ring-1 focus:ring-primary py-1.5 px-2 text-white capitalize"
           >
-            <option value="">All Cuisines</option>
+            <option value="">{t('meals.filter.cuisine_all')}</option>
             {CUISINES.map(c => <option key={c} value={c}>{c}</option>)}
           </select>
         </div>
 
         {/* Nutritional Range: Calories */}
         <div className="bg-surface-container p-3 rounded-xl border border-white/5">
-          <label className="block text-[9px] uppercase tracking-widest text-on-surface-variant font-black mb-2">Calories (Kcal)</label>
+          <label className="block text-[9px] uppercase tracking-widest text-on-surface-variant font-black mb-2">{t('meals.filter.calories')}</label>
           <div className="flex items-center gap-2">
             <input 
-              type="number" placeholder="Min"
+              type="number" placeholder={t('meals.filter.min')}
               value={filters.caloriesFrom}
               onChange={e => onFilterChange('caloriesFrom', e.target.value)}
               className="w-full bg-[#1a1919] border-none text-[10px] rounded p-1 text-white text-center"
             />
             <input 
-              type="number" placeholder="Max"
+              type="number" placeholder={t('meals.filter.max')}
               value={filters.caloriesTo}
               onChange={e => onFilterChange('caloriesTo', e.target.value)}
               className="w-full bg-[#1a1919] border-none text-[10px] rounded p-1 text-white text-center"
@@ -105,16 +107,16 @@ const MealFilter = ({ filters, onFilterChange, isAdmin = false }) => {
 
         {/* Nutritional Range: Protein */}
         <div className="bg-surface-container p-3 rounded-xl border border-white/5">
-          <label className="block text-[9px] uppercase tracking-widest text-primary font-black mb-2">Protein (g)</label>
+          <label className="block text-[9px] uppercase tracking-widest text-primary font-black mb-2">{t('meals.filter.protein')}</label>
           <div className="flex items-center gap-2">
             <input 
-              type="number" placeholder="Min"
+              type="number" placeholder={t('meals.filter.min')}
               value={filters.proteinFrom}
               onChange={e => onFilterChange('proteinFrom', e.target.value)}
               className="w-full bg-[#1a1919] border-none text-[10px] rounded p-1 text-white text-center"
             />
             <input 
-              type="number" placeholder="Max"
+              type="number" placeholder={t('meals.filter.max')}
               value={filters.proteinTo}
               onChange={e => onFilterChange('proteinTo', e.target.value)}
               className="w-full bg-[#1a1919] border-none text-[10px] rounded p-1 text-white text-center"
@@ -141,7 +143,7 @@ const MealFilter = ({ filters, onFilterChange, isAdmin = false }) => {
 
         {/* Diet Tags */}
         <div className="bg-surface-container p-3 rounded-xl border border-white/5 lg:col-span-2 space-y-2">
-          <label className="block text-[9px] uppercase tracking-widest text-on-surface-variant font-black">Dietary Filters</label>
+          <label className="block text-[9px] uppercase tracking-widest text-on-surface-variant font-black">{t('meals.filter.dietary')}</label>
           <div className="flex flex-wrap gap-1 max-h-[60px] overflow-y-auto no-scrollbar">
             {filters.dietTags.map(tag => (
               <span key={tag} className="px-2 py-0.5 bg-primary/20 text-primary text-[8px] font-bold rounded flex items-center gap-1">
@@ -150,7 +152,7 @@ const MealFilter = ({ filters, onFilterChange, isAdmin = false }) => {
               </span>
             ))}
             <input 
-              type="text" placeholder="+ Tag (Enter)"
+              type="text" placeholder={t('meals.filter.add_tag')}
               value={tagInput}
               onChange={e => setTagInput(e.target.value)}
               onKeyDown={handleAddTag}
@@ -161,16 +163,16 @@ const MealFilter = ({ filters, onFilterChange, isAdmin = false }) => {
 
         {/* Sorting Logic */}
         <div className="bg-surface-container p-3 rounded-xl border border-white/5 space-y-1">
-          <label className="block text-[9px] uppercase tracking-widest text-on-surface-variant font-black">Sort Field</label>
+          <label className="block text-[9px] uppercase tracking-widest text-on-surface-variant font-black">{t('meals.filter.sort')}</label>
           <select 
             value={filters.sortBy}
             onChange={e => onFilterChange('sortBy', e.target.value)}
             className="w-full bg-[#1a1919] border-none text-xs rounded-lg focus:ring-1 focus:ring-primary py-1.5 px-2 text-white"
           >
-            <option value="CreatedAt">Recent</option>
-            <option value="Name">ABC Name</option>
-            <option value="Calories">Energy</option>
-            <option value="Protein">Protein</option>
+            <option value="CreatedAt">{t('meals.filter.sort_recent')}</option>
+            <option value="Name">{t('meals.filter.sort_abc')}</option>
+            <option value="Calories">{t('meals.filter.sort_energy')}</option>
+            <option value="Protein">{t('meals.filter.sort_protein')}</option>
           </select>
         </div>
 
@@ -187,7 +189,7 @@ const MealFilter = ({ filters, onFilterChange, isAdmin = false }) => {
           <button 
             onClick={handleReset}
             className="p-2 text-error hover:bg-error/10 rounded-lg transition-all"
-            title="Reset Filters"
+            title={t('meals.filter.reset')}
           >
             <span className="material-symbols-outlined">restart_alt</span>
           </button>

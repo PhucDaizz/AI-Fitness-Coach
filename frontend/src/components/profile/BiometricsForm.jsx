@@ -58,7 +58,7 @@ const BiometricsForm = ({ user, userId, onUpdateSuccess }) => {
   return (
     <form onSubmit={handleSubmit} className="bg-surface-container rounded-xl p-8 lg:p-10 border border-outline-variant/15 shadow-2xl shadow-black/40">
       <h3 className="text-xl font-bold mb-8 border-b border-outline-variant/15 pb-4">Core Biometrics</h3>
-      
+
       {error && (
         <div className="mb-6 bg-error/10 border border-error/20 p-4 rounded-lg text-error text-sm font-bold">
           {error}
@@ -73,10 +73,10 @@ const BiometricsForm = ({ user, userId, onUpdateSuccess }) => {
           </label>
           <div className="relative rounded-lg border border-outline-variant/30 bg-surface-container/50">
             <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant">person</span>
-            <input 
+            <input
               name="fullName"
-              className="w-full bg-transparent border-none text-on-surface-variant pl-12 pr-4 py-4 rounded-lg cursor-not-allowed outline-none" 
-              type="text" 
+              className="w-full bg-transparent border-none text-on-surface-variant pl-12 pr-4 py-4 rounded-lg cursor-not-allowed outline-none"
+              type="text"
               value={formData.fullName}
               readOnly
             />
@@ -88,10 +88,10 @@ const BiometricsForm = ({ user, userId, onUpdateSuccess }) => {
           <label className="text-xs uppercase tracking-[0.05em] text-on-surface-variant font-bold">Comms Link (Phone)</label>
           <div className="relative rounded-lg transition-all border border-outline-variant/30 bg-surface-container-lowest focus-within:ring-1 focus-within:ring-primary focus-within:border-primary">
             <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant">call</span>
-            <input 
+            <input
               name="phoneNumber"
-              className="w-full bg-transparent border-none text-on-surface pl-12 pr-4 py-4 rounded-lg focus:ring-0 outline-none" 
-              type="tel" 
+              className="w-full bg-transparent border-none text-on-surface pl-12 pr-4 py-4 rounded-lg focus:ring-0 outline-none"
+              type="tel"
               value={formData.phoneNumber}
               onChange={handleChange}
             />
@@ -102,14 +102,14 @@ const BiometricsForm = ({ user, userId, onUpdateSuccess }) => {
       <div className="mb-8">
         <label className="text-xs uppercase tracking-[0.05em] text-on-surface-variant font-bold block mb-4">Biological Anchor (Gender)</label>
         <div className="flex bg-surface-container-lowest p-1 rounded-lg border border-outline-variant/20 inline-flex w-full sm:w-auto">
-          <button 
+          <button
             type="button"
             onClick={() => handleGenderChange(true)}
             className={`flex-1 sm:px-8 py-3 rounded-md text-sm font-bold transition-all text-center ${formData.gender === true ? 'bg-surface-container-highest text-on-surface shadow-sm' : 'text-on-surface-variant hover:text-on-surface'}`}
           >
             Male
           </button>
-          <button 
+          <button
             type="button"
             onClick={() => handleGenderChange(false)}
             className={`flex-1 sm:px-8 py-3 rounded-md text-sm font-bold transition-all text-center ${formData.gender === false ? 'bg-surface-container-highest text-on-surface shadow-sm' : 'text-on-surface-variant hover:text-on-surface'}`}
@@ -123,9 +123,9 @@ const BiometricsForm = ({ user, userId, onUpdateSuccess }) => {
         <label className="text-xs uppercase tracking-[0.05em] text-on-surface-variant font-bold block mb-2">Base of Operations (Address)</label>
         <div className="relative rounded-lg transition-all border border-outline-variant/30 bg-surface-container-lowest focus-within:ring-1 focus-within:ring-primary focus-within:border-primary">
           <span className="material-symbols-outlined absolute left-4 top-4 text-on-surface-variant">location_on</span>
-          <textarea 
+          <textarea
             name="address"
-            className="w-full bg-transparent border-none text-on-surface pl-12 pr-4 py-4 rounded-lg focus:ring-0 outline-none resize-none" 
+            className="w-full bg-transparent border-none text-on-surface pl-12 pr-4 py-4 rounded-lg focus:ring-0 outline-none resize-none"
             rows="3"
             value={formData.address}
             onChange={handleChange}
@@ -134,14 +134,14 @@ const BiometricsForm = ({ user, userId, onUpdateSuccess }) => {
       </div>
 
       <div className="flex justify-end gap-4 border-t border-outline-variant/15 pt-8 mt-4">
-        <button 
+        <button
           type="button"
           onClick={() => onUpdateSuccess(null)} // Trigger re-fetch
           className="px-8 py-4 rounded-full font-bold text-sm text-on-surface hover:bg-surface-container-highest transition-colors uppercase tracking-widest"
         >
           Discard
         </button>
-        <button 
+        <button
           type="submit"
           disabled={saving}
           className="px-10 py-4 rounded-full font-bold text-sm bg-primary text-on-primary shadow-[0_10px_30px_rgba(177,255,36,0.3)] hover:shadow-[0_15px_40px_rgba(177,255,36,0.5)] transition-all uppercase tracking-widest hover:-translate-y-1 flex items-center gap-2"

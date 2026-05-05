@@ -1,6 +1,8 @@
 import React, { useState, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 
 const ChatInput = ({ onSend, isLoading, isWelcome }) => {
+  const { t } = useTranslation();
   const [message, setMessage] = useState('');
   const inputRef = useRef(null);
 
@@ -41,7 +43,7 @@ const ChatInput = ({ onSend, isLoading, isWelcome }) => {
         <input 
           ref={inputRef}
           className="flex-grow bg-transparent border-none text-on-surface focus:ring-0 focus:outline-none font-body text-sm placeholder:text-on-surface-variant py-2 px-2"
-          placeholder={isWelcome ? "Ask me anything to begin..." : "Type a message..."}
+          placeholder={isWelcome ? t('chat.input.welcome_placeholder') : t('chat.input.placeholder')}
           type="text"
           value={message}
           onChange={(e) => setMessage(e.target.value)}

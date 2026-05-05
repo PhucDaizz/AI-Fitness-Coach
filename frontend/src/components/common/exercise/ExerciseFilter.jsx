@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 const ExerciseFilter = ({ filters, onFilterChange, lookups, isAdmin = false }) => {
+  const { t, i18n } = useTranslation();
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [localSearch, setLocalSearch] = useState(filters.searchTerm);
 
@@ -46,7 +48,7 @@ const ExerciseFilter = ({ filters, onFilterChange, lookups, isAdmin = false }) =
         <span className="material-symbols-outlined text-primary">search</span>
         <input 
           type="text" 
-          placeholder="Decode protocol name or ID... (Press Enter to rapid search)"
+          placeholder={t('exercises.filter.search_placeholder')}
           value={localSearch}
           onChange={e => setLocalSearch(e.target.value)}
           onKeyDown={handleKeyDown}
@@ -56,7 +58,7 @@ const ExerciseFilter = ({ filters, onFilterChange, lookups, isAdmin = false }) =
           <button 
             onClick={() => setShowAdvanced(!showAdvanced)}
             className={`p-2 rounded-xl transition-all ${showAdvanced ? 'bg-primary text-black' : 'text-on-surface-variant hover:bg-white/5'}`}
-            title="Advanced Filters"
+            title={t('exercises.filter.advanced_title')}
           >
             <span className="material-symbols-outlined leading-none text-[20px]">tune</span>
           </button>
@@ -64,7 +66,7 @@ const ExerciseFilter = ({ filters, onFilterChange, lookups, isAdmin = false }) =
             onClick={handleSearchSubmit}
             className="bg-surface-container-highest text-white px-6 py-2 rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-primary hover:text-black transition-all shadow-lg"
           >
-            Sync Search
+            {t('exercises.filter.sync_search')}
           </button>
         </div>
       </div>
@@ -74,46 +76,58 @@ const ExerciseFilter = ({ filters, onFilterChange, lookups, isAdmin = false }) =
         
         {/* Category Select */}
         <div className="bg-surface-container p-3 rounded-xl border border-white/5 space-y-1">
-          <label className="block text-[9px] uppercase tracking-widest text-on-surface-variant font-black">Movement Class</label>
+          <label className="block text-[9px] uppercase tracking-widest text-on-surface-variant font-black">{t('exercises.filter.class')}</label>
           <select 
             value={filters.categoryIds}
             onChange={e => onFilterChange('categoryIds', e.target.value)}
             className="w-full bg-[#1a1919] border-none text-xs rounded-lg focus:ring-1 focus:ring-primary py-1.5 px-2 text-white"
           >
-            <option value="">All Regions</option>
-            {lookups.categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+            <option value="">{t('exercises.filter.class_all')}</option>
+            {lookups.categories.map(c => (
+              <option key={c.id} value={c.id}>
+                {i18n.language === 'vi' ? (c.nameVN || c.name) : (c.name || c.nameVN)}
+              </option>
+            ))}
           </select>
         </div>
 
         {/* Muscle Group Select */}
         <div className="bg-surface-container p-3 rounded-xl border border-white/5 space-y-1">
-          <label className="block text-[9px] uppercase tracking-widest text-[#adaaaa] font-black">Biometric Target</label>
+          <label className="block text-[9px] uppercase tracking-widest text-[#adaaaa] font-black">{t('exercises.filter.target')}</label>
           <select 
             value={filters.muscleGroupIds}
             onChange={e => onFilterChange('muscleGroupIds', e.target.value)}
             className="w-full bg-[#1a1919] border-none text-xs rounded-lg focus:ring-1 focus:ring-primary py-1.5 px-2 text-white"
           >
-            <option value="">Full Anatomy</option>
-            {lookups.muscles.map(m => <option key={m.id} value={m.id}>{m.nameEN}</option>)}
+            <option value="">{t('exercises.filter.target_all')}</option>
+            {lookups.muscles.map(m => (
+              <option key={m.id} value={m.id}>
+                {i18n.language === 'vi' ? (m.nameVN || m.nameEN) : (m.nameEN || m.nameVN)}
+              </option>
+            ))}
           </select>
         </div>
 
         {/* Equipment Select */}
         <div className="bg-surface-container p-3 rounded-xl border border-white/5 space-y-1">
-          <label className="block text-[9px] uppercase tracking-widest text-[#adaaaa] font-black">Hardware Requirement</label>
+          <label className="block text-[9px] uppercase tracking-widest text-[#adaaaa] font-black">{t('exercises.filter.hardware')}</label>
           <select 
             value={filters.equipmentIds}
             onChange={e => onFilterChange('equipmentIds', e.target.value)}
             className="w-full bg-[#1a1919] border-none text-xs rounded-lg focus:ring-1 focus:ring-primary py-1.5 px-2 text-white"
           >
-            <option value="">Agnostic</option>
-            {lookups.equipment.map(eq => <option key={eq.id} value={eq.id}>{eq.name}</option>)}
+            <option value="">{t('exercises.filter.hardware_all')}</option>
+            {lookups.equipment.map(eq => (
+              <option key={eq.id} value={eq.id}>
+                {i18n.language === 'vi' ? (eq.nameVN || eq.name) : (eq.name || eq.nameVN)}
+              </option>
+            ))}
           </select>
         </div>
 
         {/* Environment Filter (Multiple tags) */}
         <div className="bg-surface-container p-3 rounded-xl border border-white/5 space-y-2 lg:col-span-2 text-center flex flex-col justify-center">
-          <label className="block text-[9px] uppercase tracking-widest text-on-surface-variant font-black">Environmental Vector</label>
+          <label className="block text-[9px] uppercase tracking-widest text-on-surface-variant font-black">{t('exercises.filter.environment')}</label>
           <div className="flex justify-center gap-2">
             {['Gym', 'Home', 'Outdoor'].map(loc => (
               <button 
@@ -123,7 +137,7 @@ const ExerciseFilter = ({ filters, onFilterChange, lookups, isAdmin = false }) =
                   isLocationActive(loc) ? 'bg-primary/20 text-primary border-primary' : 'bg-transparent text-on-surface-variant border-white/10 hover:bg-white/5'
                 }`}
               >
-                {loc}
+                {t(`exercises.filter.env_${loc.toLowerCase()}`)}
               </button>
             ))}
           </div>
@@ -148,14 +162,14 @@ const ExerciseFilter = ({ filters, onFilterChange, lookups, isAdmin = false }) =
 
         {/* Sorting Logic */}
         <div className="bg-surface-container p-3 rounded-xl border border-white/5 space-y-1">
-          <label className="block text-[9px] uppercase tracking-widest text-on-surface-variant font-black">Sort Protocol</label>
+          <label className="block text-[9px] uppercase tracking-widest text-on-surface-variant font-black">{t('exercises.filter.sort')}</label>
           <select 
             value={filters.sortBy}
             onChange={e => onFilterChange('sortBy', e.target.value)}
             className="w-full bg-[#1a1919] border-none text-xs rounded-lg focus:ring-1 focus:ring-primary py-1.5 px-2 text-white"
           >
-            <option value="CreatedAt">Recent Matrix</option>
-            <option value="Name">Alpha Designation</option>
+            <option value="CreatedAt">{t('exercises.filter.sort_recent')}</option>
+            <option value="Name">{t('exercises.filter.sort_name')}</option>
           </select>
         </div>
 
@@ -174,7 +188,7 @@ const ExerciseFilter = ({ filters, onFilterChange, lookups, isAdmin = false }) =
           <button 
             onClick={handleReset}
             className="w-8 h-8 flex items-center justify-center text-error hover:bg-error/10 rounded-lg transition-all"
-            title="Purge Filters"
+            title={t('exercises.filter.purge')}
           >
             <span className="material-symbols-outlined text-[18px]">restart_alt</span>
           </button>

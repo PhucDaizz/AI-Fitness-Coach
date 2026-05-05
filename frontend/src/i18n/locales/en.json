@@ -1,0 +1,428 @@
+{
+  "common": {
+    "login": "Login",
+    "get_started": "Get Started",
+    "features": "Features",
+    "methodology": "Methodology",
+    "start_journey": "START JOURNEY",
+    "watch_how": "WATCH HOW IT WORKS"
+  },
+  "home": {
+    "hero": {
+      "future": "The Future of Human Performance",
+      "title": "TRANSFORM YOUR BODY WITH ",
+      "title_highlight": "ACTIVE INTELLIGENCE",
+      "subtitle": "Ever joined a gym just to quit two weeks later? KINETIC AI isn't just a chat app—it's a fully automated system designed to fit your life.",
+      "scroll": "Scroll to discover"
+    },
+    "bento": {
+      "header": "ENGINEERED FOR SUCCESS",
+      "card1": {
+        "title": "Custom Lifestyle in 30 Seconds",
+        "desc": "Instead of a static PDF, our system analyzes everything—from biometric markers to past injuries—to engineer a plan optimized for maximum results, whether you're in a world-class gym or at home."
+      },
+      "card2": {
+        "title": "Real-World AI in Action",
+        "desc": "Experience 'Active Intelligence'. Message the AI to move a workout or adjust intensity. It automatically re-calculates your entire schedule based on real performance and feedback.",
+        "status": "Coach: Active"
+      },
+      "card3": {
+        "title": "Vast Expert Knowledge Base",
+        "desc": "Access a library of movements rigorously vetted by experts. Train with precision and safety using data from the pros, no more guesswork."
+      },
+      "card4": {
+        "title": "Seamless Nutrition Mastery",
+        "desc": "The system automatically determines your daily calorie and protein requirements. From local favorites to complex diets, get the perfect meal suggestions to build muscle or shed fat fast.",
+        "goal": "Kcal Target"
+      }
+    },
+    "cta": {
+      "title": "NO MORE EXPENSIVE COACHES. ",
+      "title_highlight": "NO MORE EXCUSES.",
+      "subtitle": "Follow your own personalized path and enjoy the results. Your high-performance journey starts with a single tap.",
+      "button": "GET KINETIC AI NOW",
+      "availability": "Available on iOS and Android"
+    }
+  },
+  "auth": {
+    "login": {
+      "back_home": "Back to Home",
+      "brand_subtitle": "INTELLIGENT PERFORMANCE COCKPIT",
+      "welcome_back": "Welcome Back",
+      "access_metrics": "Access your elite performance metrics.",
+      "email": "Email Address",
+      "password": "Password",
+      "forgot_password": "Forgot Password?",
+      "login_btn": "Login",
+      "processing": "Processing...",
+      "no_account": "Don't have an account?",
+      "sign_up_now": "Sign up now",
+      "or_continue": "Or continue with",
+      "google_login": "Login with Google",
+      "privacy": "Privacy Policy",
+      "terms": "Terms of Service"
+    },
+    "signup": {
+      "back": "Back",
+      "cockpit": "Digital Cockpit",
+      "join_elite": "JOIN THE ",
+      "elite": "ELITE",
+      "start_journey": "Start your high-performance journey",
+      "full_name": "Full Name",
+      "email": "Email",
+      "password": "Password",
+      "phone": "Phone Number",
+      "create_btn": "CREATE ACCOUNT",
+      "initiating": "INITIATING...",
+      "already_account": "Already have an account?",
+      "login_now": "Login now",
+      "or_signup": "Or sign up with",
+      "google_signup": "Sign up with Google",
+      "protocol": "Kinetic Protocol v2.4.0",
+      "encrypted": "Encrypted biometric stream",
+      "initiate_stream": "Initiate performance stream"
+    },
+    "forgot_password": {
+      "title": "Forgot Password?",
+      "subtitle": "Enter your email and we'll send a link to reset your password.",
+      "back_to_login": "Back to login",
+      "email_label": "Email Address",
+      "send_btn": "Send reset link",
+      "sending": "Sending...",
+      "success_msg": "Request sent! Please check your email.",
+      "error_msg": "Failed to send link. Please try again.",
+      "trouble": "Having trouble?",
+      "contact_support": "Contact Support",
+      "system_ready": "System ready",
+      "module_auth": "Auth_Module_048"
+    }
+  },
+  "profile": {
+    "title": "Profile Details",
+    "subtitle": "Manage your identity and biometric anchor points.",
+    "back": "Back",
+    "update_success": "Profile updated successfully!",
+    "sidebar": {
+      "personal": "Personal",
+      "security": "Security",
+      "settings": "Settings",
+      "logout": "Logout",
+      "admin_panel": "Admin Panel"
+    },
+    "bio": {
+      "title": "Personal Bio",
+      "edit_avatar": "Edit Avatar",
+      "joined": "Joined",
+      "role": "Role",
+      "uid": "UID",
+      "anonymous": "Athlete",
+      "verified": "Verified",
+      "system_admin": "System_Admin",
+      "elite_member": "Elite_Member"
+    },
+    "biometrics": {
+      "title": "Biometric Data",
+      "full_name": "Full Name",
+      "phone": "Phone Number",
+      "weight": "Weight (kg)",
+      "height": "Height (cm)",
+      "age": "Age",
+      "gender": "Gender",
+      "activity_level": "Activity Level",
+      "goal": "Fitness Goal",
+      "save_btn": "Save Changes",
+      "saving": "Saving...",
+      "genders": {
+        "male": "Male",
+        "female": "Female",
+        "other": "Other"
+      },
+      "activity_levels": {
+        "sedentary": "Sedentary",
+        "light": "Lightly Active",
+        "moderate": "Moderately Active",
+        "very": "Very Active",
+        "extra": "Extra Active"
+      },
+      "goals": {
+        "lose_weight": "Lose Weight",
+        "maintain": "Maintain Weight",
+        "gain_muscle": "Gain Muscle"
+      }
+    }
+  },
+  "security": {
+    "title": "Account Security",
+    "subtitle": "Manage credentials, monitor active sessions, and harden your account defenses.",
+    "change_password": {
+      "title": "Change Password",
+      "current": "Current Password",
+      "new": "New Password",
+      "confirm": "Confirm New Password",
+      "update_btn": "Update Password",
+      "updating": "Updating...",
+      "success": "Password updated successfully!",
+      "error": "Failed to update password."
+    },
+    "recovery": {
+      "title": "Recovery & Verification",
+      "email_verified": "Email Verified",
+      "email_unverified": "Email Unverified",
+      "verify_now": "Verify Now",
+      "send_verification": "Send Verification Email",
+      "verification_sent": "Verification email sent!"
+    },
+    "alert": {
+      "title": "Action Required",
+      "message": "Your email is not verified. Please verify it to secure your account."
+    }
+  },
+  "workout_plans": {
+    "title": "Training",
+    "title_highlight": "Protocols",
+    "subtitle": "Select an active plan or review your training history.",
+    "init_btn": "Initialize AI Protocol",
+    "filters": {
+      "active": "Active",
+      "completed": "Completed",
+      "archived": "Archived",
+      "all": "All"
+    },
+    "loading": "Accessing neural database...",
+    "empty": "No protocols found for this status.",
+    "empty_action": "Initialize New Plan via AI Coach",
+    "card": {
+      "weeks": "Weeks",
+      "starts": "Starts",
+      "load_btn": "Load Protocol"
+    },
+    "errors": {
+      "generate_fail": "Failed to generate plan. Please ensure your profile is complete."
+    },
+    "modal": {
+      "generator_title": "Neural Generator",
+      "title": "Initialize",
+      "title_highlight": "Protocol",
+      "sync_status": "Synchronizing with biometric profile...",
+      "duration": "Duration (Weeks)",
+      "start_date": "Commencement Date",
+      "gen_btn": "Execute Generation",
+      "abort_btn": "Abort Mission",
+      "generating": "Synthesizing...",
+      "warning": "Note: Heavy computation in progress. This may take up to 5 minutes. Please do not close this window.",
+      "success_title": "Generation",
+      "success_title_highlight": "Complete",
+      "access_btn": "Access Protocols",
+      "status_messages": [
+        "Synthesizing biometrics...",
+        "Optimizing muscle focus...",
+        "Calculating progressive overload...",
+        "Structuring recovery phases...",
+        "Finalizing neural protocol...",
+        "Calibrating intensity matrices...",
+        "Almost there, finalizing data..."
+      ]
+    },
+    "details": {
+      "back": "Back to Protocols",
+      "terminate": "Terminate Protocol",
+      "terminating": "Terminating...",
+      "confirm_delete": "Are you sure you want to permanently terminate this protocol? This action cannot be undone.",
+      "title": "Protocol",
+      "title_highlight": "Timeline",
+      "subtitle": "Phased execution strategy for optimal physiological adaptation.",
+      "day": "Day",
+      "bio_focus": "Biological Focus",
+      "scheduled": "Scheduled for",
+      "required_movements": "Required Movements",
+      "sets": "Sets",
+      "reps": "Reps",
+      "rest": "Rest",
+      "ai_instruction": "AI Instruction",
+      "loading_exercise": "Loading Exercise...",
+      "incomplete": "Protocol structure incomplete.",
+      "loading_data": "Deciphering Protocol Data..."
+    }
+  },
+  "exercises": {
+    "title": "Movement",
+    "title_highlight": "Library",
+    "subtitle": "Discover advanced protocols and perfect your form with our neural database.",
+    "loading": "Accessing Neural Archive...",
+    "empty": "No protocols match your current search parameters.",
+    "filter": {
+      "search_placeholder": "Decode protocol name or ID...",
+      "sync_search": "Sync Search",
+      "advanced_title": "Advanced Filters",
+      "class": "Movement Class",
+      "class_all": "All Regions",
+      "target": "Biometric Target",
+      "target_all": "Full Anatomy",
+      "hardware": "Hardware Requirement",
+      "hardware_all": "Agnostic",
+      "environment": "Environmental Vector",
+      "env_gym": "Gym",
+      "env_home": "Home",
+      "env_outdoor": "Outdoor",
+      "sort": "Sort Protocol",
+      "sort_recent": "Recent Matrix",
+      "sort_name": "Alpha Designation",
+      "purge": "Purge Filters"
+    },
+    "detail": {
+      "target": "Target",
+      "full_body": "Full Body",
+      "primary": "Primary Muscles",
+      "assisting": "Assisting Muscles",
+      "protocol": "Execution Protocol",
+      "no_desc": "No detailed instructions available for this movement.",
+      "ready": "Ready"
+    }
+  },
+  "meals": {
+    "title": "Culinary",
+    "title_highlight": "Vault",
+    "subtitle": "Fuel your performance with precision-engineered nutrition and gourmet protocols.",
+    "loading": "Accessing Nutritional Grid...",
+    "empty": "No culinary elements match your current search parameters.",
+    "cuisine_universal": "Universal",
+    "macros": {
+      "protein": "Protein",
+      "carbs": "Carbs",
+      "fat": "Fat",
+      "energy": "Energy"
+    },
+    "filter": {
+      "search_placeholder": "Search performance meals... (Enter)",
+      "go": "Go",
+      "advanced_title": "Advanced Filters",
+      "cuisine": "Cuisine",
+      "cuisine_all": "All Cuisines",
+      "calories": "Calories (Kcal)",
+      "protein": "Protein (g)",
+      "carbs": "Carbs (g)",
+      "fat": "Fat (g)",
+      "min": "Min",
+      "max": "Max",
+      "dietary": "Dietary Filters",
+      "add_tag": "+ Tag (Enter)",
+      "sort": "Sort Field",
+      "sort_recent": "Recent",
+      "sort_abc": "ABC Name",
+      "sort_energy": "Energy",
+      "sort_protein": "Protein",
+      "reset": "Reset Filters"
+    },
+    "detail": {
+      "cuisine_global": "Global Cuisine",
+      "profile": "Culinary Profile",
+      "no_desc": "No detailed description available for this meal.",
+      "recipe_source": "View Full Recipe Source"
+    }
+  },
+  "chat": {
+    "sync_failed": "Uplink synchronization failed.",
+    "sidebar": {
+      "title": "Chronicles",
+      "new_chat": "New Protocol",
+      "rename": "Rename",
+      "delete": "Delete",
+      "confirm_delete": "Are you sure you want to delete this session?",
+      "settings": "Settings",
+      "logout": "Logout",
+      "today": "Today",
+      "last_7_days": "Previous 7 Days",
+      "older": "Older",
+      "empty": "Empty",
+      "verified": "Verified",
+      "new_conversation": "New Conversation"
+    },
+    "welcome": {
+      "greeting": "Hello {{name}},",
+      "highlight": "time to train!",
+      "subtitle": "Your physique is ready. Let me know your goals for today so I can design the best schedule for you.",
+      "feature_title": "Core Capabilities",
+      "suggestions": [
+        {
+          "title": "Track Progress",
+          "desc": "Training overview.",
+          "prompt": "Show me an overview of my training progress, streaks, and current completion rates."
+        },
+        {
+          "title": "TDEE & BMR",
+          "desc": "Nutrition planning.",
+          "prompt": "Calculate my TDEE and BMR to know how many calories I need daily."
+        },
+        {
+          "title": "Nutrition Lookup",
+          "desc": "Check calories & macros.",
+          "prompt": "Help me look up the calories and nutritional components (macros) of Beef Pho."
+        },
+        {
+          "title": "Exercise Search",
+          "desc": "Form & muscle groups.",
+          "prompt": "Suggest some effective exercises for chest and triceps development."
+        }
+      ]
+    },
+    "input": {
+      "placeholder": "Query Kinetic Core...",
+      "welcome_placeholder": "Ask me anything to begin...",
+      "thinking": "Processing...",
+      "streaming": "Responding...",
+      "send": "Transmit"
+    },
+    "message": {
+      "thinking": "AI is thinking...",
+      "ai_name": "Kinetic Core",
+      "just_now": "Just now",
+      "copied": "Copied!",
+      "ai": "AI Coach",
+      "user": "You"
+    }
+  },
+  "analytics": {
+    "title": "Your Progress Overview",
+    "error": "Failed to load analytics data.",
+    "streak": "Current Streak",
+    "days": "days",
+    "completion": "Completion",
+    "total_volume": "Total Volume",
+    "tons": "tons",
+    "this_week": "This Week",
+    "sessions": "sessions",
+    "breakdown": "Muscle Volume Breakdown"
+  },
+  "workout_log": {
+    "title": "Log Workout",
+    "completed": "Workout Completed",
+    "logged_on": "Logged on",
+    "duration": "Duration",
+    "difficulty": "Difficulty",
+    "archived": "This session has been archived in your performance matrix.",
+    "mins": "mins",
+    "target": "Target",
+    "done": "Done",
+    "sets": "Sets",
+    "reps": "Reps",
+    "weight": "Wt (kg)",
+    "notes": "Notes",
+    "how_feel": "How did you feel?",
+    "saving": "Saving...",
+    "submit": "Submit Workout Log",
+    "easy": "Easy",
+    "ok": "OK",
+    "hard": "Hard"
+  },
+  "footer": {
+    "brand_desc": "The world's most advanced autonomous kinetic intelligence. Biomechanical optimization through real-time RAG processing.",
+    "system_core": "SYSTEM CORE",
+    "training_module": "Training Module",
+    "nutrition_engine": "Nutrition Engine",
+    "authentication": "Authentication",
+    "legal_protocols": "LEGAL PROTOCOLS",
+    "privacy_policy": "Privacy Policy",
+    "terms_of_service": "Terms of Service",
+    "technical_support": "Technical Support"
+  }
+}

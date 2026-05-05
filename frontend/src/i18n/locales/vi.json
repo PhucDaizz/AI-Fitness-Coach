@@ -1,0 +1,428 @@
+{
+  "common": {
+    "login": "Đăng nhập",
+    "get_started": "Bắt đầu ngay",
+    "features": "Tính năng",
+    "methodology": "Phương pháp",
+    "start_journey": "BẮT ĐẦU HÀNH TRÌNH",
+    "watch_how": "XEM CÁCH HOẠT ĐỘNG"
+  },
+  "home": {
+    "hero": {
+      "future": "Tương lai của hiệu suất con người",
+      "title": "THAY ĐỔI CƠ THỂ VỚI ",
+      "title_highlight": "TRÍ TUỆ CHỦ ĐỘNG",
+      "subtitle": "Bạn đã từng tham gia phòng tập chỉ để bỏ cuộc sau hai tuần? KINETIC AI không chỉ là một ứng dụng chat—nó là một hệ thống hoàn toàn tự động được thiết kế để phù hợp với cuộc sống của bạn.",
+      "scroll": "Cuộn để khám phá"
+    },
+    "bento": {
+      "header": "ĐƯỢC THIẾT KẾ ĐỂ THÀNH CÔNG",
+      "card1": {
+        "title": "Lối sống tùy chỉnh trong 30 giây",
+        "desc": "Thay vì một bản PDF vô hồn, hệ thống của chúng tôi phân tích mọi thứ—từ các chỉ số sinh trắc học đến các chấn thương cũ—để thiết kế một kế hoạch được tối ưu hóa cho kết quả tối đa, cho dù bạn đang ở phòng tập đẳng cấp thế giới hay ở nhà."
+      },
+      "card2": {
+        "title": "AI hành động thực tế",
+        "desc": "Trải nghiệm 'Trí tuệ chủ động'. Nhắn tin cho AI để dời buổi tập hoặc điều chỉnh cường độ. Nó tự động sắp xếp lại toàn bộ lịch trình dựa trên sức mạnh thực tế và phản hồi của bạn.",
+        "status": "Huấn luyện viên: Đang hoạt động"
+      },
+      "card3": {
+        "title": "Kiến thức chuyên gia khổng lồ",
+        "desc": "Truy cập thư viện bài tập được kiểm duyệt nghiêm ngặt bởi các chuyên gia. Tập luyện chính xác và an toàn với dữ liệu từ chuyên gia, không còn phải 'đoán mò' nữa."
+      },
+      "card4": {
+        "title": "Làm chủ dinh dưỡng mượt mà",
+        "desc": "Hệ thống tự động xác định nhu cầu calo và protein hàng ngày của bạn. Từ phở đến salad, nhận những gợi ý bữa ăn hoàn hảo để xây dựng cơ bắp hoặc giảm mỡ nhanh chóng.",
+        "goal": "Mục tiêu Kcal"
+      }
+    },
+    "cta": {
+      "title": "KHÔNG CÒN CHI PHÍ HUẤN LUYỆN VIÊN ĐẮT ĐỎ. ",
+      "title_highlight": "KHÔNG CÒN NHỮNG LỜI BÀO CHỮA.",
+      "subtitle": "Đi theo con đường cá nhân hóa của riêng bạn và tận hưởng kết quả. Hành trình hiệu suất cao của bạn bắt đầu chỉ với một lần chạm.",
+      "button": "NHẬN KINETIC AI NGAY",
+      "availability": "Có sẵn trên iOS và Android"
+    }
+  },
+  "auth": {
+    "login": {
+      "back_home": "Quay lại trang chủ",
+      "brand_subtitle": "BẢNG ĐIỀU KHIỂN HIỆU SUẤT TRÍ TUỆ",
+      "welcome_back": "Chào mừng trở lại",
+      "access_metrics": "Truy cập các chỉ số hiệu suất ưu tú của bạn.",
+      "email": "Địa chỉ Email",
+      "password": "Mật khẩu",
+      "forgot_password": "Quên mật khẩu?",
+      "login_btn": "Đăng nhập",
+      "processing": "Đang xử lý...",
+      "no_account": "Chưa có tài khoản?",
+      "sign_up_now": "Đăng ký ngay",
+      "or_continue": "Hoặc tiếp tục với",
+      "google_login": "Đăng nhập với Google",
+      "privacy": "Chính sách bảo mật",
+      "terms": "Điều khoản dịch vụ"
+    },
+    "signup": {
+      "back": "Quay lại",
+      "cockpit": "Buồng lái kỹ thuật số",
+      "join_elite": "GIA NHẬP ",
+      "elite": "NHÓM ƯU TÚ",
+      "start_journey": "Bắt đầu hành trình hiệu suất cao của bạn",
+      "full_name": "Họ và tên",
+      "email": "Email",
+      "password": "Mật khẩu",
+      "phone": "Số điện thoại",
+      "create_btn": "TẠO TÀI KHOẢN",
+      "initiating": "ĐANG KHỞI TẠO...",
+      "already_account": "Đã có tài khoản?",
+      "login_now": "Đăng nhập",
+      "or_signup": "Hoặc đăng ký với",
+      "google_signup": "Đăng ký với Google",
+      "protocol": "Giao thức Kinetic v2.4.0",
+      "encrypted": "Dòng dữ liệu cơ thể được mã hóa",
+      "initiate_stream": "Khởi tạo dòng hiệu suất"
+    },
+    "forgot_password": {
+      "title": "Quên mật khẩu?",
+      "subtitle": "Nhập email của bạn và chúng tôi sẽ gửi liên kết để đặt lại mật khẩu.",
+      "back_to_login": "Quay lại đăng nhập",
+      "email_label": "Địa chỉ Email",
+      "send_btn": "Gửi liên kết đặt lại",
+      "sending": "Đang gửi...",
+      "success_msg": "Yêu cầu đã được gửi! Vui lòng kiểm tra email của bạn.",
+      "error_msg": "Gửi liên kết thất bại. Vui lòng thử lại.",
+      "trouble": "Gặp vấn đề?",
+      "contact_support": "Liên hệ hỗ trợ",
+      "system_ready": "Hệ thống đã sẵn sàng",
+      "module_auth": "Mô-đun_048 // Xác thực"
+    }
+  },
+  "profile": {
+    "title": "Chi tiết hồ sơ",
+    "subtitle": "Quản lý danh tính và các điểm neo sinh trắc học của bạn.",
+    "back": "Quay lại",
+    "update_success": "Cập nhật hồ sơ thành công!",
+    "sidebar": {
+      "personal": "Cá nhân",
+      "security": "Bảo mật",
+      "settings": "Cài đặt",
+      "logout": "Đăng xuất",
+      "admin_panel": "Bảng quản trị"
+    },
+    "bio": {
+      "title": "Hồ sơ cá nhân",
+      "edit_avatar": "Chỉnh sửa ảnh đại diện",
+      "joined": "Đã tham gia",
+      "role": "Vai trò",
+      "uid": "UID",
+      "anonymous": "Vận động viên",
+      "verified": "Đã xác minh",
+      "system_admin": "Quản trị_Hệ thống",
+      "elite_member": "Thành viên_Ưu tú"
+    },
+    "biometrics": {
+      "title": "Dữ liệu sinh trắc học",
+      "full_name": "Họ và tên",
+      "phone": "Số điện thoại",
+      "weight": "Cân nặng (kg)",
+      "height": "Chiều cao (cm)",
+      "age": "Tuổi",
+      "gender": "Giới tính",
+      "activity_level": "Mức độ hoạt động",
+      "goal": "Mục tiêu thể hình",
+      "save_btn": "Lưu thay đổi",
+      "saving": "Đang lưu...",
+      "genders": {
+        "male": "Nam",
+        "female": "Nữ",
+        "other": "Khác"
+      },
+      "activity_levels": {
+        "sedentary": "Ít vận động",
+        "light": "Vận động nhẹ",
+        "moderate": "Vận động vừa phải",
+        "very": "Vận động nhiều",
+        "extra": "Vận động rất nhiều"
+      },
+      "goals": {
+        "lose_weight": "Giảm cân",
+        "maintain": "Duy trì cân nặng",
+        "gain_muscle": "Tăng cơ"
+      }
+    }
+  },
+  "security": {
+    "title": "Bảo mật tài khoản",
+    "subtitle": "Quản lý thông tin xác thực, giám sát các phiên hoạt động và tăng cường phòng thủ tài khoản.",
+    "change_password": {
+      "title": "Đổi mật khẩu",
+      "current": "Mật khẩu hiện tại",
+      "new": "Mật khẩu mới",
+      "confirm": "Xác nhận mật khẩu mới",
+      "update_btn": "Cập nhật mật khẩu",
+      "updating": "Đang cập nhật...",
+      "success": "Đổi mật khẩu thành công!",
+      "error": "Đổi mật khẩu thất bại."
+    },
+    "recovery": {
+      "title": "Khôi phục & Xác minh",
+      "email_verified": "Email đã xác minh",
+      "email_unverified": "Email chưa xác minh",
+      "verify_now": "Xác minh ngay",
+      "send_verification": "Gửi email xác minh",
+      "verification_sent": "Email xác minh đã được gửi!"
+    },
+    "alert": {
+      "title": "Yêu cầu hành động",
+      "message": "Email của bạn chưa được xác minh. Vui lòng xác minh để bảo mật tài khoản."
+    }
+  },
+  "workout_plans": {
+    "title": "Lộ trình",
+    "title_highlight": "tập luyện",
+    "subtitle": "Chọn một kế hoạch đang hoạt động hoặc xem lại lịch sử tập luyện của bạn.",
+    "init_btn": "Khởi tạo lộ trình AI",
+    "filters": {
+      "active": "Đang hoạt động",
+      "completed": "Đã hoàn thành",
+      "archived": "Đã lưu trữ",
+      "all": "Tất cả"
+    },
+    "loading": "Đang truy cập cơ sở dữ liệu...",
+    "empty": "Không tìm thấy lộ trình nào cho trạng thái này.",
+    "empty_action": "Khởi tạo kế hoạch mới qua AI Coach",
+    "card": {
+      "weeks": "Tuần",
+      "starts": "Bắt đầu",
+      "load_btn": "Chi tiết lộ trình"
+    },
+    "errors": {
+      "generate_fail": "Khởi tạo lộ trình thất bại. Vui lòng đảm bảo hồ sơ của bạn đã đầy đủ."
+    },
+    "modal": {
+      "generator_title": "Trình tạo Neural",
+      "title": "Khởi tạo",
+      "title_highlight": "Lộ trình",
+      "sync_status": "Đang đồng bộ với hồ sơ sinh trắc học...",
+      "duration": "Thời gian (Tuần)",
+      "start_date": "Ngày bắt đầu",
+      "gen_btn": "Thực hiện khởi tạo",
+      "abort_btn": "Hủy bỏ sứ mệnh",
+      "generating": "Đang khởi tạo...",
+      "warning": "Lưu ý: Quá trình tính toán chuyên sâu đang diễn ra. Việc này có thể mất tới 5 phút. Vui lòng không đóng cửa sổ này.",
+      "success_title": "Khởi tạo",
+      "success_title_highlight": "Hoàn tất",
+      "access_btn": "Truy cập lộ trình",
+      "status_messages": [
+        "Đang tổng hợp dữ liệu sinh trắc học...",
+        "Tối ưu hóa mục tiêu cơ bắp...",
+        "Tính toán quá tải lũy tiến...",
+        "Xây dựng các giai đoạn phục hồi...",
+        "Hoàn thiện giao thức thần kinh...",
+        "Hiệu chuẩn ma trận cường độ...",
+        "Sắp xong rồi, đang hoàn tất dữ liệu..."
+      ]
+    },
+    "details": {
+      "back": "Quay lại lộ trình",
+      "terminate": "Hủy bỏ lộ trình",
+      "terminating": "Đang hủy bỏ...",
+      "confirm_delete": "Bạn có chắc chắn muốn hủy bỏ vĩnh viễn lộ trình này không? Hành động này không thể hoàn tác.",
+      "title": "Dòng thời gian",
+      "title_highlight": "Lộ trình",
+      "subtitle": "Chiến lược thực thi theo từng giai đoạn để thích nghi sinh lý tối ưu.",
+      "day": "Ngày",
+      "bio_focus": "Tập trung sinh học",
+      "scheduled": "Lịch trình cho",
+      "required_movements": "Các động tác yêu cầu",
+      "sets": "Hiệp",
+      "reps": "Lần",
+      "rest": "Nghỉ",
+      "ai_instruction": "Chỉ dẫn AI",
+      "loading_exercise": "Đang tải bài tập...",
+      "incomplete": "Cấu trúc lộ trình không đầy đủ.",
+      "loading_data": "Đang giải mã dữ liệu lộ trình..."
+    }
+  },
+  "exercises": {
+    "title": "Thư viện",
+    "title_highlight": "Động tác",
+    "subtitle": "Khám phá các lộ trình nâng cao và hoàn thiện kỹ thuật tập luyện với cơ sở dữ liệu chuyên sâu của chúng tôi.",
+    "loading": "Đang truy cập kho lưu trữ...",
+    "empty": "Không tìm thấy động tác nào phù hợp với tìm kiếm của bạn.",
+    "filter": {
+      "search_placeholder": "Tìm kiếm động tác hoặc ID...",
+      "sync_search": "Tìm kiếm",
+      "advanced_title": "Bộ lọc nâng cao",
+      "class": "Nhóm động tác",
+      "class_all": "Tất cả vùng",
+      "target": "Mục tiêu sinh học",
+      "target_all": "Toàn bộ cơ thể",
+      "hardware": "Yêu cầu thiết bị",
+      "hardware_all": "Không yêu cầu",
+      "environment": "Môi trường tập luyện",
+      "env_gym": "Phòng tập",
+      "env_home": "Tại nhà",
+      "env_outdoor": "Ngoài trời",
+      "sort": "Sắp xếp",
+      "sort_recent": "Mới nhất",
+      "sort_name": "Theo tên",
+      "purge": "Xóa bộ lọc"
+    },
+    "detail": {
+      "target": "Mục tiêu",
+      "full_body": "Toàn thân",
+      "primary": "Cơ chính",
+      "assisting": "Cơ hỗ trợ",
+      "protocol": "Giao thức thực hiện",
+      "no_desc": "Không có hướng dẫn chi tiết cho động tác này.",
+      "ready": "Sẵn sàng"
+    }
+  },
+  "meals": {
+    "title": "Kho tàng",
+    "title_highlight": "Ẩm thực",
+    "subtitle": "Cung cấp năng lượng cho hiệu suất của bạn với dinh dưỡng được thiết kế chính xác và các công thức thượng hạng.",
+    "loading": "Đang truy cập mạng lưới dinh dưỡng...",
+    "empty": "Không tìm thấy món ăn nào phù hợp với tìm kiếm của bạn.",
+    "cuisine_universal": "Đa dạng",
+    "macros": {
+      "protein": "Đạm",
+      "carbs": "Tinh bột",
+      "fat": "Béo",
+      "energy": "Năng lượng"
+    },
+    "filter": {
+      "search_placeholder": "Tìm kiếm món ăn hiệu năng... (Nhấn Enter)",
+      "go": "Tìm",
+      "advanced_title": "Bộ lọc nâng cao",
+      "cuisine": "Ẩm thực",
+      "cuisine_all": "Tất cả các nền văn hóa",
+      "calories": "Năng lượng (Kcal)",
+      "protein": "Đạm (g)",
+      "carbs": "Tinh bột (g)",
+      "fat": "Béo (g)",
+      "min": "Tối thiểu",
+      "max": "Tối đa",
+      "dietary": "Chế độ ăn uống",
+      "add_tag": "Thêm thẻ (Enter)",
+      "sort": "Sắp xếp",
+      "sort_recent": "Mới nhất",
+      "sort_abc": "Tên A-Z",
+      "sort_energy": "Năng lượng",
+      "sort_protein": "Đạm",
+      "reset": "Đặt lại bộ lọc"
+    },
+    "detail": {
+      "cuisine_global": "Ẩm thực thế giới",
+      "profile": "Hồ sơ ẩm thực",
+      "no_desc": "Không có mô tả chi tiết cho món ăn này.",
+      "recipe_source": "Xem nguồn công thức đầy đủ"
+    }
+  },
+  "chat": {
+    "sync_failed": "Đồng bộ hóa Uplink thất bại.",
+    "sidebar": {
+      "title": "Dòng lịch sử",
+      "new_chat": "Hội thoại mới",
+      "rename": "Đổi tên",
+      "delete": "Xóa",
+      "confirm_delete": "Bạn có chắc chắn muốn xóa hội thoại này không?",
+      "settings": "Cài đặt",
+      "logout": "Đăng xuất",
+      "today": "Hôm nay",
+      "last_7_days": "7 ngày qua",
+      "older": "Cũ hơn",
+      "empty": "Trống",
+      "verified": "Đã xác minh",
+      "new_conversation": "Hội thoại mới"
+    },
+    "welcome": {
+      "greeting": "Chào {{name}},",
+      "highlight": "đã đến giờ tập luyện!",
+      "subtitle": "Cơ thể của bạn đã sẵn sàng. Hãy cho tôi biết mục tiêu của bạn hôm nay để tôi có thể thiết kế lịch trình tốt nhất cho bạn.",
+      "feature_title": "Các tính năng hỗ trợ",
+      "suggestions": [
+        {
+          "title": "Xem Tiến Độ Tập",
+          "desc": "Tổng quan quá trình tập.",
+          "prompt": "Cho tôi xem tổng quan tiến độ tập luyện, streak và tỉ lệ hoàn thành hiện tại của tôi."
+        },
+        {
+          "title": "Tính TDEE & BMR",
+          "desc": "Lên kế hoạch dinh dưỡng.",
+          "prompt": "Hãy tính chỉ số TDEE và BMR của tôi để biết tôi cần nạp bao nhiêu calo mỗi ngày."
+        },
+        {
+          "title": "Tra Cứu Dinh Dưỡng",
+          "desc": "Kiểm tra calo, macros món ăn.",
+          "prompt": "Giúp tôi tra cứu lượng calo và thành phần dinh dưỡng (macro) của món Phở bò."
+        },
+        {
+          "title": "Tìm Kiếm Bài Tập",
+          "desc": "Hướng dẫn kỹ thuật, nhóm cơ.",
+          "prompt": "Gợi ý cho tôi một số bài tập hiệu quả để phát triển nhóm cơ ngực và tay sau."
+        }
+      ]
+    },
+    "input": {
+      "placeholder": "Truy vấn Kinetic Core...",
+      "welcome_placeholder": "Hỏi tôi bất cứ điều gì để bắt đầu...",
+      "thinking": "Đang xử lý...",
+      "streaming": "Đang phản hồi...",
+      "send": "Gửi"
+    },
+    "message": {
+      "thinking": "AI đang suy nghĩ...",
+      "ai_name": "Kinetic Core",
+      "just_now": "Vừa xong",
+      "copied": "Đã sao chép!",
+      "ai": "AI Coach",
+      "user": "Bạn"
+    }
+  },
+  "analytics": {
+    "title": "Tổng quan tiến trình",
+    "error": "Không thể tải dữ liệu phân tích.",
+    "streak": "Chuỗi hiện tại",
+    "days": "ngày",
+    "completion": "Tỉ lệ hoàn thành",
+    "total_volume": "Tổng khối lượng",
+    "tons": "tấn",
+    "this_week": "Tuần này",
+    "sessions": "buổi",
+    "breakdown": "Phân bổ khối lượng cơ bắp"
+  },
+  "workout_log": {
+    "title": "Ghi chép buổi tập",
+    "completed": "Buổi tập đã hoàn thành",
+    "logged_on": "Đã ghi nhận lúc",
+    "duration": "Thời gian",
+    "difficulty": "Độ khó",
+    "archived": "Buổi tập này đã được lưu vào ma trận hiệu suất của bạn.",
+    "mins": "phút",
+    "target": "Mục tiêu",
+    "done": "Xong",
+    "sets": "Hiệp",
+    "reps": "Lần",
+    "weight": "Tải (kg)",
+    "notes": "Ghi chú",
+    "how_feel": "Bạn cảm thấy thế nào?",
+    "saving": "Đang lưu...",
+    "submit": "Gửi nhật ký tập luyện",
+    "easy": "Dễ",
+    "ok": "Ổn",
+    "hard": "Khó"
+  },
+  "footer": {
+    "brand_desc": "Trí tuệ nhân tạo vận động tiên tiến nhất thế giới. Tối ưu hóa cơ sinh học thông qua xử lý RAG thời gian thực.",
+    "system_core": "Hệ lõi hệ thống",
+    "training_module": "Mô-đun tập luyện",
+    "nutrition_engine": "Công cụ dinh dưỡng",
+    "authentication": "Xác thực",
+    "legal_protocols": "Giao thức pháp lý",
+    "privacy_policy": "Chính sách bảo mật",
+    "terms_of_service": "Điều khoản dịch vụ",
+    "technical_support": "Hỗ trợ kỹ thuật"
+  }
+}

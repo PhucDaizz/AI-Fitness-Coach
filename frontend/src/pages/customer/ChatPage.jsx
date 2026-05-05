@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import CustomerLayout from '../../components/layout/CustomerLayout';
 import ChatSidebar from '../../components/customer/ChatSidebar';
 import ChatMessage from '../../components/customer/ChatMessage';
@@ -12,6 +13,7 @@ import { getDecodedToken } from '../../utils/authUtils';
 import { logout } from '../../services/api/auth.service';
 
 const ChatPage = () => {
+  const { t } = useTranslation();
   const { sessionId: urlSessionId } = useParams();
   const navigate = useNavigate();
 
@@ -247,7 +249,7 @@ const ChatPage = () => {
         setMessages(prev => [...prev, {
           id: `err-${Date.now()}`,
           role: 'AI',
-          content: 'Uplink synchronization failed.',
+          content: t('chat.sync_failed'),
           createdAt: new Date().toISOString()
         }]);
       }

@@ -1,7 +1,10 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 const Footer = () => {
+  const { t } = useTranslation();
+
   return (
     <footer className="w-full py-16 px-6 bg-[#030303] border-t border-white/5 relative overflow-hidden">
       {/* Abstract Background Glow */}
@@ -15,7 +18,7 @@ const Footer = () => {
               KINETIC AI
             </Link>
             <p className="text-sm font-['Inter'] text-[#adaaaa] leading-relaxed max-w-sm">
-              The world's most advanced autonomous kinetic intelligence. Biomechanical optimization through real-time RAG processing.
+              {t('footer.brand_desc')}
             </p>
             <div className="flex gap-4 mt-2">
               <a 
@@ -50,21 +53,21 @@ const Footer = () => {
 
           {/* Quick Links */}
           <div className="md:col-span-3">
-             <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-white mb-6">SYSTEM CORE</h4>
+             <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-white mb-6">{t('footer.system_core')}</h4>
              <ul className="space-y-4">
-               <li><Link to="/exercises" className="text-xs font-bold text-[#adaaaa] hover:text-[#b1ff24] transition-colors uppercase tracking-widest">Training Module</Link></li>
-               <li><Link to="/meals" className="text-xs font-bold text-[#adaaaa] hover:text-[#b1ff24] transition-colors uppercase tracking-widest">Nutrition Engine</Link></li>
-               <li><Link to="/login" className="text-xs font-bold text-[#adaaaa] hover:text-[#b1ff24] transition-colors uppercase tracking-widest">Authentication</Link></li>
+               <li><Link to="/exercises" className="text-xs font-bold text-[#adaaaa] hover:text-[#b1ff24] transition-colors uppercase tracking-widest">{t('footer.training_module')}</Link></li>
+               <li><Link to="/meals" className="text-xs font-bold text-[#adaaaa] hover:text-[#b1ff24] transition-colors uppercase tracking-widest">{t('footer.nutrition_engine')}</Link></li>
+               <li><Link to="/login" className="text-xs font-bold text-[#adaaaa] hover:text-[#b1ff24] transition-colors uppercase tracking-widest">{t('footer.authentication')}</Link></li>
              </ul>
           </div>
 
           {/* Legal Identity */}
           <div className="md:col-span-4">
-             <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-white mb-6">LEGAL PROTOCOLS</h4>
+             <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-white mb-6">{t('footer.legal_protocols')}</h4>
              <ul className="space-y-4">
-               <li><Link to="/privacy" className="text-xs font-bold text-[#adaaaa] hover:text-[#b1ff24] transition-colors uppercase tracking-widest">Privacy Policy</Link></li>
-               <li><Link to="/terms" className="text-xs font-bold text-[#adaaaa] hover:text-[#b1ff24] transition-colors uppercase tracking-widest">Terms of Service</Link></li>
-               <li><a href="mailto:contact@kineticai.fit" className="text-xs font-bold text-[#adaaaa] hover:text-[#b1ff24] transition-colors uppercase tracking-widest">Technical Support</a></li>
+               <li><Link to="/privacy" className="text-xs font-bold text-[#adaaaa] hover:text-[#b1ff24] transition-colors uppercase tracking-widest">{t('footer.privacy_policy')}</Link></li>
+               <li><Link to="/terms" className="text-xs font-bold text-[#adaaaa] hover:text-[#b1ff24] transition-colors uppercase tracking-widest">{t('footer.terms_of_service')}</Link></li>
+               <li><a href="mailto:contact@kineticai.fit" className="text-xs font-bold text-[#adaaaa] hover:text-[#b1ff24] transition-colors uppercase tracking-widest">{t('footer.technical_support')}</a></li>
              </ul>
           </div>
         </div>

@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { register, getGoogleLoginUrl } from '../../services/api/auth.service';
 
 const SignUpForm = () => {
+  const { t } = useTranslation();
   const [formData, setFormData] = useState({
     fullName: '',
     email: '',
@@ -51,7 +53,7 @@ const SignUpForm = () => {
           {/* Full Name */}
           <div className="relative group">
             <label className="block text-[10px] font-bold text-on-surface-variant uppercase tracking-widest mb-1.5 ml-1">
-              Full Name
+              {t('auth.signup.full_name')}
             </label>
             <div className="relative">
               <span className="absolute left-4 top-1/2 -translate-y-1/2 material-symbols-outlined text-outline text-lg group-focus-within:text-primary transition-colors pointer-events-none z-10">
@@ -72,7 +74,7 @@ const SignUpForm = () => {
           {/* Email */}
           <div className="relative group">
             <label className="block text-[10px] font-bold text-on-surface-variant uppercase tracking-widest mb-1.5 ml-1">
-              Email
+              {t('auth.signup.email')}
             </label>
             <div className="relative">
               <span className="absolute left-4 top-1/2 -translate-y-1/2 material-symbols-outlined text-outline text-lg group-focus-within:text-primary transition-colors pointer-events-none z-10">
@@ -94,7 +96,7 @@ const SignUpForm = () => {
             {/* Password */}
             <div className="relative group">
               <label className="block text-[10px] font-bold text-on-surface-variant uppercase tracking-widest mb-1.5 ml-1">
-                Password
+                {t('auth.signup.password')}
               </label>
               <div className="relative">
                 <span className="absolute left-4 top-1/2 -translate-y-1/2 material-symbols-outlined text-outline text-lg group-focus-within:text-primary transition-colors pointer-events-none z-10">
@@ -115,7 +117,7 @@ const SignUpForm = () => {
             {/* Phone Number */}
             <div className="relative group">
               <label className="block text-[10px] font-bold text-on-surface-variant uppercase tracking-widest mb-1.5 ml-1">
-                Phone Number
+                {t('auth.signup.phone')}
               </label>
               <div className="relative">
                 <span className="absolute left-4 top-1/2 -translate-y-1/2 material-symbols-outlined text-outline text-lg group-focus-within:text-primary transition-colors pointer-events-none z-10">
@@ -140,8 +142,9 @@ const SignUpForm = () => {
           <button
             className={`w-full bg-primary text-on-primary font-black italic text-lg py-5 rounded-full kinetic-pulse active:scale-95 transition-all duration-200 flex items-center justify-center gap-2 group ${loading ? 'opacity-50' : ''}`}
             disabled={loading}
+            type="submit"
           >
-            {loading ? 'INITIATING...' : 'CREATE ACCOUNT'}
+            {loading ? t('auth.signup.initiating') : t('auth.signup.create_btn')}
             {!loading && (
               <span className="material-symbols-outlined group-hover:translate-x-1 transition-transform">
                 arrow_forward
@@ -154,7 +157,7 @@ const SignUpForm = () => {
         <div className="relative flex items-center py-2">
           <div className="flex-grow border-t border-outline-variant/20"></div>
           <span className="flex-shrink mx-4 text-[10px] font-black text-on-surface-variant uppercase tracking-widest">
-            Or sign up with
+            {t('auth.signup.or_signup')}
           </span>
           <div className="flex-grow border-t border-outline-variant/20"></div>
         </div>
@@ -183,7 +186,7 @@ const SignUpForm = () => {
               fill="currentColor"
             ></path>
           </svg>
-          Sign up with Google
+          {t('auth.signup.google_signup')}
         </button>
       </form>
     </div>

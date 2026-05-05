@@ -1,6 +1,9 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 
 const Hero = () => {
+  const { t } = useTranslation();
+
   return (
     <section className="relative min-h-screen flex items-center justify-center pt-20 overflow-hidden">
       {/* Background Image with Overlay */}
@@ -16,24 +19,23 @@ const Hero = () => {
       <div className="relative z-10 max-w-7xl mx-auto px-6 text-center">
         <div className="inline-block px-4 py-1 mb-6 rounded-full border border-primary/20 bg-primary/5 backdrop-blur-md">
           <span className="text-primary text-xs font-bold tracking-[0.2em] uppercase">
-            The Future of Human Performance
+            {t('home.hero.future')}
           </span>
         </div>
         <h1 className="text-5xl md:text-8xl font-black italic tracking-tighter leading-[0.9] mb-8 uppercase max-w-5xl mx-auto">
-          TRANSFORM YOUR BODY WITH{' '}
-          <span className="kinetic-gradient-text">ACTIVE INTELLIGENCE</span>
+          {t('home.hero.title')}{' '}
+          <span className="kinetic-gradient-text">{t('home.hero.title_highlight')}</span>
         </h1>
         <p className="text-on-surface-variant text-lg md:text-xl max-w-2xl mx-auto mb-10 leading-relaxed">
-          Have you ever joined a gym only to quit after two weeks? KINETIC AI isn't just a chat
-          app—it's a fully automated system designed to fit your life.
+          {t('home.hero.subtitle')}
         </p>
         <div className="flex flex-col md:flex-row gap-4 justify-center items-center">
           <button className="bg-primary text-on-primary px-10 py-5 rounded-full font-black tracking-tight text-lg shadow-[0_0_20px_rgba(177,255,36,0.3)] hover:scale-105 active:scale-95 transition-all">
-            START YOUR JOURNEY
+            {t('common.start_journey')}
           </button>
           <button className="flex items-center gap-2 text-on-surface hover:text-primary transition-colors font-bold px-8 py-5">
             <span className="material-symbols-outlined">play_circle</span>
-            WATCH HOW IT WORKS
+            {t('common.watch_how')}
           </button>
         </div>
       </div>
@@ -41,7 +43,7 @@ const Hero = () => {
       {/* Scroll Indicator */}
       <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 opacity-50">
         <span className="text-[10px] uppercase tracking-widest text-[#ffffff]">
-          Scroll to Explore
+          {t('home.hero.scroll')}
         </span>
         <div className="w-[1px] h-12 bg-gradient-to-b from-primary to-transparent"></div>
       </div>

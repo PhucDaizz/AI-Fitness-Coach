@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import WorkoutLogForm from './WorkoutLogForm';
 import AnalyticsSummary from './AnalyticsSummary';
 
 const ChatMessage = ({ messageId, role, content, timestamp, isStreaming, isThinking }) => {
+  const { t } = useTranslation();
   const isAI = role === 'AI' || role === 'Assistant';
   const [copied, setCopied] = useState(false);
   const [liked, setLiked] = useState(false);
@@ -49,7 +51,7 @@ const ChatMessage = ({ messageId, role, content, timestamp, isStreaming, isThink
             <div className="w-6 h-6 rounded-full bg-secondary/10 flex items-center justify-center border border-secondary/20">
               <span className="material-symbols-outlined text-secondary text-[10px]">robot</span>
             </div>
-            <span className="text-secondary text-[9px] font-black uppercase tracking-[0.2em]">Kinetic Core</span>
+            <span className="text-secondary text-[9px] font-black uppercase tracking-[0.2em]">{t('chat.message.ai_name')}</span>
           </div>
           <div className="bg-surface-container p-4 rounded-2xl rounded-tl-none border border-white/5 shadow-xl flex items-center gap-3 min-w-[140px]">
             <div className="flex gap-1">
@@ -57,7 +59,7 @@ const ChatMessage = ({ messageId, role, content, timestamp, isStreaming, isThink
               <span className="w-1.5 h-1.5 rounded-full bg-primary animate-bounce" style={{ animationDelay: '0.2s' }}></span>
               <span className="w-1.5 h-1.5 rounded-full bg-primary animate-bounce" style={{ animationDelay: '0.4s' }}></span>
             </div>
-            <span className="text-xs text-on-surface-variant font-medium italic opacity-70">AI is thinking...</span>
+            <span className="text-xs text-on-surface-variant font-medium italic opacity-70">{t('chat.message.thinking')}</span>
           </div>
         </div>
       </div>
@@ -75,7 +77,7 @@ const ChatMessage = ({ messageId, role, content, timestamp, isStreaming, isThink
             <div className="w-6 h-6 rounded-full bg-secondary/10 flex items-center justify-center border border-secondary/20">
               <span className="material-symbols-outlined text-secondary text-[10px]">robot</span>
             </div>
-            <span className="text-secondary text-[9px] font-black uppercase tracking-[0.2em]">Kinetic Core</span>
+            <span className="text-secondary text-[9px] font-black uppercase tracking-[0.2em]">{t('chat.message.ai_name')}</span>
             {isStreaming && (
               <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span>
             )}
@@ -160,13 +162,13 @@ const ChatMessage = ({ messageId, role, content, timestamp, isStreaming, isThink
           
           <div className="flex items-center justify-between mt-3 opacity-60">
              <span className="text-[9px] uppercase tracking-widest font-bold opacity-40">
-              {timestamp || 'Just now'}
+              {timestamp || t('chat.message.just_now')}
             </span>
             {isAI && !isStreaming && (
               <div className="flex items-center gap-3 relative">
                 {copied && (
                   <span className="absolute -top-8 left-1/2 -translate-x-1/2 bg-surface-container-highest text-primary text-[10px] py-1 px-2 rounded border border-primary/20 animate-in fade-in slide-in-from-bottom-1 duration-200">
-                    Copied!
+                    {t('chat.message.copied')}
                   </span>
                 )}
                 

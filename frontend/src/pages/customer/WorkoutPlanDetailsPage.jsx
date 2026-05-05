@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { getWorkoutPlanDays, deleteWorkoutPlan } from '../../services/api/workoutPlan.service';
 import { getExerciseById } from '../../services/api/exercise.service';
 import CustomerLayout from '../../components/layout/CustomerLayout';
 import ExerciseDetailModal from '../../components/customer/ExerciseDetailModal';
 
 const WorkoutPlanDetailsPage = () => {
+  const { t, i18n } = useTranslation();
   const { planId } = useParams();
   const navigate = useNavigate();
   const [days, setDays] = useState([]);
@@ -30,7 +32,7 @@ const WorkoutPlanDetailsPage = () => {
   }, [planId]);
 
   const handleDeletePlan = async () => {
-    if (!window.confirm("Are you sure you want to permanently terminate this protocol? This action cannot be undone.")) {
+    if (!window.confirm(t('workout_plans.details.confirm_delete'))) {
       return;
     }
 
@@ -78,7 +80,7 @@ const WorkoutPlanDetailsPage = () => {
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="flex flex-col items-center">
           <div className="w-12 h-12 border-2 border-primary border-t-transparent rounded-full animate-spin mb-4"></div>
-          <p className="text-[10px] font-black uppercase tracking-widest text-primary/60">Deciphering Protocol Data...</p>
+          <p className="text-[10px] font-black uppercase tracking-widest text-primary/60">{t('workout_plans.details.loading_data')}</p>
         </div>
       </div>
     );
@@ -94,7 +96,7 @@ const WorkoutPlanDetailsPage = () => {
           className="flex items-center gap-2 text-on-surface-variant hover:text-primary transition-colors font-black uppercase tracking-widest text-[10px]"
         >
           <span className="material-symbols-outlined text-sm">arrow_back</span>
-          Back to Protocols
+          {t('workout_plans.details.back')}
         </button>
 
         <button
@@ -105,16 +107,16 @@ const WorkoutPlanDetailsPage = () => {
           <span className="material-symbols-outlined text-xs">
             {isDeleting ? 'sync' : 'delete'}
           </span>
-          {isDeleting ? 'Terminating...' : 'Terminate Protocol'}
+          {isDeleting ? t('workout_plans.details.terminating') : t('workout_plans.details.terminate')}
         </button>
       </div>
 
       <header className="mb-10">
         <h1 className="text-[2.5rem] font-headline font-black italic tracking-tighter uppercase leading-none mb-2">
-          Protocol <span className="text-primary">Timeline</span>
+          {t('workout_plans.details.title')} <span className="text-primary">{t('workout_plans.details.title_highlight')}</span>
         </h1>
         <p className="text-on-surface-variant font-medium text-sm tracking-wide opacity-70">
-          Phased execution strategy for optimal physiological adaptation.
+          {t('workout_plans.details.subtitle')}
         </p>
       </header>
 
@@ -130,7 +132,7 @@ const WorkoutPlanDetailsPage = () => {
               }`}
           >
             <span className="text-[10px] font-black uppercase tracking-widest mb-1">
-              Day {day.orderIndex}
+              {t('workout_plans.details.day')} {day.orderIndex}
             </span>
             <span className="text-sm font-bold truncate w-full">{day.dayOfWeek}</span>
           </button>
@@ -144,19 +146,19 @@ const WorkoutPlanDetailsPage = () => {
             <div className="relative z-10">
               <div className="flex items-center gap-3 mb-4">
                 <span className="material-symbols-outlined text-primary">target</span>
-                <h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-primary">Biological Focus</h2>
+                <h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-primary">{t('workout_plans.details.bio_focus')}</h2>
               </div>
               <h3 className="text-3xl font-black text-white italic uppercase tracking-tighter mb-4">
                 {currentDay.muscleFocus}
               </h3>
               <p className="text-on-surface-variant text-sm font-medium opacity-70 max-w-2xl leading-relaxed">
-                Scheduled for: {new Date(currentDay.scheduledDate).toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+                {t('workout_plans.details.scheduled')}: {new Date(currentDay.scheduledDate).toLocaleDateString(i18n.language === 'vi' ? 'vi-VN' : 'en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
               </p>
             </div>
           </div>
 
           <div className="space-y-6">
-            <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-on-surface-variant mb-6 px-4">Required Movements</h4>
+            <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-on-surface-variant mb-6 px-4">{t('workout_plans.details.required_movements')}</h4>
             {currentDay.exercises.map((ex, index) => {
               const details = exerciseDetails[ex.exerciseId];
               return (
@@ -183,7 +185,7 @@ const WorkoutPlanDetailsPage = () => {
                   <div className="flex-1 space-y-4">
                     <div>
                       <h5 className="text-lg font-black text-white uppercase tracking-tight italic group-hover:text-primary transition-colors mb-1">
-                        {details?.name || 'Loading Exercise...'}
+                        {details?.name || t('workout_plans.details.loading_exercise')}
                       </h5>
                       <p className="text-[10px] text-on-surface-variant font-bold uppercase tracking-widest opacity-50">
                         {details?.bodyPart} • {details?.equipment}
@@ -192,15 +194,15 @@ const WorkoutPlanDetailsPage = () => {
 
                     <div className="grid grid-cols-3 gap-3">
                       <div className="bg-white/5 rounded-2xl p-3 border border-white/5">
-                        <p className="text-[8px] font-black uppercase tracking-widest text-on-surface-variant mb-1">Sets</p>
+                        <p className="text-[8px] font-black uppercase tracking-widest text-on-surface-variant mb-1">{t('workout_plans.details.sets')}</p>
                         <p className="text-sm font-black text-white">{ex.sets}</p>
                       </div>
                       <div className="bg-white/5 rounded-2xl p-3 border border-white/5">
-                        <p className="text-[8px] font-black uppercase tracking-widest text-on-surface-variant mb-1">Reps</p>
+                        <p className="text-[8px] font-black uppercase tracking-widest text-on-surface-variant mb-1">{t('workout_plans.details.reps')}</p>
                         <p className="text-sm font-black text-white">{ex.reps}</p>
                       </div>
                       <div className="bg-white/5 rounded-2xl p-3 border border-white/5">
-                        <p className="text-[8px] font-black uppercase tracking-widest text-on-surface-variant mb-1">Rest</p>
+                        <p className="text-[8px] font-black uppercase tracking-widest text-on-surface-variant mb-1">{t('workout_plans.details.rest')}</p>
                         <p className="text-sm font-black text-white">{ex.restSeconds}s</p>
                       </div>
                     </div>
@@ -209,7 +211,7 @@ const WorkoutPlanDetailsPage = () => {
                       <div className="bg-secondary/5 border border-secondary/10 rounded-2xl p-4">
                         <div className="flex items-center gap-2 mb-1">
                           <span className="material-symbols-outlined text-xs text-secondary">info</span>
-                          <span className="text-[8px] font-black uppercase tracking-widest text-secondary">AI Instruction</span>
+                          <span className="text-[8px] font-black uppercase tracking-widest text-secondary">{t('workout_plans.details.ai_instruction')}</span>
                         </div>
                         <p className="text-[0.7rem] text-on-surface-variant leading-relaxed">
                           {ex.notes}
@@ -224,7 +226,7 @@ const WorkoutPlanDetailsPage = () => {
         </div>
       ) : (
         <div className="text-center py-20">
-          <p className="text-on-surface-variant">Protocol structure incomplete.</p>
+          <p className="text-on-surface-variant">{t('workout_plans.details.incomplete')}</p>
         </div>
       )}
 

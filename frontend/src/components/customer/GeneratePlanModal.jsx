@@ -1,20 +1,14 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 const GeneratePlanModal = ({ isOpen, onClose, onGenerate, isGenerating }) => {
+  const { t } = useTranslation();
   const [totalWeeks, setTotalWeeks] = useState(4);
   const [startsAt, setStartsAt] = useState(new Date().toISOString().split('T')[0]);
   const [statusIndex, setStatusIndex] = useState(0);
   const [successData, setSuccessData] = useState(null);
 
-  const statusMessages = [
-    "Synthesizing biometrics...",
-    "Optimizing muscle focus...",
-    "Calculating progressive overload...",
-    "Structuring recovery phases...",
-    "Finalizing neural protocol...",
-    "Calibrating intensity matrices...",
-    "Almost there, finalizing data..."
-  ];
+  const statusMessages = t('workout_plans.modal.status_messages', { returnObjects: true }) || [];
 
   React.useEffect(() => {
     let interval;
@@ -27,11 +21,8 @@ const GeneratePlanModal = ({ isOpen, onClose, onGenerate, isGenerating }) => {
       setStatusIndex(0);
     }
     return () => clearInterval(interval);
-  }, [isGenerating]);
+  }, [isGenerating, statusMessages.length]);
 
-  // We'll expose a way to set success from parent
-  // But for better control, we'll handle the actual call here or pass the result back
-  
   const handleGenerate = async () => {
     const result = await onGenerate({ totalWeeks, startsAt });
     if (result && result.planIds) {
@@ -59,20 +50,20 @@ const GeneratePlanModal = ({ isOpen, onClose, onGenerate, isGenerating }) => {
                   <div className="w-10 h-10 rounded-xl bg-primary/20 flex items-center justify-center border border-primary/30">
                      <span className="material-symbols-outlined text-primary">auto_fix_high</span>
                   </div>
-                  <h2 className="text-sm font-black uppercase tracking-[0.2em] text-primary">Neural Generator</h2>
+                  <h2 className="text-sm font-black uppercase tracking-[0.2em] text-primary">{t('workout_plans.modal.generator_title')}</h2>
                </div>
                <h3 className="text-3xl font-black text-white italic uppercase tracking-tighter leading-none">
-                 Initialize <span className="text-primary">Protocol</span>
+                 {t('workout_plans.modal.title')} <span className="text-primary">{t('workout_plans.modal.title_highlight')}</span>
                </h3>
                <p className="text-on-surface-variant text-[10px] font-bold uppercase tracking-widest mt-2 opacity-60">
-                 Synchronizing with biometric profile...
+                 {t('workout_plans.modal.sync_status')}
                </p>
             </header>
 
             <div className="space-y-6">
               {/* Weeks Selector */}
               <div className="space-y-3">
-                 <label className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant ml-2">Duration (Weeks)</label>
+                 <label className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant ml-2">{t('workout_plans.modal.duration')}</label>
                  <div className="grid grid-cols-4 gap-2">
                     {[1, 2, 3, 4].map(w => (
                       <button
@@ -93,7 +84,7 @@ const GeneratePlanModal = ({ isOpen, onClose, onGenerate, isGenerating }) => {
 
               {/* Date Picker */}
               <div className="space-y-3">
-                 <label className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant ml-2">Commencement Date</label>
+                 <label className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant ml-2">{t('workout_plans.modal.start_date')}</label>
                  <input 
                    type="date"
                    value={startsAt}
@@ -112,7 +103,7 @@ const GeneratePlanModal = ({ isOpen, onClose, onGenerate, isGenerating }) => {
                       </p>
                    </div>
                    <p className="text-[8px] text-on-surface-variant mt-2 font-bold uppercase tracking-tighter opacity-50">
-                     Note: Heavy computation in progress. This may take up to 5 minutes. Please do not close this window.
+                     {t('workout_plans.modal.warning')}
                    </p>
                 </div>
               )}
@@ -126,12 +117,12 @@ const GeneratePlanModal = ({ isOpen, onClose, onGenerate, isGenerating }) => {
                     {isGenerating ? (
                       <>
                         <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin"></div>
-                        Synthesizing...
+                        {t('workout_plans.modal.generating')}
                       </>
                     ) : (
                       <>
                         <span className="material-symbols-outlined text-sm">bolt</span>
-                        Execute Generation
+                        {t('workout_plans.modal.gen_btn')}
                       </>
                     )}
                  </button>
@@ -140,7 +131,7 @@ const GeneratePlanModal = ({ isOpen, onClose, onGenerate, isGenerating }) => {
                      onClick={onClose}
                      className="w-full mt-3 py-3 text-[10px] font-black uppercase tracking-widest text-on-surface-variant hover:text-white transition-colors"
                    >
-                     Abort Mission
+                     {t('workout_plans.modal.abort_btn')}
                    </button>
                  )}
               </div>
@@ -152,7 +143,7 @@ const GeneratePlanModal = ({ isOpen, onClose, onGenerate, isGenerating }) => {
                 <span className="material-symbols-outlined text-4xl text-primary">check_circle</span>
              </div>
              <h3 className="text-3xl font-black text-white italic uppercase tracking-tighter mb-4">
-               Generation <span className="text-primary">Complete</span>
+               {t('workout_plans.modal.success_title')} <span className="text-primary">{t('workout_plans.modal.success_title_highlight')}</span>
              </h3>
              <div className="bg-white/5 border border-white/10 rounded-3xl p-6 mb-8">
                 <p className="text-sm text-on-surface-variant font-medium leading-relaxed">
@@ -166,7 +157,7 @@ const GeneratePlanModal = ({ isOpen, onClose, onGenerate, isGenerating }) => {
                }}
                className="w-full py-5 bg-white text-black font-black uppercase tracking-[0.3em] text-[10px] rounded-full hover:bg-primary transition-all shadow-xl"
              >
-               Access Protocols
+               {t('workout_plans.modal.access_btn')}
              </button>
           </div>
         )}

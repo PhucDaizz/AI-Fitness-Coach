@@ -1,37 +1,13 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { getDecodedToken } from '../../utils/authUtils';
 
 const ChatWelcome = ({ onSelectPrompt }) => {
-  const suggestions = [
-    {
-      title: "Xem Tiến Độ Tập",
-      desc: "Tổng quan quá trình tập.",
-      icon: "monitoring",
-      color: "primary",
-      prompt: "Cho tôi xem tổng quan tiến độ tập luyện, streak và tỉ lệ hoàn thành hiện tại của tôi."
-    },
-    {
-      title: "Tính TDEE & BMR",
-      desc: "Lên kế hoạch dinh dưỡng.",
-      icon: "calculate",
-      color: "secondary",
-      prompt: "Hãy tính chỉ số TDEE và BMR của tôi để biết tôi cần nạp bao nhiêu calo mỗi ngày."
-    },
-    {
-      title: "Tra Cứu Dinh Dưỡng",
-      desc: "Kiểm tra calo, macros món ăn.",
-      icon: "restaurant_menu",
-      color: "tertiary-fixed",
-      prompt: "Giúp tôi tra cứu lượng calo và thành phần dinh dưỡng (macro) của món Phở bò."
-    },
-    {
-      title: "Tìm Kiếm Bài Tập",
-      desc: "Hướng dẫn kỹ thuật, nhóm cơ.",
-      icon: "fitness_center",
-      color: "primary",
-      prompt: "Gợi ý cho tôi một số bài tập hiệu quả để phát triển nhóm cơ ngực và tay sau."
-    }
-  ];
+  const { t } = useTranslation();
+  
+  const suggestions = t('chat.welcome.suggestions', { returnObjects: true }) || [];
+  const icons = ["monitoring", "calculate", "restaurant_menu", "fitness_center"];
+  const colors = ["primary", "secondary", "tertiary-fixed", "primary"];
 
   // Get user info dynamically
   const token = localStorage.getItem('token');
@@ -66,13 +42,13 @@ const ChatWelcome = ({ onSelectPrompt }) => {
       {/* Headline Reveal */}
       <div className="animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
         <h2 className="text-3xl md:text-5xl font-headline font-black tracking-tight text-center mb-3 leading-tight text-white drop-shadow-sm">
-          Hello {firstName}, <span className="kinetic-gradient-text text-glow">time to train!</span>
+          {t('chat.welcome.greeting', { name: firstName })} <span className="kinetic-gradient-text text-glow">{t('chat.welcome.highlight')}</span>
         </h2>
       </div>
       
       <div className="animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
         <p className="text-on-surface-variant font-body text-center mb-10 max-w-lg text-sm md:text-base opacity-70">
-          Your physique is ready. Let me know your goals for today so I can design the best schedule for you.
+          {t('chat.welcome.subtitle')}
         </p>
       </div>
 
@@ -89,10 +65,10 @@ const ChatWelcome = ({ onSelectPrompt }) => {
             <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
             
             <div className={`w-11 h-11 rounded-xl bg-surface-container-highest flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform duration-300 relative z-10`}>
-              <span className={`material-symbols-outlined text-2xl text-${item.color} drop-shadow-[0_0_8px_rgba(0,0,0,0.5)]`}>
-                {item.icon}
+              <span className={`material-symbols-outlined text-2xl text-${colors[idx % colors.length]} drop-shadow-[0_0_8px_rgba(0,0,0,0.5)]`}>
+                {icons[idx % icons.length]}
               </span>
-              <div className={`absolute inset-0 bg-${item.color}/10 blur-md rounded-full opacity-0 group-hover:opacity-100 transition-opacity`}></div>
+              <div className={`absolute inset-0 bg-${colors[idx % colors.length]}/10 blur-md rounded-full opacity-0 group-hover:opacity-100 transition-opacity`}></div>
             </div>
 
             <div className="min-w-0 relative z-10">

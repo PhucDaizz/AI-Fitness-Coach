@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Link, useNavigate } from 'react-router-dom';
 
 import { getGoogleLoginUrl, login } from '../../services/api/auth.service';
@@ -6,6 +7,7 @@ import { checkProfileExists } from '../../services/profile.service';
 import { isAdmin } from '../../utils/authUtils';
 
 const LoginForm = () => {
+  const { t } = useTranslation();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -26,7 +28,7 @@ const LoginForm = () => {
       token = localStorage.getItem('token');
       console.log('Login successful, token:', token);
     } catch (error) {
-      setError(error.message || 'Login failed. Please try again.');
+      setError(error.message || t('auth.login.error_failed'));
       setLoading(false);
       return;
     }
@@ -57,9 +59,9 @@ const LoginForm = () => {
   return (
     <div className="surface-container glass-panel rounded-lg p-8 kinetic-glow">
       <div className="mb-8">
-        <h2 className="text-2xl font-bold tracking-tight text-white">Welcome Back</h2>
+        <h2 className="text-2xl font-bold tracking-tight text-white">{t('auth.login.welcome_back')}</h2>
         <p className="text-on-surface-variant text-sm mt-1 font-medium">
-          Access your elite performance metrics.
+          {t('auth.login.access_metrics')}
         </p>
       </div>
 
@@ -76,7 +78,7 @@ const LoginForm = () => {
             className="text-[0.6875rem] font-bold uppercase tracking-widest text-on-surface-variant ml-1"
             htmlFor="email"
           >
-            Email Address
+            {t('auth.login.email')}
           </label>
           <div className="relative group">
             <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant group-focus-within:text-primary transition-colors pointer-events-none z-10">
@@ -101,13 +103,13 @@ const LoginForm = () => {
               className="text-[0.6875rem] font-bold uppercase tracking-widest text-on-surface-variant"
               htmlFor="password"
             >
-              Password
+              {t('auth.login.password')}
             </label>
             <Link
               className="text-[0.6875rem] font-bold uppercase tracking-widest text-secondary hover:opacity-80 transition-opacity"
               to="/forgot-password"
             >
-              Forgot Password?
+              {t('auth.login.forgot_password')}
             </Link>
           </div>
           <div className="relative group">
@@ -144,7 +146,7 @@ const LoginForm = () => {
           type="submit"
           disabled={loading}
         >
-          <span>{loading ? 'Processing...' : 'Login'}</span>
+          <span>{loading ? t('auth.login.processing') : t('auth.login.login_btn')}</span>
           {!loading && <span className="material-symbols-outlined text-xl">arrow_forward</span>}
         </button>
       </form>
@@ -156,7 +158,7 @@ const LoginForm = () => {
         </div>
         <div className="relative flex justify-center text-[0.6875rem] font-bold uppercase tracking-widest">
           <span className="bg-surface-container px-4 text-on-surface-variant">
-            Or continue with
+            {t('auth.login.or_continue')}
           </span>
         </div>
       </div>
@@ -184,7 +186,7 @@ const LoginForm = () => {
             fill="#EA4335"
           ></path>
         </svg>
-        <span>Sign in with Google</span>
+        <span>{t('auth.login.google_login')}</span>
       </button>
     </div>
   );

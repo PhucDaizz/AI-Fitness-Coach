@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { getAnalyticsSummary, getMuscleVolume } from '../../services/api/analytics.service';
 
 const AnalyticsSummary = () => {
+  const { t } = useTranslation();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [summary, setSummary] = useState(null);
@@ -22,14 +24,14 @@ const AnalyticsSummary = () => {
         setMuscleVolume(volumeData);
       } catch (err) {
         console.error('Error fetching analytics:', err);
-        setError('Failed to load analytics data.');
+        setError(t('analytics.error'));
       } finally {
         setLoading(false);
       }
     };
 
     fetchAnalytics();
-  }, []);
+  }, [t]);
 
   if (loading) {
     return (
@@ -62,7 +64,7 @@ const AnalyticsSummary = () => {
         <div className="w-6 h-6 rounded-md bg-primary/20 text-primary flex items-center justify-center">
           <span className="material-symbols-outlined text-[14px]">query_stats</span>
         </div>
-        <h3 className="text-sm font-bold text-on-surface">Your Progress Overview</h3>
+        <h3 className="text-sm font-bold text-on-surface">{t('analytics.title')}</h3>
       </div>
 
       <div className="p-3 space-y-4">
@@ -71,17 +73,17 @@ const AnalyticsSummary = () => {
           <div className="bg-surface-container-high rounded-lg p-2.5 flex flex-col justify-center border border-white/5">
             <div className="flex items-center gap-1.5 text-on-surface-variant mb-1">
               <span className="material-symbols-outlined text-[12px] text-orange-400">local_fire_department</span>
-              <span className="text-[9px] font-bold uppercase tracking-wider">Current Streak</span>
+              <span className="text-[9px] font-bold uppercase tracking-wider">{t('analytics.streak')}</span>
             </div>
             <div className="text-lg font-black text-on-surface">
-              {summary.currentStreak} <span className="text-[10px] text-on-surface-variant font-medium lowercase">days</span>
+              {summary.currentStreak} <span className="text-[10px] text-on-surface-variant font-medium lowercase">{t('analytics.days')}</span>
             </div>
           </div>
           
           <div className="bg-surface-container-high rounded-lg p-2.5 flex flex-col justify-center border border-white/5">
             <div className="flex items-center gap-1.5 text-on-surface-variant mb-1">
               <span className="material-symbols-outlined text-[12px] text-primary">done_all</span>
-              <span className="text-[9px] font-bold uppercase tracking-wider">Completion</span>
+              <span className="text-[9px] font-bold uppercase tracking-wider">{t('analytics.completion')}</span>
             </div>
             <div className="text-lg font-black text-on-surface">
               {summary.completionRate}%
@@ -91,20 +93,20 @@ const AnalyticsSummary = () => {
           <div className="bg-surface-container-high rounded-lg p-2.5 flex flex-col justify-center border border-white/5">
             <div className="flex items-center gap-1.5 text-on-surface-variant mb-1">
               <span className="material-symbols-outlined text-[12px] text-secondary">fitness_center</span>
-              <span className="text-[9px] font-bold uppercase tracking-wider">Total Volume</span>
+              <span className="text-[9px] font-bold uppercase tracking-wider">{t('analytics.total_volume')}</span>
             </div>
             <div className="text-lg font-black text-on-surface">
-              {(summary.totalVolumeKg / 1000).toFixed(1)} <span className="text-[10px] text-on-surface-variant font-medium lowercase">tons</span>
+              {(summary.totalVolumeKg / 1000).toFixed(1)} <span className="text-[10px] text-on-surface-variant font-medium lowercase">{t('analytics.tons')}</span>
             </div>
           </div>
 
           <div className="bg-surface-container-high rounded-lg p-2.5 flex flex-col justify-center border border-white/5">
             <div className="flex items-center gap-1.5 text-on-surface-variant mb-1">
               <span className="material-symbols-outlined text-[12px] text-blue-400">calendar_month</span>
-              <span className="text-[9px] font-bold uppercase tracking-wider">This Week</span>
+              <span className="text-[9px] font-bold uppercase tracking-wider">{t('analytics.this_week')}</span>
             </div>
             <div className="text-lg font-black text-on-surface">
-              {summary.sessionsThisWeek} <span className="text-[10px] text-on-surface-variant font-medium lowercase">sessions</span>
+              {summary.sessionsThisWeek} <span className="text-[10px] text-on-surface-variant font-medium lowercase">{t('analytics.sessions')}</span>
             </div>
           </div>
         </div>
@@ -112,7 +114,7 @@ const AnalyticsSummary = () => {
         {/* Muscle Volume Breakdown */}
         {muscleVolume.length > 0 && (
           <div className="space-y-2 pt-2 border-t border-white/5">
-            <h4 className="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant">Muscle Volume Breakdown</h4>
+            <h4 className="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant">{t('analytics.breakdown')}</h4>
             <div className="space-y-1.5">
               {muscleVolume.slice(0, 4).map((mv, idx) => {
                 const maxVolume = Math.max(...muscleVolume.map(m => m.totalVolume));
