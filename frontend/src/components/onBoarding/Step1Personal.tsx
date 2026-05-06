@@ -176,7 +176,7 @@ const Step1Personal: React.FC<Step1PersonalProps> = ({ data, onChange, errors = 
               {/* Check indicator */}
               <span
                 className={cn(
-                  'absolute top-3 right-3 w-[18px] h-[18px] rounded-full border flex items-center justify-center transition-all',
+                  'absolute top-1/2 -translate-y-1/2 right-3 w-[18px] h-[18px] rounded-full border flex items-center justify-center transition-all',
                   selected ? 'bg-primary border-primary' : 'border-white/20 bg-transparent',
                 )}
               >
@@ -222,7 +222,7 @@ const Step1Personal: React.FC<Step1PersonalProps> = ({ data, onChange, errors = 
             >
               <span
                 className={cn(
-                  'absolute top-2.5 right-2.5 w-[16px] h-[16px] rounded-full border flex items-center justify-center transition-all',
+                  'absolute top-1/2 -translate-y-1/2 right-2.5 w-[16px] h-[16px] rounded-full border flex items-center justify-center transition-all',
                   selected ? 'bg-primary border-primary' : 'border-white/20 bg-transparent',
                 )}
               >
