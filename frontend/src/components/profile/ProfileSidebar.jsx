@@ -2,7 +2,14 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate } from 'react-router-dom';
 
-const ProfileSidebar = ({ isAdmin: isUserAdmin, fullName, avatarUrl, isOpen, onClose, activeTab = 'profile' }) => {
+const ProfileSidebar = ({
+  isAdmin: isUserAdmin,
+  fullName,
+  avatarUrl,
+  isOpen,
+  onClose,
+  activeTab = 'profile',
+}) => {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
 
@@ -18,23 +25,29 @@ const ProfileSidebar = ({ isAdmin: isUserAdmin, fullName, avatarUrl, isOpen, onC
   };
 
   const menuItems = [
-    { 
-      id: 'profile', 
-      label: t('profile.sidebar.personal'), 
-      icon: 'person', 
-      path: '/profile' 
+    {
+      id: 'profile',
+      label: t('profile.sidebar.personal'),
+      icon: 'person',
+      path: '/profile',
     },
-    { 
-      id: 'security', 
-      label: t('profile.sidebar.security'), 
-      icon: 'shield', 
-      path: '/security' 
+    {
+      id: 'security',
+      label: t('profile.sidebar.security'),
+      icon: 'shield',
+      path: '/security',
     },
-    { 
-      id: 'settings', 
-      label: t('profile.sidebar.settings'), 
-      icon: 'settings', 
-      path: '#' 
+    {
+      id: 'fitness',
+      label: 'Fitness',
+      icon: 'fitness_center',
+      path: '/fitness-profile',
+    },
+    {
+      id: 'settings',
+      label: t('profile.sidebar.settings'),
+      icon: 'settings',
+      path: '#',
     },
   ];
 
@@ -42,20 +55,26 @@ const ProfileSidebar = ({ isAdmin: isUserAdmin, fullName, avatarUrl, isOpen, onC
     <>
       {/* Overlay for mobile */}
       {isOpen && (
-        <div 
+        <div
           className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 md:hidden transition-opacity duration-300"
           onClick={onClose}
         />
       )}
 
-      <aside className={`fixed left-0 top-0 h-full w-64 bg-surface-container border-r border-outline-variant/10 z-50 transition-transform duration-300 ease-in-out ${isOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'} flex flex-col`}>
+      <aside
+        className={`fixed left-0 top-0 h-full w-64 bg-surface-container border-r border-outline-variant/10 z-50 transition-transform duration-300 ease-in-out ${isOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'} flex flex-col`}
+      >
         {/* Profile Info Header */}
         <div className="p-8 border-b border-outline-variant/10">
           <div className="flex flex-col items-center">
             <div className="relative group mb-4">
               <div className="w-20 h-20 rounded-full bg-surface-container-highest border-2 border-primary/20 p-1 kinetic-glow overflow-hidden">
                 {avatarUrl ? (
-                  <img src={avatarUrl} alt={fullName} className="w-full h-full object-cover rounded-full" />
+                  <img
+                    src={avatarUrl}
+                    alt={fullName}
+                    className="w-full h-full object-cover rounded-full"
+                  />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center bg-primary/10 text-primary">
                     <span className="material-symbols-outlined text-4xl">account_circle</span>
@@ -66,8 +85,12 @@ const ProfileSidebar = ({ isAdmin: isUserAdmin, fullName, avatarUrl, isOpen, onC
                 <span className="material-symbols-outlined text-sm">edit</span>
               </button>
             </div>
-            <h3 className="font-headline font-bold text-lg text-on-surface text-center line-clamp-1">{fullName || 'Elite Athlete'}</h3>
-            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-primary mt-1">KINETIC_MEMBER</span>
+            <h3 className="font-headline font-bold text-lg text-on-surface text-center line-clamp-1">
+              {fullName || 'Elite Athlete'}
+            </h3>
+            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-primary mt-1">
+              KINETIC_MEMBER
+            </span>
           </div>
         </div>
 
@@ -79,7 +102,9 @@ const ProfileSidebar = ({ isAdmin: isUserAdmin, fullName, avatarUrl, isOpen, onC
               to={item.path}
               className={`flex items-center gap-4 px-4 py-3 rounded-lg font-bold text-sm transition-all duration-200 group ${activeTab === item.id ? 'bg-primary text-on-primary kinetic-glow' : 'text-on-surface-variant hover:bg-white/5 hover:text-white'}`}
             >
-              <span className={`material-symbols-outlined text-xl ${activeTab === item.id ? 'text-on-primary' : 'group-hover:text-primary transition-colors'}`}>
+              <span
+                className={`material-symbols-outlined text-xl ${activeTab === item.id ? 'text-on-primary' : 'group-hover:text-primary transition-colors'}`}
+              >
                 {item.icon}
               </span>
               {item.label}
@@ -112,7 +137,7 @@ const ProfileSidebar = ({ isAdmin: isUserAdmin, fullName, avatarUrl, isOpen, onC
             {i18n.language === 'vi' ? 'English (EN)' : 'Tiếng Việt (VI)'}
           </button>
 
-          <button 
+          <button
             onClick={handleLogout}
             className="w-full flex items-center gap-4 px-4 py-3 rounded-lg text-sm font-bold text-error hover:bg-error/10 transition-all group"
           >
