@@ -20,11 +20,12 @@ import ResetPassword from '../pages/auth/ResetPassword';
 import SecurityPage from '../pages/auth/SecurityPage';
 import SignUp from '../pages/auth/SignUp';
 import VerifyEmail from '../pages/auth/VerifyEmail';
+import FitnessProfilePage from '../pages/auth/fitness/FitnessProfilePage';
 import ChatPage from '../pages/customer/ChatPage';
-import WorkoutPlansPage from '../pages/customer/WorkoutPlansPage';
-import WorkoutPlanDetailsPage from '../pages/customer/WorkoutPlanDetailsPage';
 import CustomerExercisesPage from '../pages/customer/CustomerExercisesPage';
 import CustomerMealsPage from '../pages/customer/CustomerMealsPage';
+import WorkoutPlanDetailsPage from '../pages/customer/WorkoutPlanDetailsPage';
+import WorkoutPlansPage from '../pages/customer/WorkoutPlansPage';
 import OnboardingRoute from './OnboardingRoute';
 
 const AppRoutes = () => {
@@ -37,8 +38,8 @@ const AppRoutes = () => {
         <Route path="/oauth-callback" element={<OAuthCallback />} />
 
         {/* Customer Routes */}
-        <Route 
-          path="/chat/:sessionId?" 
+        <Route
+          path="/chat/:sessionId?"
           element={
             <ProtectedRoute allowedRoles={['Customer', 'SysAdmin', 'Admin']}>
               <ChatPage />
@@ -143,6 +144,14 @@ const AppRoutes = () => {
 
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/security" element={<SecurityPage />} />
+        <Route
+          path="/fitness-profile"
+          element={
+            <ProtectedRoute allowedRoles={['Customer']}>
+              <FitnessProfilePage />
+            </ProtectedRoute>
+          }
+        />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/verify-email" element={<VerifyEmail />} />
         <Route path="/auth/resetpass" element={<ResetPassword />} />
