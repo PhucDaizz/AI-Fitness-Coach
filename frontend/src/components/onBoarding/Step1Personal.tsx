@@ -1,10 +1,13 @@
 import React from 'react';
 
+import { FITNESS_GOALS, FITNESS_LEVELS, GENDERS } from '../../config/onboarding.constant';
 import { cn } from '../../lib/utils';
+import { calcAge, calcBMI, getBMICategory, getBMIColor } from '../../utils/fitness.utils';
+import { formatNumber } from '../../utils/number';
 
 // ── Types ──────────────────────────────────────────────────────────────────
 export interface Step1Data {
-  dateOfBirth: string; // "1998-05-15"
+  dateOfBirth: string;
   weightKg: number;
   heightCm: number;
   gender: 'male' | 'female' | 'other';
@@ -17,27 +20,6 @@ interface Step1PersonalProps {
   onChange: (data: Partial<Step1Data>) => void;
   errors?: Partial<Record<keyof Step1Data, string>>;
 }
-
-// ── Constants ──────────────────────────────────────────────────────────────
-const FITNESS_LEVELS = [
-  { value: 'beginner' as const, label: 'Beginner', sub: '< 6 Months training' },
-  { value: 'intermediate' as const, label: 'Intermediate', sub: '6–24 Months training' },
-  { value: 'advanced' as const, label: 'Advanced', sub: '> 2 Years training' },
-];
-
-const FITNESS_GOALS = [
-  { value: 'weight_loss' as const, label: 'Fat Loss', icon: '🔥' },
-  { value: 'muscle_gain' as const, label: 'Muscle Gain', icon: '💪' },
-  { value: 'endurance' as const, label: 'Endurance', icon: '⏱️' },
-  { value: 'flexibility' as const, label: 'Flexibility', icon: '🤸' },
-  { value: 'maintenance' as const, label: 'Maintain', icon: '🔄' },
-];
-
-const GENDERS = [
-  { value: 'male' as const, label: 'Male' },
-  { value: 'female' as const, label: 'Female' },
-  { value: 'other' as const, label: 'Other' },
-];
 
 // ── Sub-components ─────────────────────────────────────────────────────────
 const SectionLabel: React.FC<{ children: React.ReactNode }> = ({ children }) => (
@@ -80,6 +62,14 @@ const InputField: React.FC<InputFieldProps> = ({ label, icon, error, children })
 
 // ── Main Component ─────────────────────────────────────────────────────────
 const Step1Personal: React.FC<Step1PersonalProps> = ({ data, onChange, errors = {} }) => {
+  // Dùng fitness.utils để tính BMI live — hiển thị ngay khi user nhập đủ weight + height
+  const canShowBMI = data.weightKg >= 20 && data.heightCm >= 50;
+  const bmi = canShowBMI ? calcBMI(data.weightKg, data.heightCm) : null;
+  const bmiCategory = bmi !== null ? getBMICategory(bmi) : null;
+
+  // Dùng fitness.utils để tính tuổi live
+  const age = data.dateOfBirth ? calcAge(data.dateOfBirth) : null;
+
   return (
     <div className="relative">
       {/* Decorative step number */}
@@ -99,7 +89,7 @@ const Step1Personal: React.FC<Step1PersonalProps> = ({ data, onChange, errors = 
 
       {/* ── Section 1: Physical data ───────────────────────────────── */}
       <SectionLabel>Physical Data</SectionLabel>
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-7">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-3">
         <InputField label="Date of Birth" icon="calendar_month" error={errors.dateOfBirth}>
           <input
             type="date"
@@ -137,6 +127,35 @@ const Step1Personal: React.FC<Step1PersonalProps> = ({ data, onChange, errors = 
         </InputField>
       </div>
 
+      {/* BMI live preview — dùng calcBMI + getBMICategory + formatNumber từ utils */}
+      {(bmi !== null || age !== null) && (
+        <div className="flex items-center gap-4 mb-7 px-1">
+          {bmi !== null && (
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant">
+                BMI
+              </span>
+              <span className={cn('text-[15px] font-black', getBMIColor(bmi))}>
+                {formatNumber(bmi, { minimumFractionDigits: 1, maximumFractionDigits: 1 })}
+              </span>
+              <span className="text-[10px] text-on-surface-variant">— {bmiCategory}</span>
+            </div>
+          )}
+          {bmi !== null && age !== null && (
+            <span className="text-on-surface-variant/30 text-[10px]">·</span>
+          )}
+          {age !== null && age > 0 && (
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant">
+                Age
+              </span>
+              <span className="text-[15px] font-black text-on-surface">{age}</span>
+            </div>
+          )}
+        </div>
+      )}
+      {!bmi && !age && <div className="mb-7" />}
+
       {/* ── Section 2: Gender ──────────────────────────────────────── */}
       <SectionLabel>Biological Profile</SectionLabel>
       <div className="flex gap-2 mb-7">
@@ -169,11 +188,10 @@ const Step1Personal: React.FC<Step1PersonalProps> = ({ data, onChange, errors = 
               key={lvl.value}
               onClick={() => onChange({ fitnessLevel: lvl.value })}
               className={cn(
-                'relative bg-surface-container border rounded-xl p-4 text-left transition-all hover:border-primary/30',
+                'relative bg-surface-container border rounded-xl px-6 py-3 text-left transition-all hover:border-primary/30',
                 selected ? 'border-primary bg-primary/5' : 'border-white/8',
               )}
             >
-              {/* Check indicator */}
               <span
                 className={cn(
                   'absolute top-1/2 -translate-y-1/2 right-3 w-[18px] h-[18px] rounded-full border flex items-center justify-center transition-all',
@@ -185,7 +203,7 @@ const Step1Personal: React.FC<Step1PersonalProps> = ({ data, onChange, errors = 
                     <polyline
                       points="2,6 5,9 10,3"
                       stroke="#1a2e00"
-                      strokeWidth="2"
+                      strokeWidth="2.5"
                       strokeLinecap="round"
                       strokeLinejoin="round"
                     />
@@ -216,28 +234,10 @@ const Step1Personal: React.FC<Step1PersonalProps> = ({ data, onChange, errors = 
               key={goal.value}
               onClick={() => onChange({ fitnessGoal: goal.value })}
               className={cn(
-                'relative bg-surface-container border rounded-xl p-4 flex flex-col items-center gap-2 transition-all hover:border-primary/30',
+                'bg-surface-container border rounded-xl p-4 flex flex-col items-center gap-2 transition-all hover:border-primary/30',
                 selected ? 'border-primary bg-primary/5' : 'border-white/8',
               )}
             >
-              <span
-                className={cn(
-                  'absolute top-1/2 -translate-y-1/2 right-2.5 w-[16px] h-[16px] rounded-full border flex items-center justify-center transition-all',
-                  selected ? 'bg-primary border-primary' : 'border-white/20 bg-transparent',
-                )}
-              >
-                {selected && (
-                  <svg width="8" height="8" viewBox="0 0 12 12" fill="none">
-                    <polyline
-                      points="2,6 5,9 10,3"
-                      stroke="#1a2e00"
-                      strokeWidth="2.5"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                )}
-              </span>
               <span className="text-2xl leading-none">{goal.icon}</span>
               <p
                 className={cn(

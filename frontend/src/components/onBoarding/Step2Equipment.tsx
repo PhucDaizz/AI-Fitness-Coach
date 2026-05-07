@@ -1,5 +1,6 @@
 import React from 'react';
 
+import { ENVIRONMENTS, EQUIPMENT_LIST } from '../../config/onboarding.constant';
 import { cn } from '../../lib/utils';
 
 // ── Types ──────────────────────────────────────────────────────────────────
@@ -13,113 +14,6 @@ interface Step2EquipmentProps {
   onChange: (data: Partial<Step2Data>) => void;
   errors?: Partial<Record<keyof Step2Data, string>>;
 }
-
-// ── Constants ──────────────────────────────────────────────────────────────
-const ENVIRONMENTS = [
-  {
-    value: 'gym' as const,
-    label: 'Full Gym',
-    desc: 'Commercial facility with all equipment (barbells, machines, etc.).',
-    icon: (
-      <svg
-        width="32"
-        height="32"
-        viewBox="0 0 32 32"
-        fill="none"
-        xmlns="http://www.w3.org/2000/svg"
-      >
-        <rect x="2" y="14" width="4" height="4" rx="1" fill="currentColor" opacity="0.6" />
-        <rect x="6" y="11" width="3" height="10" rx="1" fill="currentColor" />
-        <rect x="13" y="8" width="6" height="16" rx="1" fill="currentColor" opacity="0.3" />
-        <rect x="23" y="11" width="3" height="10" rx="1" fill="currentColor" />
-        <rect x="26" y="14" width="4" height="4" rx="1" fill="currentColor" opacity="0.6" />
-        <rect x="9" y="15" width="14" height="2" rx="1" fill="currentColor" />
-      </svg>
-    ),
-  },
-  {
-    value: 'home' as const,
-    label: 'Home Gym',
-    desc: 'Training at home with or without equipment.',
-    icon: (
-      <svg
-        width="32"
-        height="32"
-        viewBox="0 0 32 32"
-        fill="none"
-        xmlns="http://www.w3.org/2000/svg"
-      >
-        <path
-          d="M4 16L16 6L28 16"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          opacity="0.8"
-        />
-        <path
-          d="M8 14V26H24V14"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-        <rect x="13" y="19" width="6" height="7" rx="1" fill="currentColor" opacity="0.5" />
-        <rect
-          x="18"
-          y="16"
-          width="5"
-          height="5"
-          rx="1"
-          stroke="currentColor"
-          strokeWidth="1.5"
-          opacity="0.6"
-        />
-      </svg>
-    ),
-  },
-  {
-    value: 'outdoor' as const,
-    label: 'Outdoor',
-    desc: 'Bodyweight exercises, running, or outdoor park workouts.',
-    icon: (
-      <svg
-        width="32"
-        height="32"
-        viewBox="0 0 32 32"
-        fill="none"
-        xmlns="http://www.w3.org/2000/svg"
-      >
-        <path
-          d="M8 26L16 10L24 26"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          opacity="0.8"
-        />
-        <path
-          d="M14 26L20 14L26 26"
-          stroke="currentColor"
-          strokeWidth="1.5"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          opacity="0.5"
-        />
-        <circle cx="22" cy="9" r="3" fill="currentColor" opacity="0.7" />
-      </svg>
-    ),
-  },
-];
-
-const EQUIPMENT_LIST = [
-  { value: 'barbell', label: 'Barbell', labelVi: 'Tạ đòn' },
-  { value: 'dumbbell', label: 'Dumbbells', labelVi: 'Tạ đơn' },
-  { value: 'resistance_band', label: 'Resistance Bands', labelVi: 'Dây kháng lực' },
-  { value: 'pullup_bar', label: 'Pull-up Bar', labelVi: 'Xà đơn' },
-  { value: 'kettlebell', label: 'Kettlebells', labelVi: 'Tạ bình' },
-  { value: 'machine', label: 'Machines', labelVi: 'Máy tập' },
-];
 
 const SectionLabel: React.FC<{ children: React.ReactNode }> = ({ children }) => (
   <div className="flex items-center gap-3 mb-5">
@@ -237,7 +131,7 @@ const Step2Equipment: React.FC<Step2EquipmentProps> = ({ data, onChange, errors 
                   key={item.value}
                   onClick={() => toggleEquipment(item.value)}
                   className={cn(
-                    'relative bg-surface-container border rounded-xl px-4 py-3.5 flex items-center justify-between transition-all hover:border-primary/30',
+                    'relative bg-surface-container border rounded-xl px-5 py-3.5 flex items-center justify-between transition-all hover:border-primary/30',
                     selected ? 'border-primary bg-primary/[0.04]' : 'border-white/8',
                   )}
                 >

@@ -7,22 +7,30 @@ import type { ActivityLevel, FitnessGoal, Gender } from '../config/constants';
  * @param heightCm  Height in centimetres
  * @example calcBMI(70, 175) => 22.9
  */
-export function calcBMI(
-    weightKg: number, 
-    heightCm: number
-): number {
+export function calcBMI(weightKg: number, heightCm: number): number {
   const heightM = heightCm / 100;
   return Math.round((weightKg / (heightM * heightM)) * 10) / 10;
 }
 
 /**
- * Get BMI category label 
+ * Get BMI category label
  */
 export function getBMICategory(bmi: number): string {
   if (bmi < 18.5) return 'Thiếu cân';
   if (bmi < 25) return 'Bình thường';
   if (bmi < 30) return 'Thừa cân';
   return 'Béo phì';
+}
+
+/**
+ * Trả về Tailwind color class tương ứng với mức BMI
+ * Dùng trong onboarding Step 1 để hiển thị BMI live preview
+ */
+export function getBMIColor(bmi: number): string {
+  if (bmi < 18.5) return 'text-secondary'; // Thiếu cân
+  if (bmi < 25) return 'text-primary'; // Bình thường
+  if (bmi < 30) return 'text-yellow-400'; // Thừa cân
+  return 'text-error'; // Béo phì
 }
 
 // ─── Age ─────────────────────────────────────────────────────────────────────
@@ -95,11 +103,7 @@ export interface MacroSplit {
  * endurance   → maintenance, high carb
  * health      → maintenance, balanced
  */
-export function calcMacros(
-    tdee: number, 
-    goal: FitnessGoal, 
-    weightKg: number
-): MacroSplit {
+export function calcMacros(tdee: number, goal: FitnessGoal, weightKg: number): MacroSplit {
   const goalConfig: Record<FitnessGoal, { calMod: number; proteinPerKg: number; fatPct: number }> =
     {
       fat_loss: { calMod: 0.8, proteinPerKg: 2.4, fatPct: 0.25 },
@@ -125,11 +129,7 @@ export function calcMacros(
  * Calculate total volume lifted in a session
  * @example calcVolume(4, 10, 80) => 3200 (kg)
  */
-export function calcVolume(
-  sets: number,
-  reps: number,
-  weightKg: number
-): number {
+export function calcVolume(sets: number, reps: number, weightKg: number): number {
   return sets * reps * weightKg;
 }
 

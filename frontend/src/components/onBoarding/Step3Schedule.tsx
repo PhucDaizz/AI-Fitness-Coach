@@ -1,5 +1,6 @@
 import React from 'react';
 
+import { DAYS, SESSION_OPTIONS, TRAINING_WINDOWS } from '../../config/onboarding.constant';
 import { cn } from '../../lib/utils';
 
 // ── Types ──────────────────────────────────────────────────────────────────
@@ -14,31 +15,6 @@ interface Step3ScheduleProps {
   onChange: (data: Partial<Step3Data>) => void;
   errors?: Partial<Record<keyof Step3Data, string>>;
 }
-
-// ── Constants ──────────────────────────────────────────────────────────────
-const DAYS = [
-  { value: 'Monday', label: 'MON' },
-  { value: 'Tuesday', label: 'TUE' },
-  { value: 'Wednesday', label: 'WED' },
-  { value: 'Thursday', label: 'THU' },
-  { value: 'Friday', label: 'FRI' },
-  { value: 'Saturday', label: 'SAT' },
-  { value: 'Sunday', label: 'SUN' },
-];
-
-const SESSION_OPTIONS: { value: 30 | 45 | 60 | 90; tag: string }[] = [
-  { value: 30, tag: 'EXPRESS' },
-  { value: 45, tag: 'BALANCED' },
-  { value: 60, tag: 'ENDURANCE' },
-  { value: 90, tag: 'ELITE' },
-];
-
-const TRAINING_WINDOWS = [
-  { value: 'morning' as const, label: 'MORNING' },
-  { value: 'midday' as const, label: 'MIDDAY' },
-  { value: 'afternoon' as const, label: 'AFTERNOON' },
-  { value: 'night' as const, label: 'NIGHT' },
-];
 
 // ── Helper ─────────────────────────────────────────────────────────────────
 function getPulseRecommendation(days: string[]): string {
@@ -160,7 +136,7 @@ const Step3Schedule: React.FC<Step3ScheduleProps> = ({ data, onChange, errors = 
                     key={opt.value}
                     onClick={() => onChange({ sessionMinutes: opt.value })}
                     className={cn(
-                      'flex items-center justify-between px-4 py-3.5 rounded-xl border transition-all',
+                      'flex items-center justify-between px-5 py-3.5 rounded-xl border transition-all',
                       selected
                         ? 'border-primary bg-primary/[0.04]'
                         : 'border-white/8 bg-surface-container-high hover:border-primary/30',

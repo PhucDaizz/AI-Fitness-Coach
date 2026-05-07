@@ -231,6 +231,7 @@ export function useOnboardingPage() {
   return {
     currentStep,
     isSubmitting,
+    setSubmitError,
     submitError,
     // Step 1
     step1,
