@@ -105,6 +105,7 @@
     "sidebar": {
       "personal": "Personal",
       "security": "Security",
+      "fitness": "Fitness Profile",
       "settings": "Settings",
       "logout": "Logout",
       "admin_panel": "Admin Panel"
@@ -424,5 +425,115 @@
     "privacy_policy": "Privacy Policy",
     "terms_of_service": "Terms of Service",
     "technical_support": "Technical Support"
+  },
+  "fitness_profile": {
+    "title": "Fitness",
+    "title_highlight": "Profile",
+    "subtitle": "Update goals and training setup for AI Coach to personalize your plan.",
+    "back_to_profile": "Back to Profile",
+    "updated_msg": "Profile updated — Chat with AI Coach to create a new suitable plan.",
+    "chat_now": "Chat Now",
+    "physical_stats": {
+      "title": "Physical Stats",
+      "subtitle": "Weight, height, personal goals",
+      "body_metrics": "Body Metrics",
+      "dob": "Date of Birth",
+      "weight": "Weight (KG)",
+      "height": "Height (CM)",
+      "age": "Age",
+      "gender": "Gender",
+      "current_level": "Current Level",
+      "main_goal": "Main Goal"
+    },
+    "levels": {
+      "beginner": "Beginner",
+      "beginner_sub": "< 6 Months training",
+      "intermediate": "Intermediate",
+      "intermediate_sub": "6–24 Months training",
+      "advanced": "Advanced",
+      "advanced_sub": "> 2 Years training"
+    },
+    "goals": {
+      "weight_loss": "Fat Loss",
+      "muscle_gain": "Muscle Gain",
+      "endurance": "Endurance",
+      "flexibility": "Flexibility",
+      "maintenance": "Maintain"
+    },
+    "genders": {
+      "male": "Male",
+      "female": "Female",
+      "other": "Other"
+    },
+    "training": {
+      "title": "Training Setup",
+      "subtitle": "Environment, equipment, schedule",
+      "environment": "Training Environment",
+      "equipment": "Available Equipment",
+      "outdoor_msg": "Outdoor bodyweight training — no equipment needed.",
+      "available_days": "Available Days",
+      "duration": "Session Duration",
+      "minutes": "{{count}} mins"
+    },
+    "environments": {
+      "gym": "Full Gym",
+      "gym_desc": "Commercial facility with all equipment (barbells, machines, etc.).",
+      "home": "Home Gym",
+      "home_desc": "Training at home with or without equipment.",
+      "outdoor": "Outdoor",
+      "outdoor_desc": "Bodyweight exercises, running, or outdoor park workouts."
+    },
+    "equipment": {
+      "barbell": "Barbell",
+      "dumbbell": "Dumbbells",
+      "resistance_band": "Resistance Bands",
+      "pullup_bar": "Pull-up Bar",
+      "kettlebell": "Kettlebells",
+      "machine": "Machines"
+    },
+    "days": {
+      "Monday": "Monday",
+      "Tuesday": "Tuesday",
+      "Wednesday": "Wednesday",
+      "Thursday": "Thursday",
+      "Friday": "Friday",
+      "Saturday": "Saturday",
+      "Sunday": "Sunday",
+      "short": {
+        "Monday": "MON",
+        "Tuesday": "TUE",
+        "Wednesday": "WED",
+        "Thursday": "THU",
+        "Friday": "FRI",
+        "Saturday": "SAT",
+        "Sunday": "SUN"
+      }
+    },
+    "injuries": {
+      "title": "Injuries & Limitations",
+      "subtitle": "AI will avoid movements that affect these areas.",
+      "placeholder": "e.g., Lower back pain, left knee injury when squatting, shoulder impingement...",
+      "char_count": "{{count}} chars",
+      "note": "Note",
+      "info": "Leave empty if no injuries. This information is used by AI Coach to personalize your plan and avoid exercises that might cause further injury."
+    },
+    "sticky": {
+      "unsaved": "Unsaved changes",
+      "discard": "Discard",
+      "save": "Save Changes",
+      "saving": "Saving..."
+    },
+    "validation": {
+      "dob_required": "Date of birth is required",
+      "dob_invalid": "Invalid date of birth",
+      "weight_range": "Weight must be between 20–300 kg",
+      "height_range": "Height must be between 50–250 cm",
+      "days_required": "Select at least 1 day"
+    },
+    "toast": {
+      "load_error": "Failed to load profile",
+      "save_success": "Profile updated successfully!",
+      "save_error": "Failed to update profile"
+    }
   }
 }

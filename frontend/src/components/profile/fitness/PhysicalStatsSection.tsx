@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 
 import { FITNESS_GOALS, FITNESS_LEVELS, GENDERS } from '../../../config/onboarding.constant';
 import { cn } from '../../../lib/utils';
@@ -60,6 +61,7 @@ const Field: React.FC<FieldProps> = ({ label, icon, error, children }) => (
 // ── Main Component ─────────────────────────────────────────────────────────────
 
 const PhysicalStatsSection: React.FC<PhysicalStatsSectionProps> = ({ data, errors, onChange }) => {
+  const { t } = useTranslation();
   const canShowBMI = data.weightKg >= 20 && data.heightCm >= 50;
   const bmi = canShowBMI ? calcBMI(data.weightKg, data.heightCm) : null;
   const bmiCategory = bmi !== null ? getBMICategory(bmi) : null;
@@ -75,17 +77,17 @@ const PhysicalStatsSection: React.FC<PhysicalStatsSectionProps> = ({ data, error
           </span>
         </div>
         <div>
-          <h2 className="text-lg font-black uppercase tracking-tight text-white">Physical Stats</h2>
+          <h2 className="text-lg font-black uppercase tracking-tight text-white">{t('fitness_profile.physical_stats.title')}</h2>
           <p className="text-[11px] text-on-surface-variant">
-            Cân nặng, chiều cao, mục tiêu cá nhân
+            {t('fitness_profile.physical_stats.subtitle')}
           </p>
         </div>
       </div>
 
       {/* Section 1: Physical Data */}
-      <SectionLabel>Chỉ số cơ thể</SectionLabel>
+      <SectionLabel>{t('fitness_profile.physical_stats.body_metrics')}</SectionLabel>
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-3">
-        <Field label="Ngày sinh" icon="calendar_month" error={errors.dateOfBirth}>
+        <Field label={t('fitness_profile.physical_stats.dob')} icon="calendar_month" error={errors.dateOfBirth}>
           <input
             type="date"
             value={data.dateOfBirth}
@@ -95,7 +97,7 @@ const PhysicalStatsSection: React.FC<PhysicalStatsSectionProps> = ({ data, error
           />
         </Field>
 
-        <Field label="Cân nặng (KG)" icon="monitor_weight" error={errors.weightKg}>
+        <Field label={t('fitness_profile.physical_stats.weight')} icon="monitor_weight" error={errors.weightKg}>
           <input
             type="number"
             value={data.weightKg || ''}
@@ -108,7 +110,7 @@ const PhysicalStatsSection: React.FC<PhysicalStatsSectionProps> = ({ data, error
           />
         </Field>
 
-        <Field label="Chiều cao (CM)" icon="height" error={errors.heightCm}>
+        <Field label={t('fitness_profile.physical_stats.height')} icon="height" error={errors.heightCm}>
           <input
             type="number"
             value={data.heightCm || ''}
@@ -142,7 +144,7 @@ const PhysicalStatsSection: React.FC<PhysicalStatsSectionProps> = ({ data, error
           {age !== null && age > 0 && (
             <div className="flex items-center gap-2">
               <span className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant">
-                Tuổi
+                {t('fitness_profile.physical_stats.age')}
               </span>
               <span className="text-[15px] font-black text-on-surface">{age}</span>
             </div>
@@ -152,7 +154,7 @@ const PhysicalStatsSection: React.FC<PhysicalStatsSectionProps> = ({ data, error
       {bmi === null && (age === null || age <= 0) && <div className="mb-6" />}
 
       {/* Section 2: Gender */}
-      <SectionLabel>Giới tính</SectionLabel>
+      <SectionLabel>{t('fitness_profile.physical_stats.gender')}</SectionLabel>
       <div className="flex gap-2 mb-6">
         {GENDERS.map((g) => (
           <button
@@ -169,13 +171,13 @@ const PhysicalStatsSection: React.FC<PhysicalStatsSectionProps> = ({ data, error
               data.gender === g.value ? { boxShadow: '0 0 12px rgba(177,255,36,0.25)' } : undefined
             }
           >
-            {g.label}
+            {t(`fitness_profile.genders.${g.value}`)}
           </button>
         ))}
       </div>
 
       {/* Section 3: Fitness Level */}
-      <SectionLabel>Cấp độ hiện tại</SectionLabel>
+      <SectionLabel>{t('fitness_profile.physical_stats.current_level')}</SectionLabel>
       <div className="grid grid-cols-3 gap-2.5 mb-6">
         {FITNESS_LEVELS.map((lvl) => {
           const selected = data.fitnessLevel === lvl.value;
@@ -213,16 +215,16 @@ const PhysicalStatsSection: React.FC<PhysicalStatsSectionProps> = ({ data, error
                   selected ? 'text-primary' : 'text-on-surface-variant',
                 )}
               >
-                {lvl.label}
+                {t(`fitness_profile.levels.${lvl.value}`)}
               </p>
-              <p className="text-[11px] text-on-surface-variant/60 font-medium pr-6">{lvl.sub}</p>
+              <p className="text-[11px] text-on-surface-variant/60 font-medium pr-6">{t(`fitness_profile.levels.${lvl.value}_sub`)}</p>
             </button>
           );
         })}
       </div>
 
       {/* Section 4: Fitness Goal */}
-      <SectionLabel>Mục tiêu chính</SectionLabel>
+      <SectionLabel>{t('fitness_profile.physical_stats.main_goal')}</SectionLabel>
       <div className="grid grid-cols-2 sm:grid-cols-5 gap-2.5">
         {FITNESS_GOALS.map((goal) => {
           const selected = data.fitnessGoal === goal.value;
@@ -243,7 +245,7 @@ const PhysicalStatsSection: React.FC<PhysicalStatsSectionProps> = ({ data, error
                   selected ? 'text-primary' : 'text-on-surface-variant',
                 )}
               >
-                {goal.label}
+                {t(`fitness_profile.goals.${goal.value}`)}
               </p>
             </button>
           );

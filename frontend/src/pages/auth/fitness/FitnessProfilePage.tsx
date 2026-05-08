@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 
@@ -8,6 +8,7 @@ import PhysicalStatsSection from '../../../components/profile/fitness/PhysicalSt
 import ProfileStickyBar from '../../../components/profile/fitness/ProfileStickyBar';
 import TrainingSetupSection from '../../../components/profile/fitness/TrainingSection';
 import ToastMessage from '../../../components/shared/ToastMessage';
+import { getCurrentUser } from '../../../services/api/auth.service';
 import { isAdmin } from '../../../utils/authUtils';
 import { useFitnessProfile } from './useFitnessProfile';
 
@@ -32,10 +33,15 @@ const LoadingSkeleton: React.FC = () => (
 
 const FitnessProfilePage: React.FC = () => {
   const { t } = useTranslation();
-  const [isSidebarOpen, setIsSidebarOpen] = React.useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [user, setUser] = useState<any>(null);
 
   const token = localStorage.getItem('token');
   const isUserAdmin = isAdmin(token);
+
+  useEffect(() => {
+    getCurrentUser().then(setUser).catch(console.error);
+  }, []);
 
   const {
     formData,
@@ -63,9 +69,9 @@ const FitnessProfilePage: React.FC = () => {
       {/* Sidebar */}
       <ProfileSidebar
         isAdmin={isUserAdmin}
+        fullName={user?.fullName}
+        avatarUrl={user?.avatarUrl}
         isOpen={isSidebarOpen}
-        // fullName={fullName}
-        // avatarUrl={avatarUrl}
         onClose={() => setIsSidebarOpen(false)}
         activeTab="fitness"
       />
@@ -78,16 +84,16 @@ const FitnessProfilePage: React.FC = () => {
           className="inline-flex items-center gap-2 mb-6 text-on-surface-variant hover:text-primary transition-colors font-bold uppercase tracking-widest text-[10px]"
         >
           <span className="material-symbols-outlined text-sm">arrow_back</span>
-          Back to Profile
+          {t('fitness_profile.back_to_profile')}
         </Link>
 
         {/* Page Header */}
         <header className="mb-10">
           <h1 className="text-[2.25rem] md:text-[3.5rem] font-headline font-bold tracking-[-0.04em] leading-tight mb-2">
-            Fitness <span className="text-primary italic">Profile</span>
+            {t('fitness_profile.title')} <span className="text-primary italic">{t('fitness_profile.title_highlight')}</span>
           </h1>
           <p className="text-on-surface-variant font-medium text-sm">
-            Cập nhật mục tiêu và thiết lập tập luyện để AI Coach cá nhân hóa plan cho bạn.
+            {t('fitness_profile.subtitle')}
           </p>
         </header>
 
@@ -142,14 +148,14 @@ const FitnessProfilePage: React.FC = () => {
                 <div className="flex items-center gap-3">
                   <span className="material-symbols-outlined text-primary">auto_fix_high</span>
                   <p className="text-[13px] font-bold text-on-surface">
-                    Hồ sơ đã cập nhật — Chat với AI Coach để tạo plan mới phù hợp.
+                    {t('fitness_profile.updated_msg')}
                   </p>
                 </div>
                 <Link
                   to="/chat"
                   className="flex-shrink-0 px-5 py-2.5 rounded-full bg-primary text-on-primary text-[10px] font-black uppercase tracking-widest hover:opacity-90 transition-all"
                 >
-                  Chat ngay
+                  {t('fitness_profile.chat_now')}
                 </Link>
               </div>
             )}

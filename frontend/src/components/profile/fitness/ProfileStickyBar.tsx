@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
@@ -17,6 +18,8 @@ const ProfileStickyBar: React.FC<ProfileStickyBarProps> = ({
   onDiscard,
   onSave,
 }) => {
+  const { t } = useTranslation();
+
   return (
     <div
       className={`fixed bottom-0 left-0 right-0 z-50 transition-all duration-300 ease-in-out ${
@@ -38,7 +41,7 @@ const ProfileStickyBar: React.FC<ProfileStickyBarProps> = ({
               style={{ boxShadow: '0 0 6px rgba(250,204,21,0.6)' }}
             />
             <span className="text-[11px] font-bold uppercase tracking-widest text-on-surface-variant">
-              Có thay đổi chưa lưu
+              {t('fitness_profile.sticky.unsaved')}
             </span>
           </div>
 
@@ -50,7 +53,7 @@ const ProfileStickyBar: React.FC<ProfileStickyBarProps> = ({
               disabled={isSaving}
               className="h-10 px-5 rounded-full border border-white/15 text-on-surface-variant text-[11px] font-bold uppercase tracking-widest hover:border-white/30 hover:text-white transition-all disabled:opacity-40"
             >
-              Discard
+              {t('fitness_profile.sticky.discard')}
             </button>
 
             <button
@@ -63,12 +66,12 @@ const ProfileStickyBar: React.FC<ProfileStickyBarProps> = ({
               {isSaving ? (
                 <>
                   <span className="w-3.5 h-3.5 border-2 border-on-primary border-t-transparent rounded-full animate-spin" />
-                  Đang lưu...
+                  {t('fitness_profile.sticky.saving')}
                 </>
               ) : (
                 <>
                   <span className="material-symbols-outlined text-sm">save</span>
-                  Save Changes
+                  {t('fitness_profile.sticky.save')}
                 </>
               )}
             </button>

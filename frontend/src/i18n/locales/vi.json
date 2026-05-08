@@ -105,6 +105,7 @@
     "sidebar": {
       "personal": "Cá nhân",
       "security": "Bảo mật",
+      "fitness": "Hồ sơ Fitness",
       "settings": "Cài đặt",
       "logout": "Đăng xuất",
       "admin_panel": "Bảng quản trị"
@@ -424,5 +425,115 @@
     "privacy_policy": "Chính sách bảo mật",
     "terms_of_service": "Điều khoản dịch vụ",
     "technical_support": "Hỗ trợ kỹ thuật"
+  },
+  "fitness_profile": {
+    "title": "Hồ sơ",
+    "title_highlight": "Thể chất",
+    "subtitle": "Cập nhật mục tiêu và thiết lập tập luyện để AI Coach cá nhân hóa plan cho bạn.",
+    "back_to_profile": "Quay lại Hồ sơ",
+    "updated_msg": "Hồ sơ đã cập nhật — Chat với AI Coach để tạo plan mới phù hợp.",
+    "chat_now": "Chat ngay",
+    "physical_stats": {
+      "title": "Chỉ số thể chất",
+      "subtitle": "Cân nặng, chiều cao, mục tiêu cá nhân",
+      "body_metrics": "Chỉ số cơ thể",
+      "dob": "Ngày sinh",
+      "weight": "Cân nặng (KG)",
+      "height": "Chiều cao (CM)",
+      "age": "Tuổi",
+      "gender": "Giới tính",
+      "current_level": "Cấp độ hiện tại",
+      "main_goal": "Mục tiêu chính"
+    },
+    "levels": {
+      "beginner": "Người mới",
+      "beginner_sub": "< 6 tháng tập luyện",
+      "intermediate": "Trung cấp",
+      "intermediate_sub": "6–24 tháng tập luyện",
+      "advanced": "Nâng cao",
+      "advanced_sub": "> 2 năm tập luyện"
+    },
+    "goals": {
+      "weight_loss": "Giảm mỡ",
+      "muscle_gain": "Tăng cơ",
+      "endurance": "Sức bền",
+      "flexibility": "Linh hoạt",
+      "maintenance": "Duy trì"
+    },
+    "genders": {
+      "male": "Nam",
+      "female": "Nữ",
+      "other": "Khác"
+    },
+    "training": {
+      "title": "Thiết lập tập luyện",
+      "subtitle": "Môi trường, thiết bị, lịch tập",
+      "environment": "Môi trường tập luyện",
+      "equipment": "Thiết bị hiện có",
+      "outdoor_msg": "Tập ngoài trời dùng bodyweight — không cần thiết bị.",
+      "available_days": "Ngày rảnh trong tuần",
+      "duration": "Thời lượng mỗi buổi",
+      "minutes": "{{count}} phút"
+    },
+    "environments": {
+      "gym": "Phòng Gym",
+      "gym_desc": "Phòng tập thương mại đầy đủ trang thiết bị (tạ đòn, máy tập...).",
+      "home": "Tại nhà",
+      "home_desc": "Tập luyện tại nhà có hoặc không có dụng cụ.",
+      "outdoor": "Ngoài trời",
+      "outdoor_desc": "Các bài tập bodyweight, chạy bộ hoặc tập tại công viên."
+    },
+    "equipment": {
+      "barbell": "Tạ đòn",
+      "dumbbell": "Tạ đơn",
+      "resistance_band": "Dây kháng lực",
+      "pullup_bar": "Xà đơn",
+      "kettlebell": "Tạ bình",
+      "machine": "Máy tập"
+    },
+    "days": {
+      "Monday": "Thứ 2",
+      "Tuesday": "Thứ 3",
+      "Wednesday": "Thứ 4",
+      "Thursday": "Thứ 5",
+      "Friday": "Thứ 6",
+      "Saturday": "Thứ 7",
+      "Sunday": "Chủ Nhật",
+      "short": {
+        "Monday": "T2",
+        "Tuesday": "T3",
+        "Wednesday": "T4",
+        "Thursday": "T5",
+        "Friday": "T6",
+        "Saturday": "T7",
+        "Sunday": "CN"
+      }
+    },
+    "injuries": {
+      "title": "Chấn thương & Hạn chế",
+      "subtitle": "AI sẽ tránh bài tập ảnh hưởng đến các vùng này",
+      "placeholder": "VD: Đau lưng dưới, đầu gối trái yếu, không tập vai nặng...",
+      "char_count": "{{count}} ký tự",
+      "note": "Lưu ý",
+      "info": "Để trống nếu không có chấn thương. Thông tin này được AI Coach dùng để cá nhân hóa plan và tránh các bài tập có thể gây chấn thương thêm."
+    },
+    "sticky": {
+      "unsaved": "Có thay đổi chưa lưu",
+      "discard": "Hủy bỏ",
+      "save": "Lưu thay đổi",
+      "saving": "Đang lưu..."
+    },
+    "validation": {
+      "dob_required": "Ngày sinh là bắt buộc",
+      "dob_invalid": "Ngày sinh không hợp lệ",
+      "weight_range": "Cân nặng phải từ 20–300 kg",
+      "height_range": "Chiều cao phải từ 50–250 cm",
+      "days_required": "Chọn ít nhất 1 ngày rảnh"
+    },
+    "toast": {
+      "load_error": "Không thể tải hồ sơ",
+      "save_success": "Cập nhật hồ sơ thành công!",
+      "save_error": "Cập nhật thất bại"
+    }
   }
 }

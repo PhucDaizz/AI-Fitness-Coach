@@ -39,7 +39,7 @@ const ProfileSidebar = ({
     },
     {
       id: 'fitness',
-      label: 'Fitness',
+      label: t('profile.sidebar.fitness'),
       icon: 'fitness_center',
       path: '/fitness-profile',
     },
@@ -86,7 +86,7 @@ const ProfileSidebar = ({
               </button>
             </div>
             <h3 className="font-headline font-bold text-lg text-on-surface text-center line-clamp-1">
-              {fullName || 'Elite Athlete'}
+              {fullName || t('profile.bio.anonymous')}
             </h3>
             <span className="text-[10px] font-black uppercase tracking-[0.2em] text-primary mt-1">
               KINETIC_MEMBER

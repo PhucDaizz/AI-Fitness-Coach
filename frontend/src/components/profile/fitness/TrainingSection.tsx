@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 
 import {
   DAYS,
@@ -31,6 +32,8 @@ const SectionLabel: React.FC<{ children: React.ReactNode }> = ({ children }) => 
 // ── Main Component ─────────────────────────────────────────────────────────────
 
 const TrainingSetupSection: React.FC<TrainingSetupSectionProps> = ({ data, errors, onChange }) => {
+  const { t } = useTranslation();
+
   const toggleEquipment = (value: string) => {
     const current = data.equipment;
     const next = current.includes(value) ? current.filter((v) => v !== value) : [...current, value];
@@ -55,13 +58,13 @@ const TrainingSetupSection: React.FC<TrainingSetupSectionProps> = ({ data, error
           </span>
         </div>
         <div>
-          <h2 className="text-lg font-black uppercase tracking-tight text-white">Training Setup</h2>
-          <p className="text-[11px] text-on-surface-variant">Môi trường, thiết bị, lịch tập</p>
+          <h2 className="text-lg font-black uppercase tracking-tight text-white">{t('fitness_profile.training.title')}</h2>
+          <p className="text-[11px] text-on-surface-variant">{t('fitness_profile.training.subtitle')}</p>
         </div>
       </div>
 
       {/* Section 1: Environment */}
-      <SectionLabel>Môi trường tập luyện</SectionLabel>
+      <SectionLabel>{t('fitness_profile.training.environment')}</SectionLabel>
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">
         {ENVIRONMENTS.map((env) => {
           const selected = data.environment === env.value;
@@ -80,25 +83,12 @@ const TrainingSetupSection: React.FC<TrainingSetupSectionProps> = ({ data, error
                 selected ? 'border-primary bg-primary/[0.04]' : 'border-white/8',
               )}
             >
-              {/* {selected && (
-                <span className="absolute top-3 right-3 w-5 h-5 rounded-full bg-primary flex items-center justify-center">
-                  <svg width="10" height="10" viewBox="0 0 12 12" fill="none">
-                    <polyline
-                      points="2,6 5,9 10,3"
-                      stroke="#1a2e00"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                </span>
-              )} */}
               <span className={selected ? 'text-primary' : 'text-on-surface-variant'}>
                 {env.icon}
               </span>
               <div>
-                <p className="text-[14px] font-bold text-on-surface mb-1">{env.label}</p>
-                <p className="text-[11px] text-on-surface-variant leading-relaxed">{env.desc}</p>
+                <p className="text-[14px] font-bold text-on-surface mb-1">{t(`fitness_profile.environments.${env.value}`)}</p>
+                <p className="text-[11px] text-on-surface-variant leading-relaxed">{t(`fitness_profile.environments.${env.value}_desc`)}</p>
               </div>
             </button>
           );
@@ -108,7 +98,7 @@ const TrainingSetupSection: React.FC<TrainingSetupSectionProps> = ({ data, error
       {/* Section 2: Equipment */}
       {showEquipment && (
         <>
-          <SectionLabel>Thiết bị hiện có</SectionLabel>
+          <SectionLabel>{t('fitness_profile.training.equipment')}</SectionLabel>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mb-6">
             {EQUIPMENT_LIST.map((item) => {
               const selected = data.equipment.includes(item.value);
@@ -123,10 +113,7 @@ const TrainingSetupSection: React.FC<TrainingSetupSectionProps> = ({ data, error
                   )}
                 >
                   <div className="text-left">
-                    <p className="text-[13px] font-bold text-on-surface">{item.label}</p>
-                    <p className="text-[10px] uppercase tracking-widest text-on-surface-variant mt-0.5">
-                      {item.labelVi}
-                    </p>
+                    <p className="text-[13px] font-bold text-on-surface">{t(`fitness_profile.equipment.${item.value}`)}</p>
                   </div>
                   <span
                     className={cn(
@@ -162,13 +149,13 @@ const TrainingSetupSection: React.FC<TrainingSetupSectionProps> = ({ data, error
             park
           </span>
           <p className="text-[13px] text-on-surface-variant font-medium">
-            Tập ngoài trời dùng bodyweight — không cần thiết bị.
+            {t('fitness_profile.training.outdoor_msg')}
           </p>
         </div>
       )}
 
       {/* Section 3: Available Days */}
-      <SectionLabel>Ngày rảnh trong tuần</SectionLabel>
+      <SectionLabel>{t('fitness_profile.training.available_days')}</SectionLabel>
       {errors.availableDays && (
         <p className="text-[11px] text-error font-semibold mb-3" data-error="true">
           {errors.availableDays}
@@ -185,7 +172,7 @@ const TrainingSetupSection: React.FC<TrainingSetupSectionProps> = ({ data, error
               className="flex flex-col items-center gap-1.5"
             >
               <span className="text-[9px] font-black uppercase tracking-widest text-on-surface-variant">
-                {day.label}
+                {t(`fitness_profile.days.short.${day.value}`)}
               </span>
               <span
                 className={cn(
@@ -215,7 +202,7 @@ const TrainingSetupSection: React.FC<TrainingSetupSectionProps> = ({ data, error
       </div>
 
       {/* Section 4: Session Duration */}
-      <SectionLabel>Thời lượng mỗi buổi</SectionLabel>
+      <SectionLabel>{t('fitness_profile.training.duration')}</SectionLabel>
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
         {SESSION_OPTIONS.map((opt) => {
           const selected = data.sessionMinutes === opt.value;
@@ -237,7 +224,7 @@ const TrainingSetupSection: React.FC<TrainingSetupSectionProps> = ({ data, error
                   selected ? 'text-primary' : 'text-on-surface',
                 )}
               >
-                {opt.value} phút
+                {t('fitness_profile.training.minutes', { count: opt.value })}
               </span>
               <span
                 className={cn(

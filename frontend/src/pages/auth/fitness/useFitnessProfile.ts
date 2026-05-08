@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 import {
   type FitnessProfile,
@@ -31,35 +32,6 @@ const DEFAULT_FORM: FitnessProfile = {
   injuries: '',
 };
 
-// ── Validation ─────────────────────────────────────────────────────────────────
-
-function validate(data: FitnessProfile): FormErrors {
-  const errors: FormErrors = {};
-
-  if (!data.dateOfBirth) {
-    errors.dateOfBirth = 'Ngày sinh là bắt buộc';
-  } else {
-    const dob = new Date(data.dateOfBirth);
-    if (isNaN(dob.getTime()) || dob >= new Date()) {
-      errors.dateOfBirth = 'Ngày sinh không hợp lệ';
-    }
-  }
-
-  if (!data.weightKg || data.weightKg < 20 || data.weightKg > 300) {
-    errors.weightKg = 'Cân nặng phải từ 20–300 kg';
-  }
-
-  if (!data.heightCm || data.heightCm < 50 || data.heightCm > 250) {
-    errors.heightCm = 'Chiều cao phải từ 50–250 cm';
-  }
-
-  if (!data.availableDays || data.availableDays.length < 1) {
-    errors.availableDays = 'Chọn ít nhất 1 ngày rảnh';
-  }
-
-  return errors;
-}
-
 // ── isDirty check ──────────────────────────────────────────────────────────────
 // So sánh deep equal đơn giản — chỉ dùng cho primitive + array of primitives
 
@@ -86,6 +58,7 @@ function isDirtyCheck(current: FitnessProfile, original: FitnessProfile): boolea
 // ── Hook ───────────────────────────────────────────────────────────────────────
 
 export function useFitnessProfile() {
+  const { t } = useTranslation();
   const [formData, setFormData] = useState<FitnessProfile>(DEFAULT_FORM);
   const [originalData, setOriginalData] = useState<FitnessProfile>(DEFAULT_FORM);
   const [errors, setErrors] = useState<FormErrors>({});
@@ -95,6 +68,35 @@ export function useFitnessProfile() {
 
   // isDirty: true khi formData khác originalData
   const isDirty = isDirtyCheck(formData, originalData);
+
+  // ── Validation ─────────────────────────────────────────────────────────────────
+
+  const validate = useCallback((data: FitnessProfile): FormErrors => {
+    const errors: FormErrors = {};
+
+    if (!data.dateOfBirth) {
+      errors.dateOfBirth = t('fitness_profile.validation.dob_required');
+    } else {
+      const dob = new Date(data.dateOfBirth);
+      if (isNaN(dob.getTime()) || dob >= new Date()) {
+        errors.dateOfBirth = t('fitness_profile.validation.dob_invalid');
+      }
+    }
+
+    if (!data.weightKg || data.weightKg < 20 || data.weightKg > 300) {
+      errors.weightKg = t('fitness_profile.validation.weight_range');
+    }
+
+    if (!data.heightCm || data.heightCm < 50 || data.heightCm > 250) {
+      errors.heightCm = t('fitness_profile.validation.height_range');
+    }
+
+    if (!data.availableDays || data.availableDays.length < 1) {
+      errors.availableDays = t('fitness_profile.validation.days_required');
+    }
+
+    return errors;
+  }, [t]);
 
   // ── Load profile on mount ────────────────────────────────────────────────────
   useEffect(() => {
@@ -113,14 +115,14 @@ export function useFitnessProfile() {
         setFormData(normalized);
         setOriginalData(normalized);
       } catch (err: any) {
-        setToast({ type: 'error', message: err.message || 'Không thể tải hồ sơ' });
+        setToast({ type: 'error', message: err.message || t('fitness_profile.toast.load_error') });
       } finally {
         setIsLoading(false);
       }
     };
 
     load();
-  }, []);
+  }, [t]);
 
   // ── Update một field bất kỳ ──────────────────────────────────────────────────
   const updateField = useCallback(
@@ -174,13 +176,13 @@ export function useFitnessProfile() {
       setOriginalData(normalized);
       setFormData(normalized);
       setErrors({});
-      setToast({ type: 'success', message: 'Cập nhật hồ sơ thành công!' });
+      setToast({ type: 'success', message: t('fitness_profile.toast.save_success') });
     } catch (err: any) {
-      setToast({ type: 'error', message: err.message || 'Cập nhật thất bại' });
+      setToast({ type: 'error', message: err.message || t('fitness_profile.toast.save_error') });
     } finally {
       setIsSaving(false);
     }
-  }, [formData]);
+  }, [formData, validate, t]);
 
   // ── Dismiss toast ────────────────────────────────────────────────────────────
   const dismissToast = useCallback(() => setToast(null), []);
