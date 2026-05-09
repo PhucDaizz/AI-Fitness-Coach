@@ -182,6 +182,26 @@ export class WorkoutLogService {
 
 export const workoutLogService = new WorkoutLogService();
 
+export async function tryAutoCompleteByPlan(
+  userId: string,
+  planId: string,
+): Promise<void> {
+  try {
+    const [ loggedDays, totalDays ] = await Promise.all([
+      workoutLogRepository.countDistinctLoggedDays(userId, planId),
+      workoutPlanRepository.countDaysByPlan(planId),
+    ]);
+
+    if (totalDays > 0 && loggedDays >= totalDays) {
+      await workoutPlanRepository.updateStatus(planId, 'completed');
+      console.log(`Plan ${planId} auto-completed!`);
+    }
+  } catch (error) {
+    console.warn(`⚠️  Auto-complete plan ${planId} failed:`, error);
+    
+  }
+}
+
 // ─── Utilities ───────────────────────────────────────────────────────────────────
 
 /**

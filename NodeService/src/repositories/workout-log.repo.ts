@@ -5,6 +5,7 @@ import {
   IWorkoutLog,
   IExerciseLog,
 } from '../models/workout-log.model';
+import { count } from 'node:console';
 
 // ─── Lean types ─────────────────────────────────────────────────────────────────
 
@@ -117,6 +118,33 @@ export class WorkoutLogRepository {
       })
       .sort({ loggedDate: 1 })
       .lean<WorkoutLogLean[]>();
+  }
+
+  /**
+   * Đếm số ngày đã log của user cho 1 plan (dựa trên dayId)
+   * Dùng aggregate để đếm số dayId duy nhất trong các log của user cho plan đó
+   */
+  async countDistinctLoggedDays(
+    userId: string,
+    planId: string,
+  ): Promise<number> {
+    const result = await WorkoutLogModel.aggregate<{ count: number}>([
+      {
+        $match: {
+          userId,
+          planId: new Types.ObjectId(planId),
+        },
+      },
+      {
+        $group: {
+          _id: '$dayId',
+        },
+      },
+      {
+        $count: 'count',
+      },
+    ]);
+    return result[0]?.count ?? 0;
   }
 
   // ─── ExerciseLog ───────────────────────────────────────────────────────────────

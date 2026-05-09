@@ -137,6 +137,14 @@ export class WorkoutPlanRepository {
     return doc.toObject() as WorkoutDayLean;
   }
 
+  async countDaysByPlan(
+    planId: string,
+  ): Promise<number> {
+    return WorkoutDayModel.countDocuments({ 
+      planId: new Types.ObjectId(planId) 
+    });
+  }
+
   // ─── ExerciseInDay ─────────────────────────────────────────────────────────────
 
   async findExercisesByDayId(

@@ -15,6 +15,7 @@ import {
   ReplaceDayDto,
 } from '../validations/workout-plan.valid';
 import { buildPagination } from '../utils/response';
+import { tryAutoCompleteByPlan } from './workout-log.service';
 
 // ─── Response shapes ─────────────────────────────────────────────────────────────
 
@@ -211,15 +212,8 @@ export class WorkoutPlanService {
 
   /**
    * POST /workout-plans/:planId/days/:dayId/complete
-   * Quick-log: mark 1 ngày là "done" → tự động tạo WorkoutLog + ExerciseLog
-   *
-   * ExerciseLog được tạo từ dữ liệu plan:
-   *   - setsDone  = sets trong plan
-   *   - repsDone  = reps trong plan (VD: "10-12")
-   *   - weightKg  = undefined (không biết user tập nặng bao nhiêu)
-   *   - isCompleted = true
-   *
-   * Nếu ngày đã được log → trả về 409 (idempotency — tránh double-log).
+   * Quick-log toàn bộ ngày từ data plan.
+   * Sau khi tạo log → kiểm tra auto-complete plan.
    */
   async completeDay(
     userId: string,
@@ -227,7 +221,6 @@ export class WorkoutPlanService {
     dayId: string,
     dto: CompleteDayDto,
   ) {
-    // 1. Validate plan ownership
     await this._assertPlanOwner(userId, planId);
 
     // 2. Validate day thuộc plan
@@ -239,7 +232,6 @@ export class WorkoutPlanService {
       );
     }
 
-    // 3. Normalize loggedDate — mặc định hôm nay UTC nếu không truyền
     const loggedDate = normalizeToUTCMidnight(dto.loggedDate ?? new Date());
 
     // 4. Kiểm tra đã log ngày này chưa
@@ -268,7 +260,7 @@ export class WorkoutPlanService {
     const log = await workoutLogRepository.create({
       userId,
       planId: new Types.ObjectId(planId) as any,
-      dayId:  new Types.ObjectId(dayId) as any,
+      dayId: new Types.ObjectId(dayId) as any,
       loggedDate,
       difficultyFeedback: dto.difficultyFeedback as any,
       notes: dto.notes,
@@ -276,15 +268,16 @@ export class WorkoutPlanService {
 
     // 7. Tạo ExerciseLogs — lấy sets/reps từ plan, weightKg = null
     const exerciseRecords = exercises.map((ex) => ({
-      logId:       log._id as any,
-      exerciseId:  ex.exerciseId,
-      setsDone:    ex.sets,
-      repsDone:    ex.reps,   // giữ nguyên format "10-12" từ plan
-      weightKg:    undefined,
+      logId: log._id as any,
+      exerciseId: ex.exerciseId,
+      setsDone: ex.sets,
+      repsDone: ex.reps,   // giữ nguyên format "10-12" từ plan
+      weightKg: undefined,
       isCompleted: true,
     }));
 
     await workoutLogRepository.createExerciseLogs(exerciseRecords);
+    await tryAutoCompleteByPlan(userId, planId);
 
     return {
       ...log,
