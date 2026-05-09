@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import { workoutLogService, LogStatusResult } from '../services/workout-log.service';
+import { workoutLogService, LogStatusResult, ListLogResult } from '../services/workout-log.service';
 import {
   createWorkoutLogSchema,
   listWorkoutLogsQuerySchema,
@@ -75,10 +75,32 @@ export async function createWorkoutLog(
  * /workout-logs:
  *   get:
  *     tags: [Workout Log]
- *     summary: Lịch sử tập — filter theo tuần hoặc tháng
+ *     summary: Lấy lịch sử buổi tập
+ *     description: |
+ *       **Hai mode hoạt động — chỉ dùng 1 trong 2:**
+ *
+ *       **[1] planId mode** — truyền `planId`:
+ *       - Trả về TOÀN BỘ log của plan đó, không phân trang
+ *       - Sort theo `loggedDate` tăng dần (cũ → mới)
+ *       - Validate plan thuộc user hiện tại
+ *       - Response **không có** `pagination` field
+ *       - Không được dùng cùng `week` hoặc `month`
+ *
+ *       **[2] date mode** — truyền `week` hoặc `month` (hoặc không truyền gì):
+ *       - Filter theo tuần (`week`) hoặc tháng (`month`)
+ *       - Mặc định tuần hiện tại nếu không truyền tham số nào
+ *       - Có phân trang (`page` / `limit`)
+ *       - Response **có** `pagination` field
  *     security:
  *       - BearerAuth: []
  *     parameters:
+ *       - in: query
+ *         name: planId
+ *         description: |
+ *           ID của workout plan. Trả về toàn bộ log của plan đó.
+ *           Không dùng cùng week hoặc month.
+ *         schema:
+ *           type: string
  *       - in: query
  *         name: week
  *         description: Bất kỳ ngày nào trong tuần cần xem (YYYY-MM-DD). Mặc định tuần hiện tại.
@@ -102,9 +124,16 @@ export async function createWorkoutLog(
  *           default: 20
  *     responses:
  *       200:
- *         description: Danh sách log có phân trang
+ *         description: |
+ *           Danh sách log.
+ *           - planId mode: không có `pagination`
+ *           - date mode: có `pagination`
+ *       403:
+ *         description: Plan không thuộc user
+ *       404:
+ *         description: Không tìm thấy plan (khi dùng planId mode)
  *       422:
- *         description: Không được truyền cả week và month
+ *         description: Dùng planId cùng week/month, hoặc dùng cả week lẫn month
  */
 export async function listWorkoutLogs(
   req: Request,
@@ -114,8 +143,15 @@ export async function listWorkoutLogs(
   try {
     const userId = (req as AuthRequest).user.sub;
     const query = listWorkoutLogsQuerySchema.parse(req.query);
-    const { logs, pagination } = await workoutLogService.listLogs(userId, query);
-    sendSuccess(res, logs, 'Lấy lịch sử buổi tập thành công', 200, pagination);
+    const result: ListLogResult = await workoutLogService.listLogs(userId, query);
+    
+    if (result.mode === 'plan') {
+      // planId mode: trả về toàn bộ log, không có pagination
+      sendSuccess(res, result.logs, 'Lấy lịch sử buổi tập thành công', 200);
+    } else {
+      // date mode: có pagination
+      sendSuccess(res, result.logs, 'Lấy lịch sử buổi tập thành công', 200, result.pagination);
+    }
   } catch (error) {
     next(error);
   }
