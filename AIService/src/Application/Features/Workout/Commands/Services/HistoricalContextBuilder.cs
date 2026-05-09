@@ -41,6 +41,12 @@ namespace AIService.Application.Features.Workout.Commands.Services
             int okCount = allLogs.Count(l => l.DifficultyFeedback == "ok");
             int hardCount = allLogs.Count(l => l.DifficultyFeedback == "hard");
 
+            var validDurations = allLogs
+                .Where(l => l.DurationMinutes.HasValue && l.DurationMinutes.Value > 0)
+                .Select(l => l.DurationMinutes!.Value)
+                .ToList();
+            string avgDurationStr = validDurations.Any() ? $"{Math.Round(validDurations.Average(), 0)} mins" : "Not tracked";
+
             var muscleMap = new Dictionary<string, List<ExerciseHistoryEntry>>();
             var allExerciseIds = new HashSet<string>();
 
@@ -79,6 +85,7 @@ namespace AIService.Application.Features.Workout.Commands.Services
 
             sb.AppendLine("\n## 1. PERFORMANCE ANALYSIS");
             sb.AppendLine($"- Total sessions logged: {totalLogs}");
+            sb.AppendLine($"- Average duration: {avgDurationStr}");
 
             if (totalLogs > 0)
             {
@@ -128,9 +135,9 @@ namespace AIService.Application.Features.Workout.Commands.Services
                 {
                     var exName = exerciseNameMap.TryGetValue(ex.ExerciseId, out var name) ? name : "Unknown Exercise";
 
-                    var weightStr = ex.WeightKg > 0
+                    var weightStr = (ex.WeightKg.HasValue && ex.WeightKg.Value > 0)
                         ? $"@ {ex.WeightKg}kg"
-                        : "(bodyweight)";
+                        : "(bodyweight/not tracked)";
 
                     sb.AppendLine(
                         $"  [{ex.ExerciseId}] {exName}: " +

@@ -214,9 +214,34 @@ namespace AIService.Infrastructure.Services
             }
         }
 
-        public Task<List<CompletedDayLogDto>> GetRecentCompletedLogsAsync(string planId, CancellationToken ct)
+        public async Task<List<CompletedDayLogDto>> GetRecentCompletedLogsAsync(string planId, CancellationToken ct)
         {
-            throw new NotImplementedException();
+            try
+            {
+                using var client = CreateClientWithToken();
+
+                var response = await client.GetAsync($"/api/v1/workout-logs?planId={planId}", ct);
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    var errorDetail = await response.Content.ReadAsStringAsync(ct);
+                    _logger.LogWarning("[IntegrationService] Lấy log thất bại cho PlanId: {PlanId}. Status: {Status}. Detail: {Detail}",
+                        planId, response.StatusCode, errorDetail);
+
+                    return new List<CompletedDayLogDto>();
+                }
+
+                var result = await response.Content.ReadFromJsonAsync<ApiResponse<List<CompletedDayLogDto>>>(
+                    new JsonSerializerOptions { PropertyNameCaseInsensitive = true },
+                    ct);
+
+                return result?.Data ?? new List<CompletedDayLogDto>();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "[IntegrationService] Lỗi Exception khi lấy log cho PlanId: {PlanId}", planId);
+                return new List<CompletedDayLogDto>();
+            }
         }
 
         public async Task<List<string>> GetRecentCompletedPlanIdsAsync(int limit = 3, CancellationToken ct = default)

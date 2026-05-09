@@ -30,7 +30,7 @@ namespace AIService.Infrastructure.AI.Plugins
             await using var scope = _sp.CreateAsyncScope();
             var searchService = scope.ServiceProvider.GetRequiredService<IExerciseSearchService>();
 
-            var results = await searchService.SearchAsync(query, ct: ct);
+            var results = await searchService.SearchAsync(query, top: 15, ct: ct);
             return ExerciseResultFormatter.Format(results);
         }
     }

@@ -2,6 +2,7 @@
 using AIService.Application.DTOs.Workout;
 using AIService.Application.Features.Workout.Commands.GeneratePlan.Models;
 using AIService.Infrastructure.AI.Plugins;
+using AIService.Infrastructure.Services.Helpers;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -31,24 +32,26 @@ namespace AIService.Infrastructure.Services
                 "[Executor] Week {W}: searching exercises for {D} days",
                 week.WeekNumber, week.Days.Count);
 
-            // ── Bước 1: Search exercises từng ngày song song ─────
+            // ── Bước 1: Search song song 
             var searchTasks = week.Days.Select(day =>
                 SearchExercisesForDayAsync(day, profile, ct));
 
             var dayExercises = await Task.WhenAll(searchTasks);
 
-            // ── Bước 2: LLM2 sinh JSON plan cho tuần này ─────────
-            var exerciseContext = BuildExerciseContext(week.Days, dayExercises);
+            // ── Bước 2: Build context 
+            var exerciseContext = ExecutorPromptBuilder.BuildExerciseContext(week.Days, dayExercises);
+            
+            // ── Bước 3: Build safety constraints
+            var safetyBlock = ExecutorPromptBuilder.BuildSafetyBlock(profile);
+            var intensityBlock = ExecutorPromptBuilder.BuildIntensityBlock(week, profile);
+            var equipmentBlock = ExecutorPromptBuilder.BuildEquipmentBlock(profile);
+            var exerciseCount = ExecutorPromptBuilder.GetExerciseCount(profile.SessionMinutes);
 
             var history = new ChatHistory("""
                 You are a workout plan builder.
                 Create a structured workout plan JSON using ONLY exercises from the provided context.
                 NEVER invent exercise IDs. Output ONLY valid JSON, no markdown.
                 """);
-
-            var injuryWarning = profile.Injuries.Any()
-                ? $"CRITICAL: User has injuries [{string.Join(", ", profile.Injuries)}]. Avoid any exercise that stresses these areas."
-                : "";
 
             history.AddUserMessage($$"""
                 === WEEK {{week.WeekNumber}} BLUEPRINT ===
@@ -58,16 +61,28 @@ namespace AIService.Infrastructure.Services
                 === USER INFO ===
                 - Fitness Level: {{profile.FitnessLevel}}
                 - Environment: {{profile.Environment}}
-                - {{injuryWarning}}
+                - Session Duration: {{profile.SessionMinutes}} minutes
 
-                === AVAILABLE EXERCISES (Use the exact IDs provided below) ===
+                {{safetyBlock}}
+
+                {{equipmentBlock}}
+
+                {{intensityBlock}}
+
+                === AVAILABLE EXERCISES (Use ONLY IDs from this list) ===
                 {{exerciseContext}}
 
                 === STRICT RULES (CRITICAL) ===
-                1. You MUST generate an object inside the "days" array for EVERY SINGLE DAY listed in "Days to schedule". Do not skip any days!
-                2. For each day, you MUST select 4-6 exercises from the AVAILABLE EXERCISES.
-                3. DO NOT just copy the output example. You must generate the full plan for all requested days.
-                4. CRITICAL: 'exerciseId' MUST BE A STRING wrapped in double quotes (e.g., "123"). DO NOT output raw numbers!
+                1. FULL COVERAGE: Generate an entry for EVERY DAY in "Days to schedule". No skipping.
+                2. EXERCISE COUNT: Select {{exerciseCount}} per day based on session duration.
+                3. NO REDUNDANCY: Each exercise in one day must be a distinct movement pattern.
+                   If "Dumbbell Chest Press" is selected, do NOT also add "Benchpress Dumbbells".
+                4. MUSCLE FOCUS STRICT: Only select exercises matching the day's muscleFocus.
+                   Do NOT put chest exercises on a back day.
+                5. STRING IDs: exerciseId MUST be a STRING in double quotes e.g. "123". Never raw numbers.
+                6. REST SECONDS: Must be between 30 and 180. Never 0, never above 180.
+                7. REPS FORMAT: Use range "8-12" or single "15". Never empty string.
+                8. LANGUAGE: All content in the 'notes' field MUST be written strictly in Vietnamese.
 
                 === OUTPUT FORMAT ===
                 {
@@ -104,7 +119,12 @@ namespace AIService.Infrastructure.Services
             var result = await _llm.GetChatMessageContentAsync(
                 history, settings, cancellationToken: ct);
 
-            return ParseWeekPlan(result.Content!, week.WeekNumber);
+            var payload = ParseWeekPlan(result.Content!, week.WeekNumber);
+
+            // ── Bước 4: Post-parse safety validation
+            ExecutorSanitizer.ValidateAndSanitize(payload, profile, _logger);
+
+            return payload;
         }
 
         private async Task<string> SearchExercisesForDayAsync(
@@ -112,70 +132,36 @@ namespace AIService.Infrastructure.Services
             UserProfileDto profile,
             CancellationToken cancellationToken)
         {
-            var queryBuilder = new StringBuilder(day.ExerciseKeywords);
+            var query = new StringBuilder(day.ExerciseKeywords);
 
             var environment = profile.Environment?.ToLower() ?? "gym";
 
-            switch (environment)
+            switch (profile.Environment?.ToLower())
             {
                 case "home":
-                    queryBuilder.Append(" home");
-                    if (profile.Equipment != null && profile.Equipment.Any())
-                    {
-                        queryBuilder.Append($" using {string.Join(" ", profile.Equipment)}");
-                    }
-                    else
-                    {
-                        queryBuilder.Append(" bodyweight no equipment");
-                    }
+                    query.Append(profile.Equipment.Any()
+                        ? $" home {string.Join(" ", profile.Equipment.Take(3))}"
+                        : " home bodyweight no equipment");
                     break;
-
                 case "outdoor":
-                    queryBuilder.Append(" outdoor bodyweight calisthenics no equipment");
+                    query.Append(" outdoor bodyweight calisthenics");
                     break;
-
-                case "gym":
                 default:
-                    queryBuilder.Append(" gym heavy equipment");
+                    query.Append(" gym");
                     break;
             }
 
-            return await _exercisePlugin.SearchExercisesAsync(queryBuilder.ToString(), cancellationToken);
-        }
-
-        private static string BuildExerciseContext(
-            List<DayBlueprint> days,
-            string[] dayExercises)
-        {
-            var sb = new StringBuilder();
-            for (int i = 0; i < days.Count; i++)
-            {
-                sb.AppendLine($"--- {days[i].DayOfWeek.ToUpper()} ({days[i].MuscleFocus}) ---");
-                sb.AppendLine(dayExercises[i]);
-                sb.AppendLine();
-            }
-            return sb.ToString();
+            return await _exercisePlugin.SearchExercisesAsync(query.ToString(), cancellationToken);
         }
 
         private static string ComputeWeekStart(string startsAt, int weekNumber)
         {
-            if (string.IsNullOrWhiteSpace(startsAt))
-            {
-                return DateTime.UtcNow.AddDays((weekNumber - 1) * 7).ToString("yyyy-MM-dd");
-            }
-
-            bool isValidDate = DateTime.TryParseExact(
-                startsAt,
-                "yyyy-MM-dd",
+            if (DateTime.TryParseExact(startsAt, "yyyy-MM-dd",
                 System.Globalization.CultureInfo.InvariantCulture,
-                System.Globalization.DateTimeStyles.None,
-                out var startDate);
-
-            if (isValidDate)
+                System.Globalization.DateTimeStyles.None, out var start))
             {
-                return startDate.AddDays((weekNumber - 1) * 7).ToString("yyyy-MM-dd");
+                return start.AddDays((weekNumber - 1) * 7).ToString("yyyy-MM-dd");
             }
-
             return DateTime.UtcNow.AddDays((weekNumber - 1) * 7).ToString("yyyy-MM-dd");
         }
 
@@ -186,8 +172,8 @@ namespace AIService.Infrastructure.Services
                 .Replace("```", "")
                 .Trim();
 
-            _logger.LogInformation("[Executor] RAW JSON Week {W}:\n{Json}", weekNumber, cleaned);
-
+            _logger.LogInformation(
+                "[Executor] RAW JSON Week {W}:\n{Json}", weekNumber, cleaned);
 
             var options = new JsonSerializerOptions
             {
@@ -202,16 +188,10 @@ namespace AIService.Infrastructure.Services
             if (!payload.Days.Any())
                 throw new InvalidOperationException($"Tuần {weekNumber} không có ngày tập.");
 
-            foreach (var day in payload.Days)
-            {
-                day.DayOfWeek = DayOfWeekConstants.Normalize(day.DayOfWeek);
-                day.Exercises ??= new List<WorkoutExerciseDto>();
-            }
-
             payload.WeekNumber = weekNumber;
 
             _logger.LogInformation(
-                "[Executor] Week {W} OK. {D} days, {E} total exercises",
+                "[Executor] Week {W} parsed. {D} days, {E} exercises",
                 weekNumber,
                 payload.Days.Count,
                 payload.Days.Sum(d => d.Exercises?.Count ?? 0));
