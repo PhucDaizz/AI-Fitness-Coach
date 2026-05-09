@@ -262,6 +262,7 @@ export class WorkoutPlanService {
       planId: new Types.ObjectId(planId) as any,
       dayId: new Types.ObjectId(dayId) as any,
       loggedDate,
+      durationMinutes: dto.durationMinutes ?? null,
       difficultyFeedback: dto.difficultyFeedback as any,
       notes: dto.notes,
     });
@@ -272,7 +273,7 @@ export class WorkoutPlanService {
       exerciseId: ex.exerciseId,
       setsDone: ex.sets,
       repsDone: ex.reps,   // giữ nguyên format "10-12" từ plan
-      weightKg: undefined,
+      weightKg: null,
       isCompleted: true,
     }));
 
@@ -281,9 +282,9 @@ export class WorkoutPlanService {
 
     return {
       ...log,
-      dayOfWeek:   day.dayOfWeek,
+      dayOfWeek: day.dayOfWeek,
       muscleFocus: day.muscleFocus,
-      exercises:   exerciseRecords,
+      exercises: exerciseRecords,
     };
   }
 

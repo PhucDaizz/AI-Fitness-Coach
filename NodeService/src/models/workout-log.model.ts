@@ -8,7 +8,7 @@ export interface IWorkoutLog extends Document {
   planId: Types.ObjectId;
   dayId: Types.ObjectId;
   loggedDate: Date;          // Ngày thực sự tập (YYYY-MM-DD, time = 00:00:00 UTC)
-  durationMinutes?: number;
+  durationMinutes: number | null; // Tổng thời gian tập, có thể null nếu user không nhập
   difficultyFeedback?: 'easy' | 'ok' | 'hard';
   notes?: string;
   createdAt: Date;
@@ -39,7 +39,7 @@ const workoutLogSchema = new Schema<IWorkoutLog>(
     durationMinutes: {
       type: Number,
       min: 1,
-      default: undefined,
+      default: null,
     },
     difficultyFeedback: {
       type: String,
@@ -77,7 +77,7 @@ export interface IExerciseLog extends Document {
 
   setsDone: number;
   repsDone: string;          // VD: "10,10,8" — ghi thực tế từng set
-  weightKg?: number;
+  weightKg: number | null;
   isCompleted: boolean;
   createdAt: Date;
   updatedAt: Date;
@@ -111,7 +111,7 @@ const exerciseLogSchema = new Schema<IExerciseLog>(
     weightKg: {
       type: Number,
       min: 0,
-      default: undefined,
+      default: null,
     },
     isCompleted: {
       type: Boolean,

@@ -68,6 +68,11 @@ export const completeDaySchema = z.object({
   loggedDate: z.coerce
     .date({ message: 'loggedDate phải là ngày hợp lệ (YYYY-MM-DD)' })
     .optional(),
+  durationMinutes: z
+    .number({ message: 'durationMinutes phải là số' })
+    .int('durationMinutes phải là số nguyên')
+    .min(1, 'durationMinutes tối thiểu 1')
+    .optional(),
   difficultyFeedback: z
     .enum(['easy', 'ok', 'hard'], {
       message: 'difficultyFeedback phải là: easy, ok, hard',
