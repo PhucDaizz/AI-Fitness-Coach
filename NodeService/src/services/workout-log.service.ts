@@ -8,6 +8,7 @@ import {
   ListWorkoutLogsQuery,
 } from '../validations/workout-log.valid';
 import { buildPagination } from '../utils/response';
+import { PaginationMeta } from '@/types';
 
 export type LogStatusResult = {
   isLogged: boolean;
@@ -18,6 +19,10 @@ export type LogStatusResult = {
     durationMinutes: number | null;
   } | null;
 };
+
+export type ListLogResult = 
+| { mode: 'plan'; logs: object[] } 
+| { mode: 'date'; logs: object[]; pagination: PaginationMeta };
 
 // ─── WorkoutLogService ───────────────────────────────────────────────────────────
 
@@ -98,12 +103,27 @@ export class WorkoutLogService {
    * GET /workout-logs
    * Lấy lịch sử tập với filter theo tuần hoặc tháng.
    */
-  async listLogs(userId: string, query: ListWorkoutLogsQuery) {
+  async listLogs(
+    userId: string, 
+    query: ListWorkoutLogsQuery
+  ): Promise<ListLogResult> {
+    // mode: 'plan' - lấy logs của 1 plan cụ thể (không phân trang)
+    if (query.planId) {
+      const plan = await workoutPlanRepository.findById(query.planId);
+      if (!plan) {
+        throw new AppError('Không tìm thấy workout plan', HTTP_STATUS.NOT_FOUND);
+      }
+      if (plan.userId !== userId) {
+        throw new AppError('Bạn không có quyền truy cập plan này', HTTP_STATUS.FORBIDDEN);
+      }
+      const logs = await workoutLogRepository.findByPlanIdWithExercises(userId, query.planId);
+      return { mode: 'plan', logs };
+    }
+
+    // mode: 'date' với pagination
     const { page, limit } = query;
     const skip = (page - 1) * limit;
-
     const { from, to } = resolveDateRange(query);
-
     const { logs, total } = await workoutLogRepository.findLogsWithExercises(
       userId,
       from,
@@ -113,6 +133,7 @@ export class WorkoutLogService {
     );
 
     return {
+      mode: 'date',
       logs,
       pagination: buildPagination(total, page, limit),
     };

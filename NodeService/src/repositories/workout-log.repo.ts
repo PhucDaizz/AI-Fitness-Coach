@@ -57,16 +57,16 @@ export class WorkoutLogRepository {
  * Lấy log theo userId và dayId
  */
   async findByUserAndDayId(
-  userId: string,
-  dayId: string,
-): Promise<WorkoutLogLean | null> {
-  return WorkoutLogModel
-    .findOne({
-      userId,
-      dayId: new Types.ObjectId(dayId),
-    })
-    .lean<WorkoutLogLean>();
-}
+    userId: string,
+    dayId: string,
+  ): Promise<WorkoutLogLean | null> {
+    return WorkoutLogModel
+      .findOne({
+        userId,
+        dayId: new Types.ObjectId(dayId),
+      })
+      .lean<WorkoutLogLean>();
+  }
 
   async create(
     data: Partial<WorkoutLogLean>,
@@ -104,6 +104,19 @@ export class WorkoutLogRepository {
     ]);
 
     return { logs, total };
+  }
+
+  async findByPlanId(
+    userId: string,
+    planId: string,
+  ): Promise<WorkoutLogLean[]> {
+    return WorkoutLogModel
+      .find({
+        userId,
+        planId: new Types.ObjectId(planId),
+      })
+      .sort({ loggedDate: 1 })
+      .lean<WorkoutLogLean[]>();
   }
 
   // ─── ExerciseLog ───────────────────────────────────────────────────────────────
@@ -144,6 +157,20 @@ export class WorkoutLogRepository {
     );
 
     return { logs: logsWithExercises, total };
+  }
+
+  async findByPlanIdWithExercises(
+    userId: string,
+    planId: string,
+  ): Promise<WorkoutLogWithExercises[]> {
+    const logs = await this.findByPlanId(userId, planId);
+
+    return Promise.all(
+      logs.map(async (log) => {
+        const exercises = await this.findExercisesByLogId(String(log._id));
+        return { ...log, exercises };
+      }),
+    )
   }
 }
 

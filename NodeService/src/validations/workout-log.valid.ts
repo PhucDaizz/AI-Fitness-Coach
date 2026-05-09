@@ -40,6 +40,7 @@ export const createWorkoutLogSchema = z.object({
 
 export const listWorkoutLogsQuerySchema = z
   .object({
+    planId: z.string().optional(),
     // filter theo tuần: truyền bất kỳ ngày nào trong tuần → trả về log của tuần đó
     week: z.coerce.date().optional(),
     // filter theo tháng: "YYYY-MM"
@@ -53,7 +54,12 @@ export const listWorkoutLogsQuerySchema = z
   .refine(
     (data) => !(data.week && data.month),
     'Chỉ được truyền week hoặc month, không được cả hai',
-  );
+  )
+  .refine(
+    (data) => !(data.planId && (data.week || data.month)),
+    'Khi filter theo planId thì không được filter theo week hoặc month',
+  )
+  ;
 
 // ─── TypeScript types ────────────────────────────────────────────────────────────
 
