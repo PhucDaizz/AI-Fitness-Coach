@@ -1,4 +1,6 @@
 ﻿using AIService.Application.Common.Behaviours;
+using AIService.Application.Common.Interfaces;
+using AIService.Application.Features.Workout.Commands.Services;
 using FluentValidation;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
@@ -15,6 +17,8 @@ namespace AIService.Application
             services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
 
             services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehaviour<,>));
+
+            services.AddScoped<IHistoricalContextBuilder, HistoricalContextBuilder>();
 
             return services;
         }

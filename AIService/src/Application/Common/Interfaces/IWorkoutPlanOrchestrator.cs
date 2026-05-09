@@ -5,6 +5,6 @@ namespace AIService.Application.Common.Interfaces
 {
     public interface IWorkoutPlanOrchestrator
     {
-        Task<WorkoutBlueprint> CreateBlueprintAsync(UserProfileDto profile, int totalWeeks, CancellationToken ct = default);
+        Task<WorkoutBlueprint> CreateBlueprintAsync(UserProfileDto profile, int totalWeeks, string historicalContext, CancellationToken ct = default);
     }
 }

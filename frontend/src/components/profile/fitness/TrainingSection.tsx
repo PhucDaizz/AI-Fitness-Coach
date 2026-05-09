@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import {
@@ -8,6 +8,7 @@ import {
   SESSION_OPTIONS,
 } from '../../../config/onboarding.constant';
 import { cn } from '../../../lib/utils';
+import { getEquipments } from '../../../services/api/equipment.service';
 import type { FitnessProfile } from '../../../services/fitness.service';
 
 // ── Types ──────────────────────────────────────────────────────────────────────
@@ -16,6 +17,12 @@ interface TrainingSetupSectionProps {
   data: FitnessProfile;
   errors: Partial<Record<keyof FitnessProfile, string>>;
   onChange: <K extends keyof FitnessProfile>(key: K, value: FitnessProfile[K]) => void;
+}
+
+interface EquipmentItem {
+  value: string;
+  label: string;
+  labelVi: string;
 }
 
 // ── Sub-components ─────────────────────────────────────────────────────────────
@@ -32,7 +39,30 @@ const SectionLabel: React.FC<{ children: React.ReactNode }> = ({ children }) => 
 // ── Main Component ─────────────────────────────────────────────────────────────
 
 const TrainingSetupSection: React.FC<TrainingSetupSectionProps> = ({ data, errors, onChange }) => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const [equipments, setEquipments] = useState<EquipmentItem[]>(EQUIPMENT_LIST);
+
+  // Fetch dynamic equipment list from API
+  useEffect(() => {
+    const fetchEquipments = async () => {
+      try {
+        const response: any = await getEquipments({ pageNumber: 1, pageSize: 100 });
+        if (response?.items) {
+          const mapped = response.items.map((item: any) => ({
+            // Use name as value to match backend expectations, but normalized for i18n keys if needed
+            value: item.name, 
+            label: item.name,
+            labelVi: item.nameVN,
+          }));
+          setEquipments(mapped);
+        }
+      } catch (err) {
+        console.error('Failed to fetch equipments, falling back to constants:', err);
+      }
+    };
+
+    fetchEquipments();
+  }, []);
 
   const toggleEquipment = (value: string) => {
     const current = data.equipment;
@@ -100,8 +130,10 @@ const TrainingSetupSection: React.FC<TrainingSetupSectionProps> = ({ data, error
         <>
           <SectionLabel>{t('fitness_profile.training.equipment')}</SectionLabel>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mb-6">
-            {EQUIPMENT_LIST.map((item) => {
+            {equipments.map((item) => {
               const selected = data.equipment.includes(item.value);
+              const label = i18n.language === 'vi' ? item.labelVi : item.label;
+              
               return (
                 <button
                   key={item.value}
@@ -113,7 +145,7 @@ const TrainingSetupSection: React.FC<TrainingSetupSectionProps> = ({ data, error
                   )}
                 >
                   <div className="text-left">
-                    <p className="text-[13px] font-bold text-on-surface">{t(`fitness_profile.equipment.${item.value}`)}</p>
+                    <p className="text-[13px] font-bold text-on-surface">{label}</p>
                   </div>
                   <span
                     className={cn(

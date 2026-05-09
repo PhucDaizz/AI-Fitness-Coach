@@ -214,6 +214,42 @@ namespace AIService.Infrastructure.Services
             }
         }
 
+        public Task<List<CompletedDayLogDto>> GetRecentCompletedLogsAsync(string planId, CancellationToken ct)
+        {
+            throw new NotImplementedException();
+        }
+
+        public async Task<List<string>> GetRecentCompletedPlanIdsAsync(int limit = 3, CancellationToken ct = default)
+        {
+            try
+            {
+                using var client = CreateClientWithToken();
+
+                var response = await client.GetAsync($"/api/v1/workout-plans?status=completed&page=1&limit={limit}", ct);
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    var error = await response.Content.ReadAsStringAsync(ct);
+                    _logger.LogError("[WorkoutService] Node Error (GetCompletedPlans): {Status} - {Body}", response.StatusCode, error);
+                    return new List<string>();
+                }
+
+                var result = await response.Content.ReadFromJsonAsync<ApiResponse<List<WorkoutPlanSummaryDto>>>(
+                    new JsonSerializerOptions { PropertyNameCaseInsensitive = true },
+                    cancellationToken: ct);
+
+                if (result?.Data == null || !result.Data.Any())
+                    return new List<string>();
+
+                return result.Data.Select(p => p._Id).ToList();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "[WorkoutService] Lỗi khi lấy danh sách completed plans");
+                return new List<string>();
+            }
+        }
+
         public async Task<string> LogWorkoutDayCompleteAsync(string planId, string dayId, CompleteWorkoutDayPayload payload, CancellationToken ct = default)
         {
             using var client = CreateClientWithToken();

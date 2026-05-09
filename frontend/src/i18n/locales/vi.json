@@ -456,8 +456,10 @@
     "goals": {
       "weight_loss": "Giảm mỡ",
       "muscle_gain": "Tăng cơ",
+      "strength": "Sức mạnh & Sức bật",
       "endurance": "Sức bền",
-      "flexibility": "Linh hoạt",
+      "flexibility": "Linh hoạt & Di động",
+      "general_fitness": "Sức khỏe tổng quát",
       "maintenance": "Duy trì"
     },
     "genders": {
@@ -486,10 +488,17 @@
     "equipment": {
       "barbell": "Tạ đòn",
       "dumbbell": "Tạ đơn",
+      "sz_bar": "Tạ đòn cong",
       "resistance_band": "Dây kháng lực",
       "pullup_bar": "Xà đơn",
       "kettlebell": "Tạ bình",
-      "machine": "Máy tập"
+      "machine": "Máy tập",
+      "cable": "Cáp ròng rọc",
+      "bench": "Ghế tập",
+      "swiss_ball": "Bóng tập",
+      "gym_mat": "Thảm tập",
+      "bodyweight": "Không dụng cụ",
+      "other": "Khác"
     },
     "days": {
       "Monday": "Thứ 2",

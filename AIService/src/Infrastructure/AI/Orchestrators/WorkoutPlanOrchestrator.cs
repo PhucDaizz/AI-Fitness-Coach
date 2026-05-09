@@ -24,6 +24,7 @@ namespace AIService.Infrastructure.AI.Orchestrators
         public async Task<WorkoutBlueprint> CreateBlueprintAsync(
             UserProfileDto profile,
             int totalWeeks,
+            string historicalContext,
             CancellationToken cancellationToken = default)
         {
             _logger.LogInformation(
@@ -39,8 +40,8 @@ namespace AIService.Infrastructure.AI.Orchestrators
                 : profile.Equipment.Any() ? $"Home equipment available: {string.Join(", ", profile.Equipment)}"
                 : "Home workout — bodyweight only";
 
-            var injuryInfo = profile.Injuries.Any()
-                ? $"INJURIES (must avoid stress on these): {string.Join(", ", profile.Injuries)}"
+            var injuryInfo = !string.IsNullOrWhiteSpace(profile.Injuries)
+                ? $"INJURIES (must avoid stress on these): {profile.Injuries}"
                 : "No injuries";
 
             history.AddUserMessage($$"""
@@ -53,6 +54,9 @@ namespace AIService.Infrastructure.AI.Orchestrators
                 - {{equipmentInfo}}
                 - Available days: {{string.Join(", ", profile.AvailableDays)}}
                 - {{injuryInfo}}
+
+                === HISTORICAL TRAINING DATA ===
+                {{historicalContext}}
         
                 === RULES ===
                 - Only schedule on available days: {{string.Join(", ", profile.AvailableDays)}}

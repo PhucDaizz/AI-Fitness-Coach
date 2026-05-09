@@ -456,8 +456,10 @@
     "goals": {
       "weight_loss": "Fat Loss",
       "muscle_gain": "Muscle Gain",
+      "strength": "Strength & Power",
       "endurance": "Endurance",
-      "flexibility": "Flexibility",
+      "flexibility": "Flexibility & Mobility",
+      "general_fitness": "General Health",
       "maintenance": "Maintain"
     },
     "genders": {
@@ -486,10 +488,17 @@
     "equipment": {
       "barbell": "Barbell",
       "dumbbell": "Dumbbells",
+      "sz_bar": "SZ-Bar",
       "resistance_band": "Resistance Bands",
       "pullup_bar": "Pull-up Bar",
       "kettlebell": "Kettlebells",
-      "machine": "Machines"
+      "machine": "Machines",
+      "cable": "Cable",
+      "bench": "Bench",
+      "swiss_ball": "Swiss ball",
+      "gym_mat": "Gym mat",
+      "bodyweight": "Bodyweight",
+      "other": "Other"
     },
     "days": {
       "Monday": "Monday",

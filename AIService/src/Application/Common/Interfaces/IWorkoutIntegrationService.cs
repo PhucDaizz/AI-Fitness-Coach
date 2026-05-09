@@ -21,5 +21,8 @@ namespace AIService.Application.Common.Interfaces
 
         // Gửi JSON đè cả ngày
         Task<bool> ReplaceEntireDayAsync(string planId, string dayId, ReplaceDayRequestDto payload, CancellationToken ct);
+
+        Task<List<string>> GetRecentCompletedPlanIdsAsync(int limit = 3, CancellationToken ct = default);
+        Task<List<CompletedDayLogDto>> GetRecentCompletedLogsAsync(string planId, CancellationToken ct);
     }
 }

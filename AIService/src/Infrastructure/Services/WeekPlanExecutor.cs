@@ -60,7 +60,7 @@ namespace AIService.Infrastructure.Services
                 - Environment: {{profile.Environment}}
                 - {{injuryWarning}}
 
-                === AVAILABLE EXERCISES (use these Integer IDs) ===
+                === AVAILABLE EXERCISES (Use the exact IDs provided below) ===
                 {{exerciseContext}}
 
                 === STRICT RULES (CRITICAL) ===
@@ -112,14 +112,35 @@ namespace AIService.Infrastructure.Services
             UserProfileDto profile,
             CancellationToken cancellationToken)
         {
-            var enrichedQuery = profile.Environment == "home"
-                ? $"{day.ExerciseKeywords} home bodyweight"
-                : $"{day.ExerciseKeywords} gym";
+            var queryBuilder = new StringBuilder(day.ExerciseKeywords);
 
-            var result = await _exercisePlugin.SearchExercisesAsync(
-                enrichedQuery, cancellationToken);
+            var environment = profile.Environment?.ToLower() ?? "gym";
 
-            return result;
+            switch (environment)
+            {
+                case "home":
+                    queryBuilder.Append(" home");
+                    if (profile.Equipment != null && profile.Equipment.Any())
+                    {
+                        queryBuilder.Append($" using {string.Join(" ", profile.Equipment)}");
+                    }
+                    else
+                    {
+                        queryBuilder.Append(" bodyweight no equipment");
+                    }
+                    break;
+
+                case "outdoor":
+                    queryBuilder.Append(" outdoor bodyweight calisthenics no equipment");
+                    break;
+
+                case "gym":
+                default:
+                    queryBuilder.Append(" gym heavy equipment");
+                    break;
+            }
+
+            return await _exercisePlugin.SearchExercisesAsync(queryBuilder.ToString(), cancellationToken);
         }
 
         private static string BuildExerciseContext(

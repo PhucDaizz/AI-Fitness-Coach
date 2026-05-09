@@ -10,8 +10,10 @@ export const FITNESS_LEVELS = [
 export const FITNESS_GOALS = [
   { value: 'weight_loss' as const, label: 'Fat Loss', icon: '🔥' },
   { value: 'muscle_gain' as const, label: 'Muscle Gain', icon: '💪' },
+  { value: 'strength' as const, label: 'Strength & Power', icon: '⚡' },
   { value: 'endurance' as const, label: 'Endurance', icon: '⏱️' },
-  { value: 'flexibility' as const, label: 'Flexibility', icon: '🤸' },
+  { value: 'flexibility' as const, label: 'Flexibility & Mobility', icon: '🤸' },
+  { value: 'general_fitness' as const, label: 'General Health', icon: '🛡️' },
   { value: 'maintenance' as const, label: 'Maintain', icon: '🔄' },
 ];
 
@@ -121,12 +123,19 @@ export const ENVIRONMENTS = [
 ];
 
 export const EQUIPMENT_LIST = [
-  { value: 'barbell', label: 'Barbell', labelVi: 'Tạ đòn' },
-  { value: 'dumbbell', label: 'Dumbbells', labelVi: 'Tạ đơn' },
-  { value: 'resistance_band', label: 'Resistance Bands', labelVi: 'Dây kháng lực' },
-  { value: 'pullup_bar', label: 'Pull-up Bar', labelVi: 'Xà đơn' },
-  { value: 'kettlebell', label: 'Kettlebells', labelVi: 'Tạ bình' },
-  { value: 'machine', label: 'Machines', labelVi: 'Máy tập' },
+  { value: 'Barbell', label: 'Barbell', labelVi: 'Tạ đòn' },
+  { value: 'Dumbbell', label: 'Dumbbell', labelVi: 'Tạ đơn' },
+  { value: 'SZ-Bar', label: 'SZ-Bar', labelVi: 'Tạ đòn cong' },
+  { value: 'Kettlebell', label: 'Kettlebell', labelVi: 'Tạ bình' },
+  { value: 'Cable', label: 'Cable', labelVi: 'Cáp ròng rọc' },
+  { value: 'Machine', label: 'Machine', labelVi: 'Máy tập' },
+  { value: 'Bench', label: 'Bench', labelVi: 'Ghế tập' },
+  { value: 'Pull-up bar', label: 'Pull-up bar', labelVi: 'Xà đơn' },
+  { value: 'Resistance band', label: 'Resistance band', labelVi: 'Dây kháng lực' },
+  { value: 'Swiss ball', label: 'Swiss ball', labelVi: 'Bóng tập' },
+  { value: 'Gym mat', label: 'Gym mat', labelVi: 'Thảm tập' },
+  { value: 'Bodyweight', label: 'Bodyweight', labelVi: 'Không dụng cụ' },
+  { value: 'Other', label: 'Other', labelVi: 'Khác' },
 ];
 
 // ── Step 3 Schedule ───────────────────────────────────────────────

@@ -1,5 +1,6 @@
 ﻿using AIService.Application.Common.Interfaces;
 using AIService.Application.DTOs.Workout;
+using AIService.Application.Features.Workout.Commands.GeneratePlan.Helpers;
 using AIService.Application.Features.Workout.Commands.GeneratePlan.Models;
 using MediatR;
 using Microsoft.Extensions.Logging;
@@ -13,25 +14,36 @@ namespace AIService.Application.Features.Workout.Commands.GeneratePlan
         private readonly IWorkoutIntegrationService _integrationService;
         private readonly IWorkoutPlanOrchestrator _orchestrator;
         private readonly IWeekPlanExecutor _executor;
+        private readonly IHistoricalContextBuilder _historicalContextBuilder;
+        private readonly ICurrentUserService _currentUserService;
         private readonly ILogger<GenerateWorkoutPlanCommandHandler> _logger;
 
         public GenerateWorkoutPlanCommandHandler(
             IWorkoutIntegrationService integrationService, 
             IWorkoutPlanOrchestrator orchestrator,
             IWeekPlanExecutor executor,
+            IHistoricalContextBuilder historicalContextBuilder,
+            ICurrentUserService currentUserService,
             ILogger<GenerateWorkoutPlanCommandHandler> logger)
         {
             _integrationService = integrationService;
             _orchestrator = orchestrator;
             _executor = executor;
+            _historicalContextBuilder = historicalContextBuilder;
+            _currentUserService = currentUserService;
             _logger = logger;
         }
 
         public async Task<GenerateWorkoutPlanResult> Handle(GenerateWorkoutPlanCommand request, CancellationToken cancellationToken)
         {
-            var profile = await _integrationService.GetProfileAsync(cancellationToken)
-                ?? throw new UnauthorizedAccessException(
-                    "Không thể lấy hồ sơ người dùng hoặc token không hợp lệ.");
+            var profileTask = _integrationService.GetProfileAsync(cancellationToken);
+            var historyTask = _historicalContextBuilder.BuildAsync(_currentUserService.UserId!, cancellationToken);
+
+            await Task.WhenAll(profileTask, historyTask);
+
+            var profile = await profileTask
+                ?? throw new UnauthorizedAccessException("Không thể lấy hồ sơ người dùng hoặc token không hợp lệ.");
+            var historicalContext = await historyTask;
 
             if (request.TotalWeeks is < 1 or > 4)
                 throw new ArgumentException("Chỉ được tạo kế hoạch từ 1 đến 4 tuần.");
@@ -43,7 +55,7 @@ namespace AIService.Application.Features.Workout.Commands.GeneratePlan
                 "[GeneratePlan] Start. Weeks: {W}, Goal: {G}",
                 request.TotalWeeks, profile.FitnessGoal);
 
-            var blueprint = await _orchestrator.CreateBlueprintAsync(profile, request.TotalWeeks, cancellationToken);
+            var blueprint = await _orchestrator.CreateBlueprintAsync(profile, request.TotalWeeks, historicalContext, cancellationToken);
 
             _logger.LogInformation(
                 "[GeneratePlan] Blueprint done. Processing {W} weeks in parallel",
@@ -100,7 +112,7 @@ namespace AIService.Application.Features.Workout.Commands.GeneratePlan
             var payload = weekPayloads[0];
             payload.PlanType = "weekly";
 
-            NormalizeDays(payload);
+            WorkoutDateHelper.NormalizeDays(payload);
 
             var planId = await _integrationService.CreatePlanToNodeAsync(
                 payload, cancellationToken);
@@ -128,7 +140,7 @@ namespace AIService.Application.Features.Workout.Commands.GeneratePlan
                 {
                     day.DayOfWeek = DayOfWeekConstants.Normalize(day.DayOfWeek);
                     day.OrderIndex = globalOrder++;
-                    day.ScheduledDate = ResolveDayDate(weekStart, day.DayOfWeek)
+                    day.ScheduledDate = WorkoutDateHelper.ResolveDayDate(weekStart, day.DayOfWeek)
                         .ToString("yyyy-MM-dd");
 
                     for (int i = 0; i < day.Exercises.Count; i++)
@@ -154,38 +166,5 @@ namespace AIService.Application.Features.Workout.Commands.GeneratePlan
             return new List<string> { planId ?? "" };
         }
 
-        private static void NormalizeDays(WorkoutPlanPayloadDto payload)
-        {
-            int order = 1;
-            foreach (var day in payload.Days.OrderBy(d => d.OrderIndex))
-            {
-                day.DayOfWeek = DayOfWeekConstants.Normalize(day.DayOfWeek);
-                day.OrderIndex = order++;
-                for (int i = 0; i < day.Exercises.Count; i++)
-                    day.Exercises[i].OrderIndex = i + 1;
-            }
-        }
-
-        private static DateTime ResolveDayDate(DateTime weekStart, string dayOfWeek)
-        {
-            var dayIndex = new Dictionary<string, int>
-            {
-                ["Monday"] = 1,
-                ["Tuesday"] = 2,
-                ["Wednesday"] = 3,
-                ["Thursday"] = 4,
-                ["Friday"] = 5,
-                ["Saturday"] = 6,
-                ["Sunday"] = 0
-            };
-
-            var startDay = (int)weekStart.DayOfWeek; 
-            var targetDay = dayIndex[dayOfWeek];
-
-            var diff = targetDay - startDay;
-            if (diff < 0) diff += 7;
-
-            return weekStart.AddDays(diff).Date;
-        }
     }
 }
