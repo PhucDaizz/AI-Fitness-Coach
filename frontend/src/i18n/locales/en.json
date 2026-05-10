@@ -242,7 +242,26 @@
       "ai_instruction": "AI Instruction",
       "loading_exercise": "Loading Exercise...",
       "incomplete": "Protocol structure incomplete.",
-      "loading_data": "Deciphering Protocol Data..."
+      "loading_data": "Decoding plan data...",
+      "calendar": {
+        "title": "Execution Schedule",
+        "completed": "Completed",
+        "missed": "Missed",
+        "upcoming": "Upcoming",
+        "today": "Today"
+      },
+      "training_session": {
+        "start": "Start Training",
+        "next": "Next Exercise",
+        "finish": "Finish Workout",
+        "timer": "Timer",
+        "rest_timer": "Rest Timer",
+        "sets_done": "Sets Done",
+        "exercise": "Exercise",
+        "total_exercises": "Total Exercises",
+        "resume": "Resume Session",
+        "quit": "Quit Session"
+      }
     }
   },
   "exercises": {

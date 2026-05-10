@@ -45,3 +45,7 @@ export const submitWorkoutLog = async (logData) => {
 export const getWorkoutLogStatus = async (planId, dayId) => {
   return await handleResponse(progressApi.get(`v1/workout-plans/${planId}/days/${dayId}/log-status`));
 };
+
+export const getWorkoutPlanCalendar = async (planId) => {
+  return await handleResponse(progressApi.get(`v1/workout-plans/${planId}/calendar`));
+};

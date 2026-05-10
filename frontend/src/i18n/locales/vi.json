@@ -242,7 +242,26 @@
       "ai_instruction": "Chỉ dẫn AI",
       "loading_exercise": "Đang tải bài tập...",
       "incomplete": "Cấu trúc lộ trình không đầy đủ.",
-      "loading_data": "Đang giải mã dữ liệu lộ trình..."
+      "loading_data": "Đang giải mã dữ liệu lộ trình...",
+      "calendar": {
+        "title": "Lịch trình thực thi",
+        "completed": "Đã tập",
+        "missed": "Bỏ lỡ",
+        "upcoming": "Sắp tới",
+        "today": "Hôm nay"
+      },
+      "training_session": {
+        "start": "Bắt đầu luyện tập",
+        "next": "Bài tiếp theo",
+        "finish": "Hoàn tất buổi tập",
+        "timer": "Thời gian",
+        "rest_timer": "Thời gian nghỉ",
+        "sets_done": "Hiệp đã tập",
+        "exercise": "Bài tập",
+        "total_exercises": "Tổng số bài",
+        "resume": "Tiếp tục buổi tập",
+        "quit": "Hủy buổi tập"
+      }
     }
   },
   "exercises": {

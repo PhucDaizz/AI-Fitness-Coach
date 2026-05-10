@@ -1,20 +1,35 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { getWorkoutPlanDays, deleteWorkoutPlan } from '../../services/api/workoutPlan.service';
+import { getWorkoutPlanDays, deleteWorkoutPlan, getWorkoutPlanCalendar } from '../../services/api/workoutPlan.service';
 import { getExerciseById } from '../../services/api/exercise.service';
 import CustomerLayout from '../../components/layout/CustomerLayout';
 import ExerciseDetailModal from '../../components/customer/ExerciseDetailModal';
+import WorkoutLogForm from '../../components/customer/WorkoutLogForm';
+import ExecutionCalendar from '../../components/customer/ExecutionCalendar';
+import TrainingSessionOverlay from '../../components/customer/TrainingSessionOverlay';
+import { cn } from '../../lib/utils';
 
 const WorkoutPlanDetailsPage = () => {
   const { t, i18n } = useTranslation();
   const { planId } = useParams();
   const navigate = useNavigate();
   const [days, setDays] = useState([]);
+  const [calendar, setCalendar] = useState([]);
   const [exerciseDetails, setExerciseDetails] = useState({});
   const [loading, setLoading] = useState(true);
   const [isDeleting, setIsDeleting] = useState(false);
   const [activeDayIndex, setActiveDayIndex] = useState(0);
+
+  // Training Session States
+  const [isTraining, setIsTraining] = useState(false);
+  const [currentExerciseIndex, setCurrentExerciseIndex] = useState(0);
+  const [isResting, setIsResting] = useState(false);
+  const [timer, setTimer] = useState(0); // Total workout time
+  const [restTimer, setRestTimer] = useState(0); // Current rest time
+  const [showLogForm, setShowLogForm] = useState(false);
+  const timerRef = useRef(null);
+  const restTimerRef = useRef(null);
 
   // Modal states
   const [selectedExercise, setSelectedExercise] = useState(null);
@@ -30,6 +45,105 @@ const WorkoutPlanDetailsPage = () => {
   useEffect(() => {
     fetchPlanDetails();
   }, [planId]);
+
+  // Handle local storage for training state
+  useEffect(() => {
+    const savedState = localStorage.getItem(`training_state_${planId}`);
+    if (savedState) {
+      const parsed = JSON.parse(savedState);
+      if (parsed.planId === planId && parsed.isTraining) {
+        setIsTraining(true);
+        setCurrentExerciseIndex(parsed.currentExerciseIndex);
+        setTimer(parsed.timer);
+      }
+    }
+  }, [planId]);
+
+  useEffect(() => {
+    if (isTraining) {
+      localStorage.setItem(`training_state_${planId}`, JSON.stringify({
+        planId,
+        isTraining,
+        currentExerciseIndex,
+        timer
+      }));
+    } else if (!showLogForm) {
+      localStorage.removeItem(`training_state_${planId}`);
+    }
+  }, [isTraining, currentExerciseIndex, timer, planId, showLogForm]);
+
+  // Workout Timer
+  useEffect(() => {
+    if (isTraining && !showLogForm) {
+      timerRef.current = setInterval(() => {
+        setTimer(prev => prev + 1);
+      }, 1000);
+    } else {
+      clearInterval(timerRef.current);
+    }
+    return () => clearInterval(timerRef.current);
+  }, [isTraining, showLogForm]);
+
+  // Rest Timer
+  useEffect(() => {
+    if (isResting && restTimer > 0) {
+      restTimerRef.current = setInterval(() => {
+        setRestTimer(prev => prev - 1);
+      }, 1000);
+    } else if (restTimer === 0) {
+      setIsResting(false);
+      clearInterval(restTimerRef.current);
+    }
+    return () => clearInterval(restTimerRef.current);
+  }, [isResting, restTimer]);
+
+  const fetchPlanDetails = async () => {
+    try {
+      setLoading(true);
+      const [daysData, calendarData] = await Promise.all([
+        getWorkoutPlanDays(planId),
+        getWorkoutPlanCalendar(planId)
+      ]);
+      
+      setDays(daysData || []);
+      
+      const sortedCalendar = (calendarData || []).sort((a, b) => 
+        new Date(a.scheduledDate).getTime() - new Date(b.scheduledDate).getTime()
+      );
+      setCalendar(sortedCalendar);
+
+      const exerciseIds = [...new Set(
+        (daysData || []).flatMap(day => day.exercises.map(ex => ex.exerciseId))
+      )];
+
+      const details = {};
+      await Promise.all(exerciseIds.map(async (id) => {
+        try {
+          const exData = await getExerciseById(id);
+          details[id] = exData;
+        } catch (err) {
+          console.error(`Failed to fetch exercise ${id}`, err);
+        }
+      }));
+      setExerciseDetails(details);
+
+      const todayStr = new Date().toISOString().split('T')[0];
+      const todayIndex = calendarData.findIndex(item => item.scheduledDate === todayStr);
+      if (todayIndex !== -1) {
+        setActiveDayIndex(todayIndex);
+      } else {
+        const nextIndex = calendarData.findIndex(item => item.status === 'upcoming' || item.status === 'missed');
+        if (nextIndex !== -1) {
+          setActiveDayIndex(nextIndex);
+        }
+      }
+
+    } catch (err) {
+      console.error("Failed to fetch plan details", err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleDeletePlan = async () => {
     if (!window.confirm(t('workout_plans.details.confirm_delete'))) {
@@ -48,30 +162,51 @@ const WorkoutPlanDetailsPage = () => {
     }
   };
 
-  const fetchPlanDetails = async () => {
-    try {
-      setLoading(true);
-      const daysData = await getWorkoutPlanDays(planId);
-      setDays(daysData || []);
+  const handleStartTraining = () => {
+    setIsTraining(true);
+    setCurrentExerciseIndex(0);
+    setTimer(0);
+  };
 
-      const exerciseIds = [...new Set(
-        (daysData || []).flatMap(day => day.exercises.map(ex => ex.exerciseId))
-      )];
+  const handleNextExercise = () => {
+    const currentDayItem = days.find(d => d._id === calendar[activeDayIndex].dayId);
+    if (currentExerciseIndex < currentDayItem.exercises.length - 1) {
+      const restTime = currentDayItem.exercises[currentExerciseIndex].restSeconds || 60;
+      setRestTimer(restTime);
+      setIsResting(true);
+      setCurrentExerciseIndex(prev => prev + 1);
+    } else {
+      handleFinishTraining();
+    }
+  };
 
-      const details = {};
-      await Promise.all(exerciseIds.map(async (id) => {
-        try {
-          const exData = await getExerciseById(id);
-          details[id] = exData;
-        } catch (err) {
-          console.error(`Failed to fetch exercise ${id}`, err);
-        }
-      }));
-      setExerciseDetails(details);
-    } catch (err) {
-      console.error("Failed to fetch plan details", err);
-    } finally {
-      setLoading(false);
+  const handleFinishTraining = () => {
+    setIsTraining(false);
+    setShowLogForm(true);
+    localStorage.removeItem(`training_state_${planId}`);
+  };
+
+  const formatTime = (seconds) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  const getStatusColor = (status) => {
+    switch (status) {
+      case 'completed': return 'bg-primary text-on-primary';
+      case 'missed': return 'bg-error text-on-error';
+      case 'upcoming': return 'bg-surface-container-highest text-on-surface-variant';
+      default: return 'bg-surface-container text-on-surface-variant';
+    }
+  };
+
+  const getStatusIcon = (status) => {
+    switch (status) {
+      case 'completed': return 'check_circle';
+      case 'missed': return 'cancel';
+      case 'upcoming': return 'schedule';
+      default: return 'event';
     }
   };
 
@@ -86,7 +221,10 @@ const WorkoutPlanDetailsPage = () => {
     );
   }
 
-  const currentDay = days[activeDayIndex];
+  const currentCalendarItem = calendar[activeDayIndex];
+  const currentDay = currentCalendarItem 
+    ? days.find(d => d._id === currentCalendarItem.dayId)
+    : days[0];
 
   return (
     <CustomerLayout title="KINETIC AI" fullWidth={false}>
@@ -99,16 +237,28 @@ const WorkoutPlanDetailsPage = () => {
           {t('workout_plans.details.back')}
         </button>
 
-        <button
-          onClick={handleDeletePlan}
-          disabled={isDeleting}
-          className="flex items-center gap-2 bg-error/10 border border-error/20 px-4 py-2 rounded-full text-error hover:bg-error hover:text-white transition-all font-black uppercase tracking-widest text-[8px] disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          <span className="material-symbols-outlined text-xs">
-            {isDeleting ? 'sync' : 'delete'}
-          </span>
-          {isDeleting ? t('workout_plans.details.terminating') : t('workout_plans.details.terminate')}
-        </button>
+        <div className="flex gap-3">
+          {currentDay && currentCalendarItem.status !== 'completed' && (
+            <button
+              onClick={handleStartTraining}
+              className="flex items-center gap-2 bg-primary text-on-primary px-6 py-2.5 rounded-full hover:bg-primary/90 transition-all font-black uppercase tracking-widest text-[10px] shadow-[0_0_20px_rgba(177,255,36,0.3)]"
+            >
+              <span className="material-symbols-outlined text-sm">play_arrow</span>
+              {t('workout_plans.details.training_session.start')}
+            </button>
+          )}
+
+          <button
+            onClick={handleDeletePlan}
+            disabled={isDeleting}
+            className="flex items-center gap-2 bg-error/10 border border-error/20 px-4 py-2 rounded-full text-error hover:bg-error hover:text-white transition-all font-black uppercase tracking-widest text-[8px] disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <span className="material-symbols-outlined text-xs">
+              {isDeleting ? 'sync' : 'delete'}
+            </span>
+            {isDeleting ? t('workout_plans.details.terminating') : t('workout_plans.details.terminate')}
+          </button>
+        </div>
       </div>
 
       <header className="mb-10">
@@ -120,39 +270,76 @@ const WorkoutPlanDetailsPage = () => {
         </p>
       </header>
 
-      {/* Day Navigation */}
-      <div className="flex gap-3 mb-10 overflow-x-auto no-scrollbar pb-4 border-b border-white/5">
-        {days.map((day, index) => (
-          <button
-            key={day._id}
-            onClick={() => setActiveDayIndex(index)}
-            className={`flex flex-col items-start min-w-[120px] p-4 rounded-2xl transition-all border ${activeDayIndex === index
-              ? 'bg-primary/10 border-primary/30 text-primary'
-              : 'bg-white/5 border-white/5 text-on-surface-variant hover:border-white/10'
-              }`}
-          >
-            <span className="text-[10px] font-black uppercase tracking-widest mb-1">
-              {t('workout_plans.details.day')} {day.orderIndex}
-            </span>
-            <span className="text-sm font-bold truncate w-full">{day.dayOfWeek}</span>
-          </button>
-        ))}
-      </div>
+      {/* Execution Schedule / Calendar */}
+      <ExecutionCalendar 
+        calendar={calendar}
+        activeDayIndex={activeDayIndex}
+        setActiveDayIndex={setActiveDayIndex}
+        t={t}
+        getStatusColor={getStatusColor}
+        getStatusIcon={getStatusIcon}
+      />
+
+      {showLogForm && currentDay && (
+        <div className="fixed inset-0 z-[110] bg-black/80 backdrop-blur-md flex items-center justify-center p-6 animate-in fade-in duration-500">
+           <div className="relative w-full max-w-2xl bg-surface-container rounded-[2.5rem] border border-white/10 p-8 overflow-y-auto max-h-[90vh]">
+              <button 
+                onClick={() => setShowLogForm(false)}
+                className="absolute top-6 right-6 text-on-surface-variant hover:text-white"
+              >
+                <span className="material-symbols-outlined">close</span>
+              </button>
+              <WorkoutLogForm 
+                planId={planId} 
+                dayId={currentDay._id} 
+                scheduledDate={currentCalendarItem.scheduledDate} 
+              />
+           </div>
+        </div>
+      )}
+
+      {isTraining && currentDay && (
+        <TrainingSessionOverlay 
+          currentDay={currentDay}
+          currentExerciseIndex={currentExerciseIndex}
+          isResting={isResting}
+          timer={timer}
+          restTimer={restTimer}
+          exerciseDetails={exerciseDetails}
+          t={t}
+          formatTime={formatTime}
+          setRestTimer={setRestTimer}
+          setIsTraining={setIsTraining}
+          handleNextExercise={handleNextExercise}
+          openExerciseDetail={openExerciseDetail}
+        />
+      )}
 
       {currentDay ? (
-        <div className="space-y-10">
+        <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
           <div className="bg-surface-container rounded-[2.5rem] p-8 border border-white/5 relative overflow-hidden">
             <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 blur-[100px]"></div>
             <div className="relative z-10">
-              <div className="flex items-center gap-3 mb-4">
-                <span className="material-symbols-outlined text-primary">target</span>
-                <h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-primary">{t('workout_plans.details.bio_focus')}</h2>
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-3">
+                  <span className="material-symbols-outlined text-primary">target</span>
+                  <h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-primary">{t('workout_plans.details.bio_focus')}</h2>
+                </div>
+                <div className={cn(
+                  "px-4 py-1.5 rounded-full flex items-center gap-2 border border-white/5",
+                  getStatusColor(currentCalendarItem.status)
+                )}>
+                   <span className="material-symbols-outlined text-xs">{getStatusIcon(currentCalendarItem.status)}</span>
+                   <span className="text-[9px] font-black uppercase tracking-widest">
+                     {t(`workout_plans.details.calendar.${currentCalendarItem.status}`)}
+                   </span>
+                </div>
               </div>
               <h3 className="text-3xl font-black text-white italic uppercase tracking-tighter mb-4">
                 {currentDay.muscleFocus}
               </h3>
               <p className="text-on-surface-variant text-sm font-medium opacity-70 max-w-2xl leading-relaxed">
-                {t('workout_plans.details.scheduled')}: {new Date(currentDay.scheduledDate).toLocaleDateString(i18n.language === 'vi' ? 'vi-VN' : 'en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+                {t('workout_plans.details.scheduled')}: {new Date(currentCalendarItem.scheduledDate).toLocaleDateString(i18n.language === 'vi' ? 'vi-VN' : 'en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
               </p>
             </div>
           </div>
