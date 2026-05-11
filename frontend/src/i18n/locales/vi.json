@@ -60,7 +60,8 @@
       "or_continue": "Hoặc tiếp tục với",
       "google_login": "Đăng nhập với Google",
       "privacy": "Chính sách bảo mật",
-      "terms": "Điều khoản dịch vụ"
+      "terms": "Điều khoản dịch vụ",
+      "account_inactive": "Tài khoản của bạn đã bị khóa. Vui lòng liên hệ quản trị viên để biết thêm chi tiết."
     },
     "signup": {
       "back": "Quay lại",

@@ -60,7 +60,8 @@
       "or_continue": "Or continue with",
       "google_login": "Login with Google",
       "privacy": "Privacy Policy",
-      "terms": "Terms of Service"
+      "terms": "Terms of Service",
+      "account_inactive": "Your account has been locked. Please contact the administrator for further details."
     },
     "signup": {
       "back": "Back",

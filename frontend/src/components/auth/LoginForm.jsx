@@ -28,7 +28,11 @@ const LoginForm = () => {
       token = localStorage.getItem('token');
       console.log('Login successful, token:', token);
     } catch (error) {
-      setError(error.message || t('auth.login.error_failed'));
+      if (error.message === "The user account is inactive.") {
+        setError(t('auth.login.account_inactive'));
+      } else {
+        setError(error.message || t('auth.login.error_failed'));
+      }
       setLoading(false);
       return;
     }

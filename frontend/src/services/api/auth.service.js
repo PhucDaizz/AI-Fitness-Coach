@@ -61,6 +61,14 @@ export const getCurrentUser = async () => {
   return await handleResponse(authApi.get('/Auth/me'));
 };
 
+export const getUsers = async (params) => {
+  return await handleResponse(authApi.get('/Auth', { params }));
+};
+
+export const updateUserStatus = async (userId, isActive) => {
+  return await handleResponse(authApi.put(`/Auth/${userId}/status`, { isActive }));
+};
+
 export const updateProfile = async (profileData) => {
   return await handleResponse(authApi.put('/Auth/profile', profileData));
 };

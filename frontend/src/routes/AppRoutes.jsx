@@ -12,6 +12,7 @@ import ExercisePage from '../pages/admin/ExercisePage';
 import MealPage from '../pages/admin/MealPage';
 import MuscleGroupPage from '../pages/admin/MuscleGroupPage';
 import SystemStatistics from '../pages/admin/SystemStatistics';
+import UserManagementPage from '../pages/admin/UserManagementPage';
 import ForgotPassword from '../pages/auth/ForgotPassword';
 import Login from '../pages/auth/Login';
 import OAuthCallback from '../pages/auth/OAuthCallback';
@@ -138,6 +139,14 @@ const AppRoutes = () => {
           element={
             <ProtectedRoute allowedRoles={['SysAdmin', 'Admin']}>
               <MealPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/users"
+          element={
+            <ProtectedRoute allowedRoles={['SysAdmin', 'Admin']}>
+              <UserManagementPage />
             </ProtectedRoute>
           }
         />
