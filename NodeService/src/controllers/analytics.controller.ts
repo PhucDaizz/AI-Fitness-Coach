@@ -231,3 +231,84 @@ export async function getHeatmap(
     next(error);
   }
 }
+
+// ─── GET /analytics/admin/overview ───────────────────────────────────────────────
+/**
+ * @openapi
+ * /analytics/admin/overview:
+ *   get:
+ *     tags: [Analytics]
+ *     summary: "[ADMIN] Thống kê tổng hợp toàn hệ thống"
+ *     description: |
+ *       Chỉ dành cho tài khoản admin. Trả về 3 nhóm metric:
+ *
+ *       **1. difficultyDistribution** — Tỷ lệ đánh giá độ khó của toàn bộ users.
+ *       Chỉ tính WorkoutLog có điền difficultyFeedback. Percentage = count / total × 100.
+ *
+ *       **2. planCompletion** — Tỷ lệ hoàn thành kế hoạch.
+ *       rate = số plan có status=completed / tổng plan (không tính đã xóa).
+ *
+ *       **3. avgSetsPerUser** — Trung bình tổng số set tập trên mỗi người dùng.
+ *       Chỉ tính user có ít nhất 1 ExerciseLog. Làm tròn 1 chữ số thập phân.
+ *     security:
+ *       - BearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Admin overview stats
+ *         content:
+ *           application/json:
+ *             schema:
+ *               allOf:
+ *                 - $ref: '#/components/schemas/ApiSuccess'
+ *                 - type: object
+ *                   properties:
+ *                     data:
+ *                       type: object
+ *                       properties:
+ *                         difficultyDistribution:
+ *                           type: object
+ *                           properties:
+ *                             easy:
+ *                               type: object
+ *                               properties:
+ *                                 count: { type: integer, example: 120 }
+ *                                 percentage: { type: integer, example: 30 }
+ *                             ok:
+ *                               type: object
+ *                               properties:
+ *                                 count: { type: integer, example: 280 }
+ *                                 percentage: { type: integer, example: 70 }
+ *                             hard:
+ *                               type: object
+ *                               properties:
+ *                                 count: { type: integer, example: 100 }
+ *                                 percentage: { type: integer, example: 25 }
+ *                             total:
+ *                               type: integer
+ *                               example: 400
+ *                         planCompletion:
+ *                           type: object
+ *                           properties:
+ *                             completed: { type: integer, example: 85 }
+ *                             active:    { type: integer, example: 40 }
+ *                             archived:  { type: integer, example: 25 }
+ *                             total:     { type: integer, example: 150 }
+ *                             rate:      { type: integer, example: 57 }
+ *                         avgSetsPerUser:
+ *                           type: number
+ *                           example: 142.5
+ *       403:
+ *         description: Không có quyền admin
+ */
+export async function getAdminOverview(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): Promise<void> {
+  try {
+    const data = await analyticsService.getAdminOverview();
+    sendSuccess(res, data, 'Thống kê tổng hợp hệ thống');
+  } catch (error) {
+    next(error);
+  }
+}

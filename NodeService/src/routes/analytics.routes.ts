@@ -1,9 +1,11 @@
+import { adminOnly } from './../middlewares/auth.middleware';
 import { Router } from 'express';
 import {
   getSummary,
   getWeeklySessions,
   getMuscleVolume,
   getHeatmap,
+  getAdminOverview,
 } from '../controllers/analytics.controller';
 
 const router = Router();
@@ -23,5 +25,8 @@ router.get('/muscle-volume', getMuscleVolume);
 
 // GET /analytics/heatmap         — heatmap theo ngày tập
 router.get('/heatmap', getHeatmap);
+
+// GET /analytics/admin/overview    — thống kê tổng hợp hệ thống (admin)
+router.get('/admin/overview', adminOnly, getAdminOverview);
 
 export default router;

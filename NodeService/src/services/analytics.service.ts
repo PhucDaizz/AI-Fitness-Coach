@@ -1,4 +1,9 @@
-import { analyticsRepository, MuscleVolumeEntry } from '../repositories/analytics.repo';
+import { 
+  analyticsRepository, 
+  DifficultyDistributionResult, 
+  MuscleVolumeEntry, 
+  PlanCompletionResult 
+} from '../repositories/analytics.repo';
 import { streakService } from './streak.service';
 import { workoutPlanRepository } from '../repositories/workout-plan.repo';
 import { exerciseClient } from '../utils/exercise.client';
@@ -17,6 +22,12 @@ export type WeeklySessionsResult = {
   weekEnd: string;     // "YYYY-MM-DD"
   weekLabel: string;   // "W1"…"W4"
   sessions: number;
+};
+
+export type AdminOverviewResult = {
+  difficultyDistribution: DifficultyDistributionResult;
+  planCompletion: PlanCompletionResult;
+  avgSetsPerUser: number;
 };
 
 // ─── AnalyticsService ─────────────────────────────────────────────────────────────
@@ -103,9 +114,6 @@ export class AnalyticsService {
    *   - Repo   : chỉ làm MongoDB, không biết .NET tồn tại
    *   - Client : chỉ làm HTTP + in-memory cache, không biết MongoDB
    *   - Service: orchestrate + merge kết quả từ 2 nguồn
-   *
-   * Phase 6 TODO: thay in-memory cache trong ExerciseClient bằng Redis TTL 1h
-   * → chỉ sửa exercise.client.ts, không đụng service này
    */
   async getMuscleVolume(userId: string): Promise<MuscleVolumeEntry[]> {
     // Step 1: volume per exerciseId từ MongoDB
@@ -151,6 +159,23 @@ export class AnalyticsService {
     from.setUTCHours(0, 0, 0, 0);
 
     return analyticsRepository.getDailySessions(userId, from, to);
+  }
+
+  /**
+   * GET /analytics/admin-overview
+   */
+  async getAdminOverview(): Promise<AdminOverviewResult> {
+    const [difficultyDistribution, planCompletion, avgSetsPerUser] = await Promise.all([
+      analyticsRepository.getDifficultyDistribution(),
+      analyticsRepository.getPlanCompletionRate(),
+      analyticsRepository.getAvgSetsPerUser(),
+    ]);
+ 
+    return {
+      difficultyDistribution,
+      planCompletion,
+      avgSetsPerUser,
+    };
   }
 }
 
