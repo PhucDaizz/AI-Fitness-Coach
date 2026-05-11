@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
-const GeneratePlanModal = ({ isOpen, onClose, onGenerate, isGenerating }) => {
+const GeneratePlanModal = ({ isOpen, onClose, onGenerate, onAbort, isGenerating }) => {
   const { t } = useTranslation();
   const [totalWeeks, setTotalWeeks] = useState(4);
   const [startsAt, setStartsAt] = useState(new Date().toISOString().split('T')[0]);
@@ -30,6 +30,13 @@ const GeneratePlanModal = ({ isOpen, onClose, onGenerate, isGenerating }) => {
     }
   };
 
+  const handleCancel = () => {
+    if (isGenerating && onAbort) {
+      onAbort();
+    }
+    onClose();
+  };
+
   if (!isOpen) return null;
 
   return (
@@ -37,7 +44,7 @@ const GeneratePlanModal = ({ isOpen, onClose, onGenerate, isGenerating }) => {
       {/* Backdrop */}
       <div 
         className="absolute inset-0 bg-black/80 backdrop-blur-xl transition-opacity duration-300"
-        onClick={isGenerating || successData ? undefined : onClose}
+        onClick={successData ? undefined : handleCancel}
       />
       
       {/* Modal Content */}
@@ -126,14 +133,12 @@ const GeneratePlanModal = ({ isOpen, onClose, onGenerate, isGenerating }) => {
                       </>
                     )}
                  </button>
-                 {!isGenerating && (
-                   <button
-                     onClick={onClose}
-                     className="w-full mt-3 py-3 text-[10px] font-black uppercase tracking-widest text-on-surface-variant hover:text-white transition-colors"
-                   >
-                     {t('workout_plans.modal.abort_btn')}
-                   </button>
-                 )}
+                 <button
+                   onClick={handleCancel}
+                   className="w-full mt-3 py-3 text-[10px] font-black uppercase tracking-widest text-on-surface-variant hover:text-white transition-colors"
+                 >
+                   {isGenerating ? t('workout_plans.modal.abort_btn') : t('workout_plans.modal.abort_btn_simple')}
+                 </button>
               </div>
             </div>
           </>

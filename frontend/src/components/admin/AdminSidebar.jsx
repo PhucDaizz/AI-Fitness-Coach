@@ -9,7 +9,7 @@ const AdminSidebar = () => {
     { icon: 'dashboard', label: 'Dashboard', path: '/admin' },
     { icon: 'category', label: 'Exercise Category', path: '/admin/exercise-category' },
     { icon: 'inventory_2', label: 'Equipment', path: '/admin/equipment' },
-    { icon: 'build', label: 'Maintenance', path: '#' },
+    { icon: 'build', label: 'Maintenance', path: '/admin/maintenance' },
     { icon: 'group', label: 'User Management', path: '/admin/users' },
     { icon: 'restaurant', label: 'Meal Management', path: '/admin/meals' },
     { icon: 'accessibility_new', label: 'Muscle Group', path: '/admin/muscle-group' },

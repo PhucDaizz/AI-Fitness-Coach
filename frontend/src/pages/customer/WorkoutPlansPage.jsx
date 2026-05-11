@@ -35,20 +35,38 @@ const WorkoutPlansPage = () => {
     }
   };
 
+  const abortControllerRef = React.useRef(null);
+
   const handleGeneratePlan = async (data) => {
     try {
       setIsGenerating(true);
-      const result = await generateWorkoutPlan(data);
+      
+      // Initialize new AbortController
+      abortControllerRef.current = new AbortController();
+      
+      const result = await generateWorkoutPlan(data, abortControllerRef.current.signal);
+      
       // Refresh active plans in background
       setStatus('active');
       fetchPlans();
-      return result; // Return the data so the modal can show success summary
+      return result; 
     } catch (err) {
+      if (err.name === 'CanceledError' || err.name === 'AbortError') {
+        console.log('Generation aborted by user');
+        return;
+      }
       console.error("Failed to generate plan", err);
       alert(err.message || t('workout_plans.errors.generate_fail'));
-      throw err; // Re-throw so modal doesn't transition to success state
+      throw err; 
     } finally {
       setIsGenerating(false);
+      abortControllerRef.current = null;
+    }
+  };
+
+  const handleAbortGeneration = () => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
     }
   };
 
@@ -168,6 +186,7 @@ const WorkoutPlansPage = () => {
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onGenerate={handleGeneratePlan}
+        onAbort={handleAbortGeneration}
         isGenerating={isGenerating}
       />
     </CustomerLayout>

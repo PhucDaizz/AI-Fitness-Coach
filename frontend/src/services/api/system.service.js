@@ -26,6 +26,18 @@ const handleResponse = async (apiPromise) => {
   }
 };
 
+const handlePlainResponse = async (apiPromise) => {
+  try {
+    const response = await apiPromise;
+    return response.data; // Just return the body
+  } catch (err) {
+    if (err.response?.data) {
+      throw new Error(err.response.data.message || err.message);
+    }
+    throw err;
+  }
+};
+
 /**
  * Fetch total number of registered users across the entire system (Auth Service)
  */
@@ -47,4 +59,18 @@ export const getTokenChartData = async (timeFrame = 1) => {
  */
 export const getToolUsageChartData = async (timeFrame = 1) => {
   return await handleResponse(workoutApi.get('/System/tool-usage-chart', { params: { timeFrame } }));
+};
+
+/**
+ * Requeue pending exercises for embedding (Workout Service)
+ */
+export const requeueExercises = async () => {
+  return await handlePlainResponse(workoutApi.post('/Maintenance/requeue-exercises', {}));
+};
+
+/**
+ * Requeue pending meals for embedding (Workout Service)
+ */
+export const requeueMeals = async () => {
+  return await handlePlainResponse(workoutApi.post('/Maintenance/requeue-meals', {}));
 };

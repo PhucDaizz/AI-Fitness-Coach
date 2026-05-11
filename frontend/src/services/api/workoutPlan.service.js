@@ -30,8 +30,11 @@ export const deleteWorkoutPlan = async (planId) => {
   return await handleResponse(progressApi.delete(`v1/workout-plans/${planId}`));
 };
 
-export const generateWorkoutPlan = async (data) => {
-  return await handleResponse(workoutApi.post('WorkoutPlan/generate', data, { timeout: 300000 }));
+export const generateWorkoutPlan = async (data, signal) => {
+  return await handleResponse(workoutApi.post('WorkoutPlan/generate', data, { 
+    timeout: 480000,
+    signal 
+  }));
 };
 
 export const getWorkoutPlanDays = async (planId) => {
