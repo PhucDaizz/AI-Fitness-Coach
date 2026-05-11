@@ -15,7 +15,7 @@ const handleResponse = async (apiPromise) => {
         throw error;
       }
     }
-    
+
     // Fallback for raw responses (like Accepted/Ok with custom objects)
     return apiResponse;
   } catch (err) {
@@ -42,7 +42,7 @@ export const getSessions = async () => {
 export const getSessionMessages = async (sessionId, before = null, pageSize = 20) => {
   const params = { sessionId, pageSize };
   if (before) params.before = before;
-  
+
   return await handleResponse(workoutApi.get('/Session/messages', { params }));
 };
 
@@ -50,9 +50,11 @@ export const getSessionMessages = async (sessionId, before = null, pageSize = 20
  * Thay đổi tiêu đề của session
  */
 export const changeTitle = async (sessionId, newTitle) => {
-  return await handleResponse(workoutApi.post('/Session', null, { 
-    params: { sessionId, newTitle } 
-  }));
+  return await handleResponse(
+    workoutApi.post('/Session', null, {
+      params: { sessionId, newTitle },
+    }),
+  );
 };
 
 /**
@@ -63,10 +65,12 @@ export const changeTitle = async (sessionId, newTitle) => {
 export const streamChat = async (question, sessionId) => {
   // BE: StreamChatRequest { Question, SessionId }
   // Lưu ý: userId được BE lấy từ Token, không cần gửi trong body
-  return await handleResponse(workoutApi.post('/Rag/stream-chat', { 
-    question, 
-    sessionId 
-  }));
+  return await handleResponse(
+    workoutApi.post('/Rag/stream-chat', {
+      question,
+      sessionId,
+    }),
+  );
 };
 
 export const deleteSession = async (sessionId) => {

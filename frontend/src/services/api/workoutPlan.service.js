@@ -31,10 +31,12 @@ export const deleteWorkoutPlan = async (planId) => {
 };
 
 export const generateWorkoutPlan = async (data, signal) => {
-  return await handleResponse(workoutApi.post('WorkoutPlan/generate', data, { 
-    timeout: 480000,
-    signal 
-  }));
+  return await handleResponse(
+    workoutApi.post('WorkoutPlan/generate', data, {
+      timeout: 480000,
+      signal,
+    }),
+  );
 };
 
 export const getWorkoutPlanDays = async (planId) => {
@@ -46,7 +48,9 @@ export const submitWorkoutLog = async (logData) => {
 };
 
 export const getWorkoutLogStatus = async (planId, dayId) => {
-  return await handleResponse(progressApi.get(`v1/workout-plans/${planId}/days/${dayId}/log-status`));
+  return await handleResponse(
+    progressApi.get(`v1/workout-plans/${planId}/days/${dayId}/log-status`),
+  );
 };
 
 export const getWorkoutPlanCalendar = async (planId) => {

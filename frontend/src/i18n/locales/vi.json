@@ -415,6 +415,36 @@
     "sessions": "buổi",
     "breakdown": "Phân bổ khối lượng cơ bắp"
   },
+  "stats": {
+    "title": "Tiến trình",
+    "title_highlight": "Thống kê",
+    "subtitle": "Theo dõi hiệu suất tập luyện, khối lượng và tính nhất quán theo thời gian.",
+    "no_data": "Chưa có dữ liệu — hãy bắt đầu tập luyện!",
+    "metrics": {
+      "current_streak": "Chuỗi hiện tại",
+      "sessions_week": "Tuần này",
+      "total_volume": "Tổng khối lượng",
+      "completion_rate": "Hoàn thành",
+      "days": "ngày",
+      "sessions": "buổi",
+      "tons": "tấn",
+      "longest": "Chuỗi dài nhất"
+    },
+    "weekly_chart": {
+      "title": "Số buổi tập / 4 tuần gần nhất",
+      "avg": "Trung bình"
+    },
+    "muscle_chart": {
+      "title": "Khối lượng theo nhóm cơ",
+      "groups": "nhóm cơ"
+    },
+    "heatmap": {
+      "title": "Hoạt động — 1 năm qua",
+      "less": "Ít",
+      "more": "Nhiều",
+      "total_sessions": "buổi trong năm"
+    }
+  },
   "workout_log": {
     "title": "Ghi chép buổi tập",
     "completed": "Buổi tập đã hoàn thành",

@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 
-const CustomerTopBar = ({ title = "KINETIC AI" }) => {
+const CustomerTopBar = ({ title = 'KINETIC AI' }) => {
   const location = useLocation();
 
   const navItems = [
@@ -18,7 +18,10 @@ const CustomerTopBar = ({ title = "KINETIC AI" }) => {
       <div className="flex justify-between items-center h-16 px-6 w-full mx-auto">
         {/* Left: Brand */}
         <div className="flex items-center gap-4 lg:min-w-[200px]">
-          <Link to="/" className="text-2xl font-black italic text-[#b1ff24] tracking-tighter hover:opacity-80 transition-opacity">
+          <Link
+            to="/"
+            className="text-2xl font-black italic text-[#b1ff24] tracking-tighter hover:opacity-80 transition-opacity"
+          >
             {title}
           </Link>
         </div>
@@ -32,14 +35,12 @@ const CustomerTopBar = ({ title = "KINETIC AI" }) => {
                 key={item.path}
                 to={item.path}
                 className={`flex items-center gap-2 px-5 py-2 rounded-full text-[10px] font-black uppercase tracking-[0.2em] transition-all duration-300 ${
-                  isActive 
-                    ? 'bg-[#b1ff24] text-[#0e0e0e] shadow-[0_0_20px_rgba(177,255,36,0.3)]' 
+                  isActive
+                    ? 'bg-[#b1ff24] text-[#0e0e0e] shadow-[0_0_20px_rgba(177,255,36,0.3)]'
                     : 'text-[#adaaaa] hover:text-white hover:bg-white/5'
                 }`}
               >
-                <span className="material-symbols-outlined text-[16px]">
-                  {item.icon}
-                </span>
+                <span className="material-symbols-outlined text-[16px]">{item.icon}</span>
                 {item.label}
               </Link>
             );
@@ -51,7 +52,10 @@ const CustomerTopBar = ({ title = "KINETIC AI" }) => {
           <button className="text-[#adaaaa] hover:text-[#b1ff24] transition-colors active:scale-95 transition-transform duration-200">
             <span className="material-symbols-outlined fill-1">notifications</span>
           </button>
-          <Link to="/settings" className="text-[#adaaaa] hover:text-[#b1ff24] transition-colors active:scale-95 transition-transform duration-200">
+          <Link
+            to="/settings"
+            className="text-[#adaaaa] hover:text-[#b1ff24] transition-colors active:scale-95 transition-transform duration-200"
+          >
             <span className="material-symbols-outlined fill-1">settings</span>
           </Link>
         </div>

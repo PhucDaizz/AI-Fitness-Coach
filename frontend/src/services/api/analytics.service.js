@@ -26,6 +26,14 @@ export const getAnalyticsSummary = async () => {
   return await handleResponse(progressApi.get('v1/analytics/summary'));
 };
 
+export const getWeeklyData = async () => {
+  return await handleResponse(progressApi.get('v1/analytics/weekly'));
+};
+
+export const getHeatmapData = async (days = 365) => {
+  return await handleResponse(progressApi.get(`v1/analytics/heatmap`, { params: { days } }));
+};
+
 export const getMuscleVolume = async () => {
   return await handleResponse(progressApi.get('v1/analytics/muscle-volume'));
 };

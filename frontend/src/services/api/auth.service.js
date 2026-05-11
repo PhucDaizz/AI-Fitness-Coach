@@ -86,7 +86,9 @@ export const sendConfirmEmail = async () => {
 };
 
 export const confirmEmail = async (userId, token) => {
-  return await handleResponse(authApi.get(`/Auth/email-confirmation?userId=${userId}&token=${token}`));
+  return await handleResponse(
+    authApi.get(`/Auth/email-confirmation?userId=${userId}&token=${token}`),
+  );
 };
 
 export const resetPassword = async (resetData) => {

@@ -415,6 +415,36 @@
     "sessions": "sessions",
     "breakdown": "Muscle Volume Breakdown"
   },
+  "stats": {
+    "title": "Progress",
+    "title_highlight": "Stats",
+    "subtitle": "Track your training performance, volume, and consistency over time.",
+    "no_data": "No data yet — start training!",
+    "metrics": {
+      "current_streak": "Current Streak",
+      "sessions_week": "This Week",
+      "total_volume": "Total Volume",
+      "completion_rate": "Completion",
+      "days": "days",
+      "sessions": "sessions",
+      "tons": "tons",
+      "longest": "Longest streak"
+    },
+    "weekly_chart": {
+      "title": "Sessions / Last 4 Weeks",
+      "avg": "Avg"
+    },
+    "muscle_chart": {
+      "title": "Volume by Muscle Group",
+      "groups": "groups"
+    },
+    "heatmap": {
+      "title": "Activity — Past Year",
+      "less": "Less",
+      "more": "More",
+      "total_sessions": "sessions this year"
+    }
+  },
   "workout_log": {
     "title": "Log Workout",
     "completed": "Workout Completed",

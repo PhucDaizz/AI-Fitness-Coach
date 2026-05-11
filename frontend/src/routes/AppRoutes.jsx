@@ -9,11 +9,11 @@ import TermsOfService from '../pages/TermsOfService';
 import EquipmentPage from '../pages/admin/EquipmentPage';
 import ExerciseCategoryPage from '../pages/admin/ExerciseCategoryPage';
 import ExercisePage from '../pages/admin/ExercisePage';
+import MaintenancePage from '../pages/admin/MaintenancePage';
 import MealPage from '../pages/admin/MealPage';
 import MuscleGroupPage from '../pages/admin/MuscleGroupPage';
 import SystemStatistics from '../pages/admin/SystemStatistics';
 import UserManagementPage from '../pages/admin/UserManagementPage';
-import MaintenancePage from '../pages/admin/MaintenancePage';
 import ForgotPassword from '../pages/auth/ForgotPassword';
 import Login from '../pages/auth/Login';
 import OAuthCallback from '../pages/auth/OAuthCallback';
@@ -26,6 +26,7 @@ import FitnessProfilePage from '../pages/auth/fitness/FitnessProfilePage';
 import ChatPage from '../pages/customer/ChatPage';
 import CustomerExercisesPage from '../pages/customer/CustomerExercisesPage';
 import CustomerMealsPage from '../pages/customer/CustomerMealsPage';
+import StatsPage from '../pages/customer/StatsPage';
 import WorkoutPlanDetailsPage from '../pages/customer/WorkoutPlanDetailsPage';
 import WorkoutPlansPage from '../pages/customer/WorkoutPlansPage';
 import OnboardingRoute from './OnboardingRoute';
@@ -56,6 +57,15 @@ const AppRoutes = () => {
               <OnboardingRoute>
                 <OnboardingPage />
               </OnboardingRoute>
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/stats"
+          element={
+            <ProtectedRoute allowedRoles={['Customer']}>
+              <StatsPage />
             </ProtectedRoute>
           }
         />
