@@ -1,5 +1,4 @@
-﻿using Application.Common.Interfaces;
-using Application.Contracts;
+﻿using Application.Contracts;
 using Application.DTOs.User;
 using Domain.Common.Response;
 using MediatR;
@@ -19,9 +18,12 @@ namespace Application.Features.User.Commands.Login
 
         public async Task<Result<LoginResponseDto>> Handle(LoginCommand request, CancellationToken cancellationToken)
         {
-            var (isAuthenticated, user) = await _identityService.AuthenticateUserAsync(request.Email, request.Password);
+            var (isAuthenticated, isActive, user) = await _identityService.AuthenticateUserAsync(request.Email, request.Password);
             if (!isAuthenticated) 
                 return Result.Failure<LoginResponseDto>(new Error("InvalidCredentials", "The email or password provided is incorrect."));
+            
+            if (isActive == false)
+                return Result.Failure<LoginResponseDto>(new Error("User.Inactive", "The user account is inactive."));
 
             var roles = await _identityService.GetRolesAsync(user.Id);
 

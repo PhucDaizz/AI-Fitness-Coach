@@ -244,18 +244,19 @@ namespace Infrastructure.Services
             return Result.Success(createdUserDto);
         }
 
-        public async Task<(bool IsAuthenticated, UserIdentityDto? User)> AuthenticateUserAsync(string email, string password)
+        public async Task<(bool IsAuthenticated, bool? IsAvtive, UserIdentityDto? User)> AuthenticateUserAsync(string email, string password)
         {
             var user = await _userManager.FindByEmailAsync(email);
             if (user == null)
             {
-                return (false, null);
+                return (false, null, null);
             }
+            
 
             var isPasswordCorrect = await _userManager.CheckPasswordAsync(user, password);
             if (!isPasswordCorrect)
             {
-                return (false, null);
+                return (false, user.IsActive, null);
             }
 
             var userDto = new UserIdentityDto
@@ -264,7 +265,7 @@ namespace Infrastructure.Services
                 Email = user.Email
             };
 
-            return (true, userDto);
+            return (true, user.IsActive, userDto);
         }
 
         public async Task<UserIdentityDto?> GetUserByEmailAndValidateRefreshTokenAsync(string email, string refreshToken)
@@ -276,7 +277,7 @@ namespace Infrastructure.Services
                 return null; 
             }
 
-            return new UserIdentityDto { Id = user.Id, Email = user.Email };
+            return new UserIdentityDto { Id = user.Id, Email = user.Email, IsActive = user.IsActive };
         }
 
         public async Task<Result> RemoveRoleAsync(string userId, string role, CancellationToken cancellationToken = default)

@@ -36,6 +36,11 @@ namespace Application.Features.User.Commands.RefreshToken
                 return new LoginResponseDto();
             }
 
+            if (!user.IsActive)
+            {
+                return Result.Failure<LoginResponseDto>(new Error("Account Banned", "Your account has been locked. Please contact the Admin."));
+            }
+
             var roles = await _identityService.GetRolesAsync(user.Id);
             var createTokenDto = new CreateTokenDTO
             {

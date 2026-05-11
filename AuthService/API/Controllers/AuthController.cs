@@ -1,6 +1,7 @@
 ﻿using Application.Common.Interfaces;
 using Application.DTOs.User;
 using Application.Features.User.Commands.ChangePassword;
+using Application.Features.User.Commands.ChangeUserStatus;
 using Application.Features.User.Commands.ConfirmEmail;
 using Application.Features.User.Commands.ExternalLogin;
 using Application.Features.User.Commands.ForgotPassword;
@@ -480,6 +481,30 @@ namespace API.Controllers
 
             var result = await _mediator.Send(request);
             return Ok(ApiResponse<bool>.SuccessResponse(result.Value));
+        }
+
+        [HttpPut("{id}/status")]
+        [Authorize(Roles = $"{AppRoles.SysAdmin}")]
+        public async Task<IActionResult> ChangeStatus(string id, [FromBody] ChangeUserStatusRequest body)
+        {
+            var command = new ChangeUserStatusCommand
+            {
+                UserId = id,
+                IsActive = body.IsActive
+            };
+
+            var result = await _mediator.Send(command);
+
+            if (!result.IsSuccess)
+            {
+                return BadRequest(ApiResponse<string>.ErrorResponse(result.Error.Code, new List<string> { result.Error.Message }));
+            }
+
+            return Ok(
+                ApiResponse<string>.SuccessResponse(
+                    null,
+                     body.IsActive ? "Account unlocked successfully." : "Account locked successfully."
+                ));
         }
     }
 }

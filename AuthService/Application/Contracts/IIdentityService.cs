@@ -20,7 +20,7 @@ namespace Application.Contracts
         Task AddLoginAsync(string userId, string loginProvider, string providerKey);
         Task<List<string>> GetRolesAsync(string userId);
         Task UpdateRefreshTokenAsync(string userId, string refreshToken);
-        Task<(bool IsAuthenticated, UserIdentityDto? User)> AuthenticateUserAsync(string email, string password);
+        Task<(bool IsAuthenticated, bool? IsAvtive, UserIdentityDto? User)> AuthenticateUserAsync(string email, string password);
         Task<UserIdentityDto?> GetUserByEmailAndValidateRefreshTokenAsync(string email, string refreshToken);
 
         Task<Result> RemoveRoleAsync(string userId, string role, CancellationToken cancellationToken = default);

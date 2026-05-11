@@ -15,6 +15,21 @@ namespace Infrastructure.Data.Repositories
             _dbContext = dbContext;
         }
 
+        public async Task<bool> ChangeUserStatusAsync(string userId, bool isActive, CancellationToken cancellationToken = default)
+        {
+            var user = await _dbContext.Users.FirstOrDefaultAsync(x => x.Id == userId);
+            if (user == null)
+            {
+                return false;
+
+            }
+            else
+            {
+                user.IsActive = isActive;
+                return true;
+            }
+        }
+
         public async Task<UserIdentityDto?> FindByEmailAsync(string email)
         {
             var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.Email == email);

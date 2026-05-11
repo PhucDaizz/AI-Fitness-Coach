@@ -11,7 +11,6 @@ namespace Application.Repositories
         Task<ExtendedIdentityUser?> GetUserByEmailAsync(string email, CancellationToken cancellationToken = default);
         Task<List<ExtendedIdentityUser>> GetUsersAsync(CancellationToken cancellationToken = default);
         Task UpdateUserAsync(ExtendedIdentityUser user, CancellationToken cancellationToken = default);
-
-
+        Task<bool> ChangeUserStatusAsync(string userId, bool isActive, CancellationToken cancellationToken = default);
     }
 }
