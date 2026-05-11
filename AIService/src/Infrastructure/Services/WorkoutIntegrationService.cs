@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging;
 using Nexus.BuildingBlocks.Model;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
+using System.Text;
 using System.Text.Json;
 
 namespace AIService.Infrastructure.Services
@@ -14,11 +15,13 @@ namespace AIService.Infrastructure.Services
         private readonly HttpClient _httpClient;
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly ILogger<WorkoutIntegrationService> _logger;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public WorkoutIntegrationService(IHttpClientFactory httpFactory, ILogger<WorkoutIntegrationService> logger)
+        public WorkoutIntegrationService(IHttpClientFactory httpFactory, ILogger<WorkoutIntegrationService> logger, IUnitOfWork unitOfWork)
         {
             _httpClientFactory = httpFactory;
             _logger = logger;
+            _unitOfWork = unitOfWork;
             _httpClient = httpFactory.CreateClient("WorkoutService");
         }
 
@@ -165,14 +168,52 @@ namespace AIService.Infrastructure.Services
         {
             using var client = CreateClientWithToken();
             var response = await client.GetAsync($"/api/v1/workout-plans/{planId}/days", ct);
-            if (!response.IsSuccessStatusCode) return "Lỗi không lấy được chi tiết lịch tập.";
+
+            if (!response.IsSuccessStatusCode)
+                return "Error: Failed to retrieve plan schedule details.";
 
             var result = await response.Content.ReadFromJsonAsync<ApiResponse<List<WorkoutPlanDayDto>>>(cancellationToken: ct);
-            if (result?.Data == null) return "Không có dữ liệu ngày tập.";
 
-            var days = result.Data.OrderBy(d => d.ScheduledDate).Select(d =>
-                $"- Ngày: {d.ScheduledDate:yyyy-MM-dd} ({d.DayOfWeek}) | Nhóm cơ: {d.MuscleFocus} | Day ID: `{d.Id}`");
-            return string.Join("\n", days);
+            if (result?.Data == null)
+                return "Error: No workout days data available.";
+
+            var planDays = result.Data;
+
+            var exerciseIds = planDays
+                .Where(d => d.Exercises != null)
+                .SelectMany(d => d.Exercises.Select(e => e.ExerciseId))
+                .Where(id => !string.IsNullOrWhiteSpace(id))
+                .Distinct()
+                .ToList();
+
+            var exerciseDict = await _unitOfWork.ExerciseRepository.GetExerciseNamesByIdsAsync(exerciseIds, ct);
+
+            var sb = new StringBuilder();
+            foreach (var day in planDays.OrderBy(d => d.ScheduledDate))
+            {
+                sb.AppendLine($"- Date: {day.ScheduledDate:yyyy-MM-dd} ({day.DayOfWeek}) | Muscle Focus: {day.MuscleFocus} | Day ID: `{day.Id}`");
+
+                if (day.Exercises != null && day.Exercises.Any())
+                {
+                    foreach (var ex in day.Exercises.OrderBy(e => e.OrderIndex))
+                    {
+                        string exName = exerciseDict.TryGetValue(ex.ExerciseId, out var name)
+                                        ? name
+                                        : $"Unknown (ID: {ex.ExerciseId})";
+
+                        sb.AppendLine($"  + Exercise {ex.OrderIndex}: {exName}");
+                        sb.AppendLine($"    - Volume: {ex.Sets} sets x {ex.Reps} | Rest: {ex.RestSeconds}s");
+                        sb.AppendLine($"    - Notes: {ex.Notes}");
+                    }
+                }
+                else
+                {
+                    sb.AppendLine("  + (No exercises scheduled)");
+                }
+                sb.AppendLine();
+            }
+
+            return sb.ToString();
         }
 
         public async Task<UserProfileDto?> GetProfileAsync(CancellationToken ct = default)

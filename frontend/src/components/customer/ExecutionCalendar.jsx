@@ -10,7 +10,7 @@ const ExecutionCalendar = ({ calendar, activeDayIndex, setActiveDayIndex, t, get
         </h3>
       </div>
       
-      <div className="flex gap-3 overflow-x-auto no-scrollbar pb-6">
+      <div className="flex gap-3 overflow-x-auto no-scrollbar pt-4 pb-6">
         {calendar.map((item, index) => {
           const isSelected = activeDayIndex === index;
           const isToday = item.scheduledDate === new Date().toISOString().split('T')[0];

@@ -9,5 +9,6 @@ namespace AIService.Application.DTOs.Workout
         public string DayOfWeek { get; set; } = string.Empty;
         public string MuscleFocus { get; set; } = string.Empty;
         public DateTime ScheduledDate { get; set; }
+        public List<WorkoutExerciseDto> Exercises { get; set; } = new();
     }
 }
