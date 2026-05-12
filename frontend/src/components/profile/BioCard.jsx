@@ -9,7 +9,7 @@ const BioCard = ({ user, userId, isAdmin }) => {
   const fullId = decoded?.['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier'] || userId;
 
   // Random avatar on hover effect logic
-  const randomAvatar = `https://loremflickr.com/300/300/fitness?lock=${fullId}`;
+  const randomAvatar = `https://loremflickr.com/300/300/fitness?lock=88${fullId}`;
 
   return (
     <div className="bg-surface-container p-8 rounded-xl border border-outline-variant/15 flex flex-col items-center text-center relative overflow-hidden group">

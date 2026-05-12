@@ -17,7 +17,7 @@ const ProfileSidebar = ({
   const token = localStorage.getItem('token');
   const decoded = getDecodedToken(token);
   const fullId = decoded?.["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"];
-  const randomAvatar = `https://loremflickr.com/300/300/fitness?lock=${fullId}`;
+  const randomAvatar = `https://loremflickr.com/300/300/fitness?lock=88${fullId}`;
 
 
   const handleLogout = () => {

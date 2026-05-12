@@ -16,7 +16,7 @@ const ChatSidebar = ({ sessions, currentSessionId, onSelectSession, onRenameSess
     : 'Kinetic User';
   
   const fullId = user?.["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"];
-  const randomAvatar = `https://loremflickr.com/300/300/fitness?lock=${fullId}`;
+  const randomAvatar = `https://loremflickr.com/300/300/fitness?lock=88${fullId}`;
 
 
   // Grouping logic

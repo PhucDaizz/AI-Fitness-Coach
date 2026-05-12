@@ -172,8 +172,23 @@
       "email_unverified": "Email chưa xác minh",
       "verify_now": "Xác minh ngay",
       "send_verification": "Gửi email xác minh",
-      "verification_sent": "Email xác minh đã được gửi!"
+      "verification_sent": "Email xác minh đã được gửi!",
+      "password_title": "Khôi phục mật khẩu",
+      "password_desc_verified": "Tài khoản của bạn đã được bảo mật hoàn toàn. Bạn có thể đặt lại mật khẩu bằng liên kết gửi tới email đã xác minh.",
+      "password_desc_unverified": "Yêu cầu xác minh email để kích hoạt tính năng khôi phục mật khẩu an toàn. Không thể cấp liên kết đặt lại cho đến khi danh tính của bạn được xác nhận.",
+      "link_sent": "Liên kết đã được gửi vào hộp thư",
+      "error_msg": "Gửi liên kết khôi phục thất bại."
     },
+    "verification_alert": {
+      "sent_title": "Đã gửi xác minh!",
+      "sent_desc": "Một liên kết xác nhận đã được gửi đến {{email}}. Vui lòng kiểm tra hộp thư của bạn.",
+      "unverified_title": "Kênh liên lạc chưa xác minh",
+      "unverified_desc": "{{email}} cần được xác minh để mở khóa các thông tin chi tiết về huấn luyện nâng cao.",
+      "verify_btn": "Xác minh ngay",
+      "sending": "Đang gửi...",
+      "error_msg": "Gửi email xác minh thất bại."
+    },
+
     "alert": {
       "title": "Yêu cầu hành động",
       "message": "Email của bạn chưa được xác minh. Vui lòng xác minh để bảo mật tài khoản."

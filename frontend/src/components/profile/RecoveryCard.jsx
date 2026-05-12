@@ -1,33 +1,30 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { sendConfirmEmail } from '../../services/api/auth.service';
 
 const RecoveryCard = ({ isEmailVerified, email }) => {
+  const { t } = useTranslation();
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
   const [error, setError] = useState(null);
 
   const handleAction = async () => {
     if (!isEmailVerified) {
-      // If not verified, the action is to send confirmation email
       try {
         setLoading(true);
         setError(null);
         await sendConfirmEmail();
         setSent(true);
       } catch (err) {
-        setError(err.message || "Failed to send verification link");
+        setError(err.message || t('security.recovery.error_msg'));
       } finally {
         setLoading(false);
       }
-    } else {
-      // If already verified, maybe another action or just success notice
-      console.log("Email already verified");
     }
   };
 
   return (
     <section className="bg-surface-container-low p-8 rounded-[2rem] border border-outline-variant/15 backdrop-blur-md relative overflow-hidden group">
-      {/* Subtle background glow when active */}
       {!isEmailVerified && (
         <div className="absolute -bottom-12 -left-12 w-48 h-48 bg-error/5 rounded-full blur-[60px] pointer-events-none group-hover:bg-error/10 transition-colors"></div>
       )}
@@ -38,12 +35,12 @@ const RecoveryCard = ({ isEmailVerified, email }) => {
             <span className={`material-symbols-outlined text-xl ${isEmailVerified ? 'text-primary' : 'text-secondary'}`}>
               {isEmailVerified ? 'mark_email_read' : 'lock_reset'}
             </span>
-            Password Recovery
+            {t('security.recovery.password_title')}
           </h3>
           <p className="font-body text-sm text-on-surface-variant leading-relaxed">
             {isEmailVerified
-              ? "Your account is fully secured. You can reset your password using your verified email link."
-              : "Email verification is required to enable secure password recovery. No reset links can be issued until your identity is confirmed."}
+              ? t('security.recovery.password_desc_verified')
+              : t('security.recovery.password_desc_unverified')}
           </p>
           {error && <p className="text-error text-[10px] mt-2 font-bold uppercase tracking-widest leading-none">{error}</p>}
         </div>
@@ -51,12 +48,12 @@ const RecoveryCard = ({ isEmailVerified, email }) => {
         {sent ? (
           <div className="flex items-center gap-2 px-6 py-3 rounded-full bg-primary/10 text-primary border border-primary/20 font-bold text-sm animate-fade-in">
             <span className="material-symbols-outlined text-sm">send</span>
-            Link Sent to Inbox
+            {t('security.recovery.link_sent')}
           </div>
         ) : isEmailVerified ? (
           <div className="flex items-center gap-2 px-6 py-3 rounded-full bg-primary/10 text-primary border border-primary/20 font-bold text-sm">
             <span className="material-symbols-outlined text-sm">verified</span>
-            Email Verified
+            {t('security.recovery.email_verified')}
           </div>
         ) : (
           <button
@@ -68,7 +65,7 @@ const RecoveryCard = ({ isEmailVerified, email }) => {
               <span className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin"></span>
             ) : (
               <>
-                Confirm Identity (Verify)
+                {t('security.recovery.verify_now')}
                 <span className="material-symbols-outlined text-sm group-hover:translate-x-1 transition-transform">arrow_forward</span>
               </>
             )}
@@ -82,12 +79,13 @@ const RecoveryCard = ({ isEmailVerified, email }) => {
             <span className="material-symbols-outlined text-error text-lg">warning</span>
           </div>
           <p className="text-xs text-on-surface font-medium capitalize">
-            {email} requires validation to unlock recovery features.
+            {t('security.verification_alert.unverified_desc', { email: email })}
           </p>
         </div>
       )}
     </section>
   );
 };
+
 
 export default RecoveryCard;

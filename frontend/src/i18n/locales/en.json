@@ -172,8 +172,23 @@
       "email_unverified": "Email Unverified",
       "verify_now": "Verify Now",
       "send_verification": "Send Verification Email",
-      "verification_sent": "Verification email sent!"
+      "verification_sent": "Verification email sent!",
+      "password_title": "Password Recovery",
+      "password_desc_verified": "Your account is fully secured. You can reset your password using your verified email link.",
+      "password_desc_unverified": "Email verification is required to enable secure password recovery. No reset links can be issued until your identity is confirmed.",
+      "link_sent": "Link Sent to Inbox",
+      "error_msg": "Failed to send recovery link."
     },
+    "verification_alert": {
+      "sent_title": "Verification Sent!",
+      "sent_desc": "A confirmation link has been sent to {{email}}. Please check your inbox.",
+      "unverified_title": "Unverified Comms Channel",
+      "unverified_desc": "{{email}} requires verification to unlock advanced coaching insights.",
+      "verify_btn": "Verify Now",
+      "sending": "Sending...",
+      "error_msg": "Failed to send verification email."
+    },
+
     "alert": {
       "title": "Action Required",
       "message": "Your email is not verified. Please verify it to secure your account."

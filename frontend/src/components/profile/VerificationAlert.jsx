@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { sendConfirmEmail } from '../../services/api/auth.service';
 
 const VerificationAlert = ({ email }) => {
+  const { t } = useTranslation();
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
   const [error, setError] = useState(null);
@@ -13,7 +15,7 @@ const VerificationAlert = ({ email }) => {
       await sendConfirmEmail();
       setSent(true);
     } catch (err) {
-      setError(err.message || "Failed to send verification email");
+      setError(err.message || t('security.verification_alert.error_msg'));
     } finally {
       setLoading(false);
     }
@@ -26,8 +28,10 @@ const VerificationAlert = ({ email }) => {
           <span className="material-symbols-outlined text-primary">mark_email_read</span>
         </div>
         <div>
-          <h3 className="text-xl font-bold mb-1 text-primary">Verification Sent!</h3>
-          <p className="text-on-surface-variant text-sm">A confirmation link has been sent to <span className="text-white font-bold">{email}</span>. Please check your inbox.</p>
+          <h3 className="text-xl font-bold mb-1 text-primary">{t('security.verification_alert.sent_title')}</h3>
+          <p className="text-on-surface-variant text-sm">
+            {t('security.verification_alert.sent_desc', { email: email })}
+          </p>
         </div>
       </div>
     );
@@ -41,8 +45,10 @@ const VerificationAlert = ({ email }) => {
           <span className="material-symbols-outlined text-error">warning</span>
         </div>
         <div>
-          <h3 className="text-xl font-bold mb-1 text-on-surface">Unverified Comms Channel</h3>
-          <p className="text-on-surface-variant text-sm">{email} requires verification to unlock advanced coaching insights.</p>
+          <h3 className="text-xl font-bold mb-1 text-on-surface">{t('security.verification_alert.unverified_title')}</h3>
+          <p className="text-on-surface-variant text-sm">
+            {t('security.verification_alert.unverified_desc', { email: email })}
+          </p>
           {error && <p className="text-error text-[10px] mt-2 font-bold uppercase tracking-widest">{error}</p>}
         </div>
       </div>
@@ -55,7 +61,7 @@ const VerificationAlert = ({ email }) => {
           <span className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin"></span>
         ) : (
           <>
-            Verify Now
+            {t('security.verification_alert.verify_btn')}
             <span className="material-symbols-outlined text-[18px] group-hover:translate-x-1 transition-transform">send</span>
           </>
         )}
@@ -63,5 +69,6 @@ const VerificationAlert = ({ email }) => {
     </div>
   );
 };
+
 
 export default VerificationAlert;
