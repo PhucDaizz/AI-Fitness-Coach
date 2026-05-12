@@ -16,7 +16,8 @@ const CLAIM_ROLE =
 // .NET AuthService dùng "Customer" / "Admin",
 // NodeService dùng "user" / "admin"
 function mapRole(dotNetRole: string): JwtPayload['role'] {
-  if (dotNetRole?.toLowerCase() === 'admin') return ROLES.ADMIN;
+  const normalized = dotNetRole?.toLowerCase();
+  if (normalized === 'admin' || normalized === 'sysadmin') return ROLES.ADMIN;
   return ROLES.USER; // "Customer" và mọi giá trị khác → "user"
 }
 

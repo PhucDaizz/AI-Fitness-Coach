@@ -27,6 +27,6 @@ router.get('/muscle-volume', getMuscleVolume);
 router.get('/heatmap', getHeatmap);
 
 // GET /analytics/admin/overview    — thống kê tổng hợp hệ thống (admin)
-router.get('/admin/overview', getAdminOverview);
+router.get('/admin/overview', adminOnly, getAdminOverview);
 
 export default router;
