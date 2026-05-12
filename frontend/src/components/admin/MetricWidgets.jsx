@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { getToolUsageChartData } from '../../services/api/system.service';
+import { getAdminAnalyticsOverview } from '../../services/api/analytics.service';
 
 const MetricWidgets = () => {
   // Tool Usage States
@@ -22,6 +23,25 @@ const MetricWidgets = () => {
     };
     fetchToolChart();
   }, [toolTimeFrame]);
+  
+  // Admin Analytics Overview State
+  const [adminOverview, setAdminOverview] = useState(null);
+  const [isLoadingOverview, setIsLoadingOverview] = useState(true);
+
+  useEffect(() => {
+    const fetchOverview = async () => {
+      try {
+        setIsLoadingOverview(true);
+        const data = await getAdminAnalyticsOverview();
+        setAdminOverview(data);
+      } catch (err) {
+        console.error("Failed to fetch admin analytics overview:", err);
+      } finally {
+        setIsLoadingOverview(false);
+      }
+    };
+    fetchOverview();
+  }, []);
 
   // Tool Usage Calculation
   const toolColors = ['#b1ff24', '#00e5ff', '#b388ff', '#ff4081', '#ffea00'];
@@ -103,67 +123,118 @@ const MetricWidgets = () => {
       </div>
 
       {/* Difficulty Feedback Loop */}
-      <div className="bg-surface-container p-6 rounded-3xl flex flex-col h-full">
-        <h3 className="text-sm font-bold text-white uppercase tracking-[0.15em] mb-8">Difficulty Feedback Loop</h3>
-        <div className="flex-1 flex flex-col justify-center space-y-8">
-          <div>
-            <div className="flex justify-between mb-2">
-              <span className="text-xs font-bold text-white uppercase tracking-widest">Too Easy</span>
-              <span className="text-xs font-medium text-on-surface-variant">15%</span>
-            </div>
-            <div className="h-2 bg-surface-container-highest rounded-full overflow-hidden">
-              <div className="h-full bg-secondary w-[15%]"></div>
-            </div>
-          </div>
-          <div>
-            <div className="flex justify-between mb-2">
-              <span className="text-xs font-bold text-white uppercase tracking-widest">Just Right</span>
-              <span className="text-xs font-medium text-on-surface-variant">72%</span>
-            </div>
-            <div className="h-4 bg-surface-container-highest rounded-full overflow-hidden">
-              <div className="h-full bg-primary w-[72%] shadow-[0_0_15px_rgba(177,255,36,0.3)]"></div>
-            </div>
-          </div>
-          <div>
-            <div className="flex justify-between mb-2">
-              <span className="text-xs font-bold text-white uppercase tracking-widest">Too Hard</span>
-              <span className="text-xs font-medium text-on-surface-variant">13%</span>
-            </div>
-            <div className="h-2 bg-surface-container-highest rounded-full overflow-hidden">
-              <div className="h-full bg-error w-[13%]"></div>
-            </div>
-          </div>
+      <div className="bg-surface-container p-6 rounded-3xl flex flex-col h-full relative overflow-hidden group">
+        <div className="absolute -bottom-8 -right-8 p-8 opacity-5 group-hover:scale-110 transition-transform duration-500">
+          <span className="material-symbols-outlined text-[150px]">rebase_edit</span>
         </div>
-        <div className="mt-8 p-4 bg-surface-container-highest rounded-2xl border-l-2 border-primary/40">
+        
+        <h3 className="text-sm font-bold text-white uppercase tracking-[0.15em] mb-8 relative z-10">Difficulty Feedback Loop</h3>
+        
+        <div className="flex-1 flex flex-col justify-center space-y-8 relative z-10">
+          {isLoadingOverview ? (
+            <div className="flex justify-center py-10">
+               <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+            </div>
+          ) : (
+            <>
+              <div>
+                <div className="flex justify-between mb-2">
+                  <span className="text-xs font-bold text-white uppercase tracking-widest">Too Easy</span>
+                  <span className="text-xs font-medium text-on-surface-variant">
+                    {adminOverview?.difficultyDistribution?.easy?.percentage || 0}%
+                  </span>
+                </div>
+                <div className="h-2 bg-surface-container-highest rounded-full overflow-hidden">
+                  <div 
+                    className="h-full bg-secondary transition-all duration-1000" 
+                    style={{ width: `${adminOverview?.difficultyDistribution?.easy?.percentage || 0}%` }}
+                  ></div>
+                </div>
+              </div>
+              <div>
+                <div className="flex justify-between mb-2">
+                  <span className="text-xs font-bold text-white uppercase tracking-widest">Just Right</span>
+                  <span className="text-xs font-medium text-on-surface-variant">
+                    {adminOverview?.difficultyDistribution?.ok?.percentage || 0}%
+                  </span>
+                </div>
+                <div className="h-4 bg-surface-container-highest rounded-full overflow-hidden">
+                  <div 
+                    className="h-full bg-primary shadow-[0_0_15px_rgba(177,255,36,0.3)] transition-all duration-1000" 
+                    style={{ width: `${adminOverview?.difficultyDistribution?.ok?.percentage || 0}%` }}
+                  ></div>
+                </div>
+              </div>
+              <div>
+                <div className="flex justify-between mb-2">
+                  <span className="text-xs font-bold text-white uppercase tracking-widest">Too Hard</span>
+                  <span className="text-xs font-medium text-on-surface-variant">
+                    {adminOverview?.difficultyDistribution?.hard?.percentage || 0}%
+                  </span>
+                </div>
+                <div className="h-2 bg-surface-container-highest rounded-full overflow-hidden">
+                  <div 
+                    className="h-full bg-error transition-all duration-1000" 
+                    style={{ width: `${adminOverview?.difficultyDistribution?.hard?.percentage || 0}%` }}
+                  ></div>
+                </div>
+              </div>
+            </>
+          )}
+        </div>
+        
+        <div className="mt-8 p-4 bg-surface-container-highest rounded-2xl border-l-2 border-primary/40 relative z-10">
           <p className="text-[0.65rem] text-primary font-bold uppercase tracking-widest mb-1">Coach Insight</p>
-          <p className="text-xs text-on-surface-variant">"Just Right" ratings up 4.2% since V2.4 model weights update.</p>
+          <p className="text-xs text-on-surface-variant">
+            {adminOverview?.difficultyDistribution?.ok?.percentage > 60 
+              ? "Training equilibrium achieved. High user satisfaction detected." 
+              : "Engagement at risk. Plan difficulty variance detected."}
+          </p>
         </div>
       </div>
 
       {/* Plan Completion Rate */}
-      <div className="bg-surface-container p-6 rounded-3xl flex flex-col h-full overflow-hidden relative">
+      <div className="bg-surface-container p-6 rounded-3xl flex flex-col h-full overflow-hidden relative group">
         <div className="absolute -right-10 -top-10 w-40 h-40 bg-primary/5 rounded-full blur-3xl"></div>
         <h3 className="text-sm font-bold text-white uppercase tracking-[0.15em] mb-8">Plan Completion Rate</h3>
+        
         <div className="flex-1 flex flex-col items-center justify-center">
-          <div className="relative w-48 h-48">
-            <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
-              <circle cx="50" cy="50" fill="transparent" r="45" stroke="#262626" strokeWidth="8"></circle>
-              <circle cx="50" cy="50" fill="transparent" r="45" stroke="#b1ff24" strokeDasharray="282.7" strokeDashoffset="45.2" strokeLinecap="round" strokeWidth="8"></circle>
-            </svg>
-            <div className="absolute inset-0 flex flex-col items-center justify-center">
-              <span className="text-5xl font-black text-white italic tracking-tighter">84<span className="text-2xl">%</span></span>
-              <span className="text-[10px] font-bold text-on-surface-variant uppercase tracking-[0.2em] mt-1">Avg Rate</span>
+          {isLoadingOverview ? (
+            <div className="w-10 h-10 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+          ) : (
+            <div className="relative w-48 h-48">
+              <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
+                <circle cx="50" cy="50" fill="transparent" r="45" stroke="#262626" strokeWidth="8"></circle>
+                <circle 
+                  cx="50" cy="50" fill="transparent" r="45" stroke="#b1ff24" 
+                  strokeDasharray="282.7" 
+                  strokeDashoffset={282.7 - (282.7 * (adminOverview?.planCompletion?.rate || 0)) / 100} 
+                  strokeLinecap="round" strokeWidth="8"
+                  className="transition-all duration-1000 ease-out"
+                ></circle>
+              </svg>
+              <div className="absolute inset-0 flex flex-col items-center justify-center">
+                <span className="text-5xl font-black text-white italic tracking-tighter">
+                  {adminOverview?.planCompletion?.rate || 0}<span className="text-2xl">%</span>
+                </span>
+                <span className="text-[10px] font-bold text-on-surface-variant uppercase tracking-[0.2em] mt-1">Avg Rate</span>
+              </div>
             </div>
-          </div>
+          )}
         </div>
+        
         <div className="mt-8 grid grid-cols-2 gap-4">
-          <div className="bg-surface-container-highest p-4 rounded-2xl">
-            <p className="text-2xl font-bold text-white">4.2</p>
+          <div className="bg-surface-container-highest p-4 rounded-2xl border border-white/5 group-hover:border-primary/20 transition-colors">
+            <p className="text-2xl font-bold text-white">
+              {isLoadingOverview ? '...' : (adminOverview?.avgSetsPerUser || 0).toFixed(1)}
+            </p>
             <p className="text-[9px] font-bold text-on-surface-variant uppercase tracking-widest">Avg Sets / User</p>
           </div>
-          <div className="bg-surface-container-highest p-4 rounded-2xl">
-            <p className="text-2xl font-bold text-white">92%</p>
-            <p className="text-[9px] font-bold text-on-surface-variant uppercase tracking-widest">Retention</p>
+          <div className="bg-surface-container-highest p-4 rounded-2xl border border-white/5">
+            <p className="text-2xl font-bold text-white">
+              {isLoadingOverview ? '...' : `${adminOverview?.planCompletion?.total || 0}`}
+            </p>
+            <p className="text-[9px] font-bold text-on-surface-variant uppercase tracking-widest">Total Plans</p>
           </div>
         </div>
       </div>

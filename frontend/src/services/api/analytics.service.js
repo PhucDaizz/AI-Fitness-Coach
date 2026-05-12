@@ -37,3 +37,8 @@ export const getHeatmapData = async (days = 365) => {
 export const getMuscleVolume = async () => {
   return await handleResponse(progressApi.get('v1/analytics/muscle-volume'));
 };
+
+export const getAdminAnalyticsOverview = async () => {
+  return await handleResponse(progressApi.get('v1/analytics/admin/overview'));
+};
+

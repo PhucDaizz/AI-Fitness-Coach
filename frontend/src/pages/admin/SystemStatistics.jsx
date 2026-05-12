@@ -3,20 +3,18 @@ import AdminSidebar from '../../components/admin/AdminSidebar';
 import AdminHeader from '../../components/admin/AdminHeader';
 import BentoStats from '../../components/admin/BentoStats';
 import MetricWidgets from '../../components/admin/MetricWidgets';
-import StrategicInsights from '../../components/admin/StrategicInsights';
 
 const SystemStatistics = () => {
   return (
     <div className="bg-background text-on-background min-h-screen">
       <AdminSidebar />
-      
+
       <main className="md:ml-64 min-h-screen relative">
         <AdminHeader />
-        
+
         <section className="p-6 md:p-10 space-y-8">
           <BentoStats />
           <MetricWidgets />
-          <StrategicInsights />
 
           {/* Footer Meta Info */}
           <div className="flex flex-col md:flex-row justify-between items-center text-[10px] text-on-surface-variant font-bold uppercase tracking-[0.2em] py-8 opacity-50">
@@ -30,7 +28,7 @@ const SystemStatistics = () => {
         </section>
 
         {/* Floating AI Orb (Coach Pulse) */}
-        <div className="fixed bottom-8 right-8 z-[70]">
+        {/* <div className="fixed bottom-8 right-8 z-[70]">
           <div className="relative group cursor-pointer">
             <div className="absolute -inset-2 bg-secondary blur-xl opacity-20 group-hover:opacity-40 transition-opacity"></div>
             <div className="w-14 h-14 rounded-full glass-panel border border-secondary/30 flex items-center justify-center relative overflow-hidden">
@@ -41,7 +39,7 @@ const SystemStatistics = () => {
               <p className="text-[0.7rem] text-white leading-tight">Processing real-time telemetry. Performance within optimal parameters.</p>
             </div>
           </div>
-        </div>
+        </div> */}
       </main>
 
     </div>

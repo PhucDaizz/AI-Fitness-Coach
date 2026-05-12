@@ -6,6 +6,10 @@ const AdminHeader = () => {
   const decoded = getDecodedToken(token);
   const fullName = decoded?.["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"] || "Admin User";
   const role = decoded?.["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"] || "Superuser";
+  const fullId = decoded?.["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"];
+  
+  const randomAvatar = `https://loremflickr.com/300/300/fitness?lock=${fullId}`;
+
 
   return (
     <header className="w-full top-0 sticky bg-[#0e0e0e]/80 backdrop-blur-xl flex justify-between items-center px-6 py-3 z-50 shadow-[0_20px_40px_rgba(0,0,0,0.4)]">
@@ -32,9 +36,10 @@ const AdminHeader = () => {
           </div>
           <img 
             alt="Administrator profile avatar" 
-            className="w-9 h-9 rounded-full border border-primary/30 p-0.5" 
-            src="https://lh3.googleusercontent.com/aida-public/AB6AXuDkV0V1PddiBlbt2xmr8RWkbwIUl-NCRqYOWz5nGu7nzd9QJZpu3kejeuckpVT9lj-HkItaFt-9XVJAqY9-rAAhP4wrpbPY-Rco7x5Fj7SdcCOyL_f8XhZ-DPdhcqS5VYvyqWBuIMqL7RU-71MWZvygRDDIXihw_VYaF8lyCrkm_ExGqksnpbFdddWeVcnOu_R9KpmDx7XQV75DVOoWD-kV4drLm_bauAd-zjycjRCLRRtZravaGtbo_mA2pxZY2nlAi5O3FbIZOGHQ"
+            className="w-9 h-9 rounded-full border border-primary/30 p-0.5 object-cover" 
+            src={randomAvatar}
           />
+
         </Link>
       </div>
     </header>

@@ -1,6 +1,7 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate } from 'react-router-dom';
+import { getDecodedToken } from '../../utils/authUtils';
 
 const ProfileSidebar = ({
   isAdmin: isUserAdmin,
@@ -12,6 +13,12 @@ const ProfileSidebar = ({
 }) => {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
+
+  const token = localStorage.getItem('token');
+  const decoded = getDecodedToken(token);
+  const fullId = decoded?.["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"];
+  const randomAvatar = `https://loremflickr.com/300/300/fitness?lock=${fullId}`;
+
 
   const handleLogout = () => {
     localStorage.removeItem('token');
@@ -69,18 +76,13 @@ const ProfileSidebar = ({
           <div className="flex flex-col items-center">
             <div className="relative group mb-4">
               <div className="w-20 h-20 rounded-full bg-surface-container-highest border-2 border-primary/20 p-1 kinetic-glow overflow-hidden">
-                {avatarUrl ? (
-                  <img
-                    src={avatarUrl}
-                    alt={fullName}
-                    className="w-full h-full object-cover rounded-full"
-                  />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center bg-primary/10 text-primary">
-                    <span className="material-symbols-outlined text-4xl">account_circle</span>
-                  </div>
-                )}
+                <img
+                  src={avatarUrl || randomAvatar}
+                  alt={fullName}
+                  className="w-full h-full object-cover rounded-full"
+                />
               </div>
+
               <button className="absolute bottom-0 right-0 w-7 h-7 bg-primary text-on-primary rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-transform">
                 <span className="material-symbols-outlined text-sm">edit</span>
               </button>

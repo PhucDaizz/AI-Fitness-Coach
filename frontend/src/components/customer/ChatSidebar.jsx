@@ -14,6 +14,10 @@ const ChatSidebar = ({ sessions, currentSessionId, onSelectSession, onRenameSess
   const userName = user 
     ? user["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"] || user.unique_name || user.email 
     : 'Kinetic User';
+  
+  const fullId = user?.["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"];
+  const randomAvatar = `https://loremflickr.com/300/300/fitness?lock=${fullId}`;
+
 
   // Grouping logic
   const groupSessions = (items) => {
@@ -181,11 +185,14 @@ const ChatSidebar = ({ sessions, currentSessionId, onSelectSession, onRenameSess
 
           <div className="p-4 border-t border-white/5 bg-surface-container-lowest/50">
              <div className="flex items-center gap-3 p-2 rounded-xl bg-white/5 group relative overflow-hidden">
-                <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-secondary to-primary p-[1px] shrink-0">
-                   <div className="w-full h-full rounded-full bg-surface-container-low flex items-center justify-center">
-                      <span className="material-symbols-outlined text-sm text-on-surface">person</span>
-                   </div>
+                <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-secondary to-primary p-[1px] shrink-0 overflow-hidden">
+                   <img 
+                     src={randomAvatar} 
+                     alt="User profile" 
+                     className="w-full h-full rounded-full object-cover"
+                   />
                 </div>
+
                 <div className="flex-grow min-w-0">
                    <p className="text-[11px] font-bold text-on-surface truncate">{userName}</p>
                    <p className="text-[8px] text-primary font-black uppercase tracking-widest opacity-60">{t('chat.sidebar.verified')}</p>
