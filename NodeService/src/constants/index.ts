@@ -90,11 +90,11 @@ export const DIFFICULTY_FEEDBACK = {
 } as const;
 
 // ─── RabbitMQ Queue Names ───────────────────────────────────────────────────────
-export const QUEUES = {
-  PLAN_GENERATED: 'plan.generated',
-  PLAN_ADJUSTED: 'plan.adjusted',
-  WORKOUT_FEEDBACK: 'workout.feedback',
-} as const;
+// export const QUEUES = {
+//   PLAN_GENERATED: 'plan.generated',
+//   PLAN_ADJUSTED: 'plan.adjusted',
+//   WORKOUT_FEEDBACK: 'workout.feedback',
+// } as const;
 
 // ─── WebSocket Events ───────────────────────────────────────────────────────────
 export const SOCKET_EVENTS = {

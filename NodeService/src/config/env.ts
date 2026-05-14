@@ -31,10 +31,10 @@ const envSchema = z.object({
 
   // RabbitMQ — tắt khi chưa có RabbitMQ server
   // RABBITMQ_ENABLED: booleanFromString,
-  RABBITMQ_URL: z.string().default("amqp://guest:guest@localhost:5672"),
-  RABBITMQ_QUEUE_PLAN_GENERATED: z.string().default("plan.generated"),
-  RABBITMQ_QUEUE_PLAN_ADJUSTED: z.string().default("plan.adjusted"),
-  RABBITMQ_QUEUE_WORKOUT_FEEDBACK: z.string().default("workout.feedback"),
+  // RABBITMQ_URL: z.string().default("amqp://guest:guest@localhost:5672"),
+  // RABBITMQ_QUEUE_PLAN_GENERATED: z.string().default("plan.generated"),
+  // RABBITMQ_QUEUE_PLAN_ADJUSTED: z.string().default("plan.adjusted"),
+  // RABBITMQ_QUEUE_WORKOUT_FEEDBACK: z.string().default("workout.feedback"),
 
   // JWT (token được ký bởi .NET Auth Service)
   JWT_SECRET: z.string().min(16, "JWT_SECRET phải có ít nhất 16 ký tự"),
