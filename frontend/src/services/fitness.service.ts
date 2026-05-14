@@ -46,7 +46,7 @@ const handleResponse = async <T>(apiPromise: Promise<any>): Promise<T> => {
  * Lấy fitness profile của user hiện tại
  */
 export const getFitnessProfile = async (): Promise<FitnessProfile> => {
-  return handleResponse<FitnessProfile>(progressApi.get('/v1/profile'));
+  return handleResponse<FitnessProfile>(progressApi.get('/profile'));
 };
 
 /**
@@ -57,5 +57,5 @@ export const getFitnessProfile = async (): Promise<FitnessProfile> => {
 export const updateFitnessProfile = async (
   dto: UpdateFitnessProfileDto,
 ): Promise<FitnessProfile> => {
-  return handleResponse<FitnessProfile>(progressApi.put('/v1/profile', dto));
+  return handleResponse<FitnessProfile>(progressApi.put('/profile', dto));
 };

@@ -55,7 +55,7 @@ const handleResponse = async <T>(apiPromise: Promise<any>): Promise<T> => {
  */
 export const checkProfileExists = async (): Promise<boolean> => {
   try {
-    const data = await handleResponse<{ exists: boolean }>(progressApi.get('/v1/profile/exists'));
+    const data = await handleResponse<{ exists: boolean }>(progressApi.get('/profile/exists'));
     return data.exists === true;
   } catch (error: any) {
     const status = error?.status ?? error?.response?.status;
@@ -82,5 +82,5 @@ export const checkProfileExists = async (): Promise<boolean> => {
  * POST /api/v1/profile
  */
 export const createUserProfile = async (payload: CreateUserProfileRequest): Promise<void> => {
-  await handleResponse(progressApi.post('/v1/profile', payload));
+  await handleResponse(progressApi.post('/profile', payload));
 };

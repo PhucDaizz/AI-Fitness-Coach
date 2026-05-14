@@ -23,22 +23,21 @@ const handleResponse = async (apiPromise) => {
 };
 
 export const getAnalyticsSummary = async () => {
-  return await handleResponse(progressApi.get('v1/analytics/summary'));
+  return await handleResponse(progressApi.get('analytics/summary'));
 };
 
 export const getWeeklyData = async () => {
-  return await handleResponse(progressApi.get('v1/analytics/weekly'));
+  return await handleResponse(progressApi.get('analytics/weekly'));
 };
 
 export const getHeatmapData = async (days = 365) => {
-  return await handleResponse(progressApi.get(`v1/analytics/heatmap`, { params: { days } }));
+  return await handleResponse(progressApi.get(`analytics/heatmap`, { params: { days } }));
 };
 
 export const getMuscleVolume = async () => {
-  return await handleResponse(progressApi.get('v1/analytics/muscle-volume'));
+  return await handleResponse(progressApi.get('analytics/muscle-volume'));
 };
 
 export const getAdminAnalyticsOverview = async () => {
-  return await handleResponse(progressApi.get('v1/analytics/admin/overview'));
+  return await handleResponse(progressApi.get('analytics/admin/overview'));
 };
-
