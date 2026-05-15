@@ -24,7 +24,7 @@ const envSchema = z.object({
     .enum(["development", "production", "test"])
     .default("development"),
   PORT: z.coerce.number().positive().default(3000),
-  API_PREFIX: z.string().default("/api"),
+  API_PREFIX: z.string().default("/api/v1"),
 
   // MongoDB
   MONGODB_URI: z.string().url("MONGODB_URI phải là một URL hợp lệ"),
