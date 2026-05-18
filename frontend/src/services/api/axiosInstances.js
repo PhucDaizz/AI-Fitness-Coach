@@ -13,13 +13,13 @@ const createInstance = (baseURL) => {
         const value = params[key];
         if (value === undefined || value === null || value === '') continue;
         if (Array.isArray(value)) {
-          value.forEach(v => searchParams.append(key, v));
+          value.forEach((v) => searchParams.append(key, v));
         } else {
           searchParams.append(key, value);
         }
       }
       return searchParams.toString();
-    }
+    },
   });
 
   // Request interceptor for Auth Token
@@ -27,7 +27,7 @@ const createInstance = (baseURL) => {
     (config) => {
       // List of endpoints that should NOT carry the Auth header
       const publicEndpoints = ['/Auth/Login', '/Auth/Register', '/Auth/Refreshtoken'];
-      const isPublic = publicEndpoints.some(url => config.url?.includes(url));
+      const isPublic = publicEndpoints.some((url) => config.url?.includes(url));
 
       const token = localStorage.getItem('token');
       if (token && !isPublic) {
@@ -47,23 +47,26 @@ const createInstance = (baseURL) => {
       // If error is 401 and we haven't retried yet
       if (error.response?.status === 401 && !originalRequest._retry) {
         originalRequest._retry = true;
-        
+
         const refreshToken = localStorage.getItem('refreshToken');
         const token = localStorage.getItem('token');
 
         if (refreshToken && token) {
           try {
             console.log('Token expired. Attempting refresh...');
-            
+
             // Call the refresh endpoint directly using axios to avoid loops
-            const response = await axios.post(`${import.meta.env.VITE_AUTH_API_URL}/api/Auth/Refreshtoken`, {
-              token,
-              refreshToken
-            });
+            const response = await axios.post(
+              `${import.meta.env.VITE_AUTH_API_URL}/api/Auth/Refreshtoken`,
+              {
+                token,
+                refreshToken,
+              },
+            );
 
             if (response.data.success) {
               const { token: newToken, refreshToken: newRefreshToken } = response.data.data;
-              
+
               localStorage.setItem('token', newToken);
               localStorage.setItem('refreshToken', newRefreshToken);
 
@@ -85,7 +88,7 @@ const createInstance = (baseURL) => {
           window.location.href = '/login';
         }
       }
-      
+
       return Promise.reject(error);
     },
   );

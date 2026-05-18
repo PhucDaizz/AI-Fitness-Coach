@@ -23,7 +23,6 @@ export const GENDERS = [
   { value: 'other' as const, label: 'Other' },
 ];
 
-
 // ── Step 2 Equipment ───────────────────────────────────────────────
 export const ENVIRONMENTS = [
   {

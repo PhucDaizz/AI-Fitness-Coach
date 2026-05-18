@@ -41,4 +41,3 @@ export const getMuscleVolume = async () => {
 export const getAdminAnalyticsOverview = async () => {
   return await handleResponse(progressApi.get('v1/analytics/admin/overview'));
 };
-
