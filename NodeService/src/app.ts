@@ -65,6 +65,14 @@ export function createApp(): Application {
   }
 
   // ─── API routes ────────────────────────────────────────────────────────────────
+  app.get('/health', (_req, res) => {
+    res.status(200).json({
+      service: 'node-service',
+      status: 'healthy',
+      timestamp: new Date().toISOString(),
+    });
+  });
+
   app.use(env.API_PREFIX, routes);
 
   // ─── 404 ───────────────────────────────────────────────────────────────────────

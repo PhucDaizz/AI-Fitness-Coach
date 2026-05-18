@@ -30,6 +30,22 @@ services:
     networks:
       - fitnesscoach-network
 
+  ollama_pull_bge_m3:
+    image: ollama/ollama:latest
+    container_name: fitnesscoach_ollama_pull_bge_m3
+    depends_on:
+      ollama:
+        condition: service_started
+    environment:
+      - OLLAMA_HOST=http://ollama:11434
+    entrypoint: [ "/bin/sh", "-c" ]
+    command: >
+      "until ollama list; do sleep 2; done;
+       ollama pull bge-m3"
+    networks:
+      - fitnesscoach-network
+    restart: "no"
+
   mongodb:
     image: mongo:7.0
     container_name: fitnesscoach_mongodb
@@ -66,6 +82,22 @@ services:
       timeout: 5s
       retries: 5
 
+  redis:
+    image: redis:7.4-alpine
+    container_name: fitnesscoach_redis
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - fitnesscoach-network
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   auth_service:
     build:
       context: ./AuthService
@@ -95,6 +127,7 @@ services:
       - "6333:6333" # REST
     volumes:
       - qdrant_data:/qdrant/storage
+      - ./qdrant-snapshots:/qdrant/snapshots
     networks:
       - fitnesscoach-network
 
@@ -111,16 +144,14 @@ services:
         condition: service_healthy
       qdrant:
         condition: service_started
+      ollama_pull_bge_m3:
+        condition: service_completed_successfully
     ports:
       - "7002:8080" # Exposed on port 7002 to avoid conflict with auth_service
     env_file:
       - .env.example.ai
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
-      - ConnectionStrings__DefaultConnection=Server=mysql;Port=3306;Database=AI.Fitness.Coach.Service;user=root;password=phucdai011;
-      - RabbitMQ__HostName=rabbitmq
-      - Qdrant__Host=qdrant
-      - Ollama__Url=http://ollama:11434
     networks:
       - fitnesscoach-network
 
@@ -145,6 +176,27 @@ services:
     networks:
       - fitnesscoach-network
 
+  api_gateway:
+    build:
+      context: ./APIGateway
+      dockerfile: Dockerfile
+    container_name: fitnesscoach_api_gateway
+    restart: on-failure
+    depends_on:
+      auth_service:
+        condition: service_started
+      ai_service:
+        condition: service_started
+      node_service:
+        condition: service_started
+    ports:
+      - "7000:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Docker
+      - ASPNETCORE_HTTP_PORTS=8080
+    networks:
+      - fitnesscoach-network
+
   
 networks:
   fitnesscoach-network:
@@ -156,3 +208,4 @@ volumes:
   rabbitmq_data:
   qdrant_data:
   ollama_data:
+  redis_data:
