@@ -43,7 +43,39 @@ namespace AIService.API.StartUp
         {
             if (app.Environment.IsDevelopment())
             {
-                app.UseSwagger();
+                app.UseSwagger(options =>
+                {
+                    options.PreSerializeFilters.Add((swaggerDoc, request) =>
+                    {
+                        if (!request.Headers.TryGetValue("X-Forwarded-Prefix", out var serverPrefixValues))
+                        {
+                            return;
+                        }
+
+                        var serverPrefix = serverPrefixValues.FirstOrDefault();
+                        if (string.IsNullOrWhiteSpace(serverPrefix))
+                        {
+                            return;
+                        }
+
+                        swaggerDoc.Servers = new List<OpenApiServer>
+                        {
+                            new() { Url = serverPrefix }
+                        };
+
+                        var paths = new OpenApiPaths();
+                        foreach (var path in swaggerDoc.Paths)
+                        {
+                            var key = path.Key.StartsWith("/api/", StringComparison.OrdinalIgnoreCase)
+                                ? path.Key[4..]
+                                : path.Key;
+
+                            paths.Add(key, path.Value);
+                        }
+
+                        swaggerDoc.Paths = paths;
+                    });
+                });
                 app.UseSwaggerUI();
             }
         }

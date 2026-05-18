@@ -42,6 +42,15 @@ namespace APIGateway
                     return;
                 }
 
+                if (context.Request.Path.StartsWithSegments("/auth/swagger"))
+                {
+                    context.Request.Headers["X-Forwarded-Prefix"] = "/auth";
+                }
+                else if (context.Request.Path.StartsWithSegments("/ai/swagger"))
+                {
+                    context.Request.Headers["X-Forwarded-Prefix"] = "/ai";
+                }
+
                 await next();
             });
 
