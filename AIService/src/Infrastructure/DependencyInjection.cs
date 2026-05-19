@@ -120,7 +120,7 @@ namespace AIService.Infrastructure
                     httpClient: httpClient);
 
                 kernelBuilder.AddGoogleAIGeminiChatCompletion(
-                    modelId: "gemma-4-26b-a4b-it",
+                    modelId: googleConfig.TranslatorModel,
                     apiKey: googleConfig.ApiKey,
                     serviceId: "fast_translator",
                     httpClient: httpClient);
@@ -141,6 +141,13 @@ namespace AIService.Infrastructure
                     endpoint: new Uri("https://openrouter.ai/api/v1"),
                     httpClient: openRouterClient,
                     serviceId: "pt_brain");
+
+                /*kernelBuilder.AddOpenAIChatCompletion(
+                    modelId: openRouterConfig.TranslatorModel,
+                    apiKey: openRouterConfig.ApiKey,
+                    endpoint: new Uri("https://openrouter.ai/api/v1"),
+                    httpClient: openRouterClient,
+                    serviceId: "fast_translator");*/
 
                 #endregion
 

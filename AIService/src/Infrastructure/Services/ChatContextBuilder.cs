@@ -43,10 +43,21 @@ namespace AIService.Infrastructure.Services
                     _logger.LogInformation("[ContextBuilder] VI: {VI} → EN: {EN}", vietnameseQuestion, englishQuestion);
                     return (englishQuestion, longTermContext);
                 }
-                catch (HttpOperationException) when (attempt < maxRetries - 1)
+                catch (HttpOperationException ex) when (ex.Message.Contains("400", StringComparison.OrdinalIgnoreCase))
+                {
+                    _logger.LogError(ex, "[ContextBuilder] ! Nội dung Request gửi đi bị sai.");
+
+                    if (ex.InnerException != null)
+                    {
+                        _logger.LogError("[ContextBuilder] Chi tiết từ LLM: {Detail}", ex.InnerException.Message);
+                    }
+
+                    throw; 
+                }
+                catch (HttpOperationException ex) when (attempt < maxRetries - 1)
                 {
                     attempt++;
-                    _logger.LogWarning("[ContextBuilder] Retry {Attempt}/{Max}", attempt, maxRetries);
+                    _logger.LogWarning("[ContextBuilder] Retry {Attempt}/{Max} do lỗi: {Msg}", attempt, maxRetries, ex.Message);
                     await Task.Delay(TimeSpan.FromSeconds(attempt * 2), ct);
                 }
             }

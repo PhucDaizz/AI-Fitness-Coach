@@ -42,6 +42,9 @@ namespace APIGateway
                     return;
                 }
 
+                context.Request.Headers["X-Forwarded-Host"] = context.Request.Host.Value;
+                context.Request.Headers["X-Forwarded-Proto"] = context.Request.Scheme;
+
                 if (context.Request.Path.StartsWithSegments("/auth/swagger"))
                 {
                     context.Request.Headers["X-Forwarded-Prefix"] = "/auth";

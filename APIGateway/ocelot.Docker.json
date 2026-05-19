@@ -27,6 +27,19 @@
       "Priority": 100
     },
     {
+      "UpstreamPathTemplate": "/signin-google",
+      "UpstreamHttpMethod": [ "GET", "POST" ],
+      "DownstreamPathTemplate": "/signin-google",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "auth_service",
+          "Port": 8080
+        }
+      ],
+      "Priority": 100
+    },
+    {
       "UpstreamPathTemplate": "/auth/swagger",
       "UpstreamHttpMethod": [ "GET" ],
       "DownstreamPathTemplate": "/swagger",
@@ -69,7 +82,7 @@
       "UpstreamPathTemplate": "/ai/hubs/{everything}",
       "UpstreamHttpMethod": [ "GET", "POST", "OPTIONS" ],
       "DownstreamPathTemplate": "/hubs/{everything}",
-      "DownstreamScheme": "http",
+      "DownstreamScheme": "ws",
       "DownstreamHostAndPorts": [
         {
           "Host": "ai_service",

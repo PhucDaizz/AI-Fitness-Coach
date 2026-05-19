@@ -98,12 +98,12 @@ namespace AIService.API
 
             //app.UseHttpsRedirection();
 
-            app.MapHealthChecks("/health");
+            app.UseCors("AllowAll");
 
             app.UseAuthentication();
             app.UseAuthorization();
 
-            app.UseCors("AllowAll");
+            app.MapHealthChecks("/health");
 
             app.MapHub<ChatHub>("/hubs/chat");
 

@@ -204,10 +204,13 @@ namespace API.Controllers
         [HttpGet("google-login")]
         public IActionResult GoogleLogin()
         {
+            var callbackUri = _configuration["Google:SignInCallbackRedirectUri"]
+                ?? Url.Action(nameof(GoogleSignInCallbackHandler));
+
             var properties = new AuthenticationProperties
             {
                 // Bảo Google sau khi xong thì quay về hàm Callback bên dưới
-                RedirectUri = Url.Action(nameof(GoogleSignInCallbackHandler))
+                RedirectUri = callbackUri
             };
 
             return Challenge(properties, "Google");

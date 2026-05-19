@@ -42,6 +42,7 @@ const envSchema = z.object({
 
   // CORS
   CORS_ORIGIN: z.string().default("http://localhost:5173"),
+  API_GATEWAY_NODE_URL: z.string().url().default("http://localhost:7000/node"),
 
   // Rate Limit — tắt khi dev
   RATE_LIMIT_ENABLED: booleanFromString,

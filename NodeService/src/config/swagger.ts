@@ -17,8 +17,12 @@ const options: swaggerJsdoc.Options = {
     },
     servers: [
       {
+        url: env.API_GATEWAY_NODE_URL,
+        description: 'API Gateway',
+      },
+      {
         url: `http://localhost:${env.PORT}${env.API_PREFIX}`,
-        description: 'Development server',
+        description: 'Node direct',
       },
     ],
     components: {

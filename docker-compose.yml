@@ -149,7 +149,7 @@ services:
     ports:
       - "7002:8080" # Exposed on port 7002 to avoid conflict with auth_service
     env_file:
-      - .env.example.ai
+      - .env.ai
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
     networks:

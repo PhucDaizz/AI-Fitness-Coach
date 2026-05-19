@@ -34,7 +34,10 @@ export function authenticate(req: Request, res: Response, next: NextFunction): v
     return;
   }
 
-  const token = authHeader.split(' ')[1];
+  const token = authHeader
+    .slice('Bearer '.length)
+    .replace(/^Bearer\s+/i, '')
+    .trim();
 
   try {
     // verify() xác nhận chữ ký + hạn token
