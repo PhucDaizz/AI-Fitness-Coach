@@ -54,7 +54,7 @@ export const register = async (fullName, email, password, phoneNumber) => {
 };
 
 export const getGoogleLoginUrl = () => {
-  return `${import.meta.env.VITE_AUTH_API_URL}/api/Auth/google-login`;
+  return `${import.meta.env.VITE_AUTH_API_URL}/Auth/google-login`;
 };
 
 export const getCurrentUser = async () => {

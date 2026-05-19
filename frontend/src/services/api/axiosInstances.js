@@ -57,7 +57,7 @@ const createInstance = (baseURL) => {
 
             // Call the refresh endpoint directly using axios to avoid loops
             const response = await axios.post(
-              `${import.meta.env.VITE_AUTH_API_URL}/api/Auth/Refreshtoken`,
+              `${import.meta.env.VITE_AUTH_API_URL}/Auth/Refreshtoken`,
               {
                 token,
                 refreshToken,
@@ -97,6 +97,6 @@ const createInstance = (baseURL) => {
 };
 
 // Create specialized instances
-export const authApi = createInstance(`${import.meta.env.VITE_AUTH_API_URL}/api`);
-export const workoutApi = createInstance(`${import.meta.env.VITE_WORKOUT_API_URL}/api`);
-export const progressApi = createInstance(`${import.meta.env.VITE_PROGRESS_API_URL}/api`);
+export const authApi = createInstance(`${import.meta.env.VITE_AUTH_API_URL}`);
+export const workoutApi = createInstance(`${import.meta.env.VITE_WORKOUT_API_URL}`);
+export const progressApi = createInstance(`${import.meta.env.VITE_PROGRESS_API_URL}`);

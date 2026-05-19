@@ -1,16 +1,23 @@
-import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import CustomerLayout from '../../components/layout/CustomerLayout';
-import ChatSidebar from '../../components/customer/ChatSidebar';
-import ChatMessage from '../../components/customer/ChatMessage';
+import { useNavigate, useParams } from 'react-router-dom';
+
 import ChatInput from '../../components/customer/ChatInput';
-import ChatWelcome from '../../components/customer/ChatWelcome';
+import ChatMessage from '../../components/customer/ChatMessage';
 import ChatScrollSpy from '../../components/customer/ChatScrollSpy';
+import ChatSidebar from '../../components/customer/ChatSidebar';
+import ChatWelcome from '../../components/customer/ChatWelcome';
+import CustomerLayout from '../../components/layout/CustomerLayout';
 import useChatSignalR from '../../hooks/useChatSignalR';
-import { getSessions, getSessionMessages, streamChat, changeTitle, deleteSession } from '../../services/api/chat.service';
-import { getDecodedToken } from '../../utils/authUtils';
 import { logout } from '../../services/api/auth.service';
+import {
+  changeTitle,
+  deleteSession,
+  getSessionMessages,
+  getSessions,
+  streamChat,
+} from '../../services/api/chat.service';
+import { getDecodedToken } from '../../utils/authUtils';
 
 const ChatPage = () => {
   const { t } = useTranslation();
@@ -94,7 +101,7 @@ const ChatPage = () => {
       const newItems = data?.items || [];
       const sortedNew = [...newItems].sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
 
-      setMessages(prev => [...sortedNew, ...prev]);
+      setMessages((prev) => [...sortedNew, ...prev]);
       setHasMore(data?.hasMore || false);
       setNextCursor(data?.nextCursor || null);
 
@@ -116,7 +123,7 @@ const ChatPage = () => {
   // Scroll detection for infinite load and auto-scroll logic
   const handleScroll = (e) => {
     const { scrollTop, scrollHeight, clientHeight } = e.currentTarget;
-    
+
     // Track if user is within 150px of the bottom
     isNearBottomRef.current = scrollHeight - scrollTop - clientHeight < 150;
 
@@ -148,56 +155,69 @@ const ChatPage = () => {
   }, [messages.length, streamingContent, isThinking, isStreaming]);
 
   // SignalR Handlers
-  const onReceiveChunk = useCallback((messageId, chunk) => {
-    setIsThinking(false);
-    setIsStreaming(true);
-    setActiveStreamingId(messageId);
-    
-    // Update both state (for rendering) and ref (for reliable final read)
-    streamingContentRef.current += chunk;
-    setStreamingContent(streamingContentRef.current);
-  }, []);
+  const onReceiveChunk = useCallback(
+    (messageId, chunk) => {
+      if (activeStreamingId && activeStreamingId !== messageId) {
+        return;
+      }
 
-  const onMessageCompleted = useCallback((messageId) => {
-    // Read final content from ref — guaranteed to be the latest, no stale closure
-    const finalContent = streamingContentRef.current;
+      setIsThinking(false);
+      setIsStreaming(true);
+      setActiveStreamingId(messageId);
 
-    // 1. Clear streaming state FIRST to hide the streaming bubble
-    setIsStreaming(false);
-    setIsThinking(false);
-    setActiveStreamingId(null);
-    setStreamingContent('');
-    streamingContentRef.current = '';
+      // Update both state (for rendering) and ref (for reliable final read)
+      streamingContentRef.current += chunk;
+      setStreamingContent(streamingContentRef.current);
+    },
+    [activeStreamingId],
+  );
 
-    // 2. Then append the completed message to the permanent list locally
-    if (finalContent) {
-      setMessages(prev => {
-        const exists = prev.some(m => m.id === messageId);
-        if (exists) return prev;
-        return [...prev, {
-          id: messageId,
-          role: 'AI',
-          content: finalContent,
-          createdAt: new Date().toISOString()
-        }];
-      });
-    }
+  const onMessageCompleted = useCallback(
+    (messageId) => {
+      // Read final content from ref — guaranteed to be the latest, no stale closure
+      const finalContent = streamingContentRef.current;
 
-    // 3. Sync sidebar session list and trigger silent DB sync
-    if (currentSessionId) {
-      fetchSessions();
-      
-      setTimeout(() => {
-        loadMessages(currentSessionId);
-      }, 1500);
-    }
-  }, [currentSessionId, fetchSessions, loadMessages]);
+      // 1. Clear streaming state FIRST to hide the streaming bubble
+      setIsStreaming(false);
+      setIsThinking(false);
+      setActiveStreamingId(null);
+      setStreamingContent('');
+      streamingContentRef.current = '';
+
+      // 2. Then append the completed message to the permanent list locally
+      if (finalContent) {
+        setMessages((prev) => {
+          const exists = prev.some((m) => m.id === messageId);
+          if (exists) return prev;
+          return [
+            ...prev,
+            {
+              id: messageId,
+              role: 'AI',
+              content: finalContent,
+              createdAt: new Date().toISOString(),
+            },
+          ];
+        });
+      }
+
+      // 3. Sync sidebar session list and trigger silent DB sync
+      if (currentSessionId) {
+        fetchSessions();
+
+        setTimeout(() => {
+          loadMessages(currentSessionId);
+        }, 1500);
+      }
+    },
+    [currentSessionId, fetchSessions, loadMessages],
+  );
 
   const onTitleUpdated = useCallback((sessionId, newTitle) => {
-    setSessions(prev => {
-      const exists = prev.some(s => s.id === sessionId);
+    setSessions((prev) => {
+      const exists = prev.some((s) => s.id === sessionId);
       if (exists) {
-        return prev.map(s => s.id === sessionId ? { ...s, title: newTitle } : s);
+        return prev.map((s) => (s.id === sessionId ? { ...s, title: newTitle } : s));
       } else {
         return [{ id: sessionId, title: newTitle, createdAt: new Date().toISOString() }, ...prev];
       }
@@ -208,14 +228,20 @@ const ChatPage = () => {
     console.error('SignalR Error:', error);
     setIsThinking(false);
     setIsStreaming(false);
+    setActiveStreamingId(null);
+    setStreamingContent('');
+    streamingContentRef.current = '';
   }, []);
 
-  const signalRHandlers = useMemo(() => ({
-    ReceiveMessageChunk: onReceiveChunk,
-    MessageCompleted: onMessageCompleted,
-    SessionTitleUpdated: onTitleUpdated,
-    ReceiveError: onReceiveError
-  }), [onReceiveChunk, onMessageCompleted, onTitleUpdated, onReceiveError]);
+  const signalRHandlers = useMemo(
+    () => ({
+      ReceiveMessageChunk: onReceiveChunk,
+      MessageCompleted: onMessageCompleted,
+      SessionTitleUpdated: onTitleUpdated,
+      ReceiveError: onReceiveError,
+    }),
+    [onReceiveChunk, onMessageCompleted, onTitleUpdated, onReceiveError],
+  );
 
   useChatSignalR(signalRHandlers);
 
@@ -233,12 +259,14 @@ const ChatPage = () => {
       id: `temp-u-${Date.now()}`,
       role: 'User',
       content: text,
-      createdAt: new Date().toISOString()
+      createdAt: new Date().toISOString(),
     };
-    setMessages(prev => [...prev, userMsg]);
+    setMessages((prev) => [...prev, userMsg]);
 
     setIsThinking(true);
     setStreamingContent('');
+    setActiveStreamingId(null);
+    streamingContentRef.current = '';
 
     try {
       await streamChat(text, sessionId);
@@ -246,12 +274,15 @@ const ChatPage = () => {
       console.error('API Error:', err);
       if (!isStreaming) {
         setIsThinking(false);
-        setMessages(prev => [...prev, {
-          id: `err-${Date.now()}`,
-          role: 'AI',
-          content: t('chat.sync_failed'),
-          createdAt: new Date().toISOString()
-        }]);
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: `err-${Date.now()}`,
+            role: 'AI',
+            content: t('chat.sync_failed'),
+            createdAt: new Date().toISOString(),
+          },
+        ]);
       }
     }
   };
@@ -269,7 +300,7 @@ const ChatPage = () => {
     try {
       await changeTitle(id, newTitle);
       // Update local state immediately for better UX
-      setSessions(prev => prev.map(s => s.id === id ? { ...s, title: newTitle } : s));
+      setSessions((prev) => prev.map((s) => (s.id === id ? { ...s, title: newTitle } : s)));
     } catch (err) {
       console.error('Failed to rename session', err);
       // Revert on failure (could add a toast notification here)
@@ -281,7 +312,7 @@ const ChatPage = () => {
     try {
       await deleteSession(id);
       // Remove from local state
-      setSessions(prev => prev.filter(s => s.id !== id));
+      setSessions((prev) => prev.filter((s) => s.id !== id));
 
       // If the deleted session is the currently active one, clear it
       if (currentSessionId === id) {
@@ -345,7 +376,9 @@ const ChatPage = () => {
                 onClick={() => setIsSidebarOpen(true)}
                 className="w-10 h-10 rounded-full bg-surface-container-highest/90 backdrop-blur-xl flex items-center justify-center border border-white/10 shadow-2xl hover:border-primary/40 transition-all active:scale-90 group"
               >
-                <span className="material-symbols-outlined text-on-surface group-hover:text-primary text-xl">menu</span>
+                <span className="material-symbols-outlined text-on-surface group-hover:text-primary text-xl">
+                  menu
+                </span>
               </button>
             </div>
           )}
@@ -373,18 +406,15 @@ const ChatPage = () => {
                   messageId={uniqueId}
                   role={msg.role}
                   content={msg.content}
-                  timestamp={new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                  timestamp={new Date(msg.createdAt).toLocaleTimeString([], {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                  })}
                 />
               );
             })}
 
-            {isThinking && (
-              <ChatMessage
-                role="AI"
-                content=""
-                isThinking={true}
-              />
-            )}
+            {isThinking && <ChatMessage role="AI" content="" isThinking={true} />}
 
             {isStreaming && (
               <ChatMessage

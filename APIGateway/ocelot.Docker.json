@@ -1,6 +1,149 @@
 {
   "Routes": [
     {
+      "UpstreamPathTemplate": "/hubs/{everything}",
+      "UpstreamHttpMethod": [ "GET", "POST", "OPTIONS" ],
+      "DownstreamPathTemplate": "/hubs/{everything}",
+      "DownstreamScheme": "ws",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "ai_service",
+          "Port": 8080
+        }
+      ],
+      "Priority": 300
+    },
+    {
+      "UpstreamPathTemplate": "/Auth/{everything}",
+      "UpstreamHttpMethod": [ "GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS" ],
+      "DownstreamPathTemplate": "/api/Auth/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "auth_service",
+          "Port": 8080
+        }
+      ],
+      "Priority": 300
+    },
+    {
+      "UpstreamPathTemplate": "/System/total-users",
+      "UpstreamHttpMethod": [ "GET" ],
+      "DownstreamPathTemplate": "/api/System/total-users",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "auth_service",
+          "Port": 8080
+        }
+      ],
+      "Priority": 300
+    },
+    {
+      "UpstreamPathTemplate": "/v1/{everything}",
+      "UpstreamHttpMethod": [ "GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS" ],
+      "DownstreamPathTemplate": "/api/v1/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "node_service",
+          "Port": 7003
+        }
+      ],
+      "Priority": 300
+    },
+    {
+      "UpstreamPathTemplate": "/Session",
+      "UpstreamHttpMethod": [ "GET", "POST", "DELETE", "OPTIONS" ],
+      "DownstreamPathTemplate": "/api/Session",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "ai_service",
+          "Port": 8080
+        }
+      ],
+      "Priority": 300
+    },
+    {
+      "UpstreamPathTemplate": "/Session/{everything}",
+      "UpstreamHttpMethod": [ "GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS" ],
+      "DownstreamPathTemplate": "/api/Session/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "ai_service",
+          "Port": 8080
+        }
+      ],
+      "Priority": 300
+    },
+    {
+      "UpstreamPathTemplate": "/Rag/{everything}",
+      "UpstreamHttpMethod": [ "GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS" ],
+      "DownstreamPathTemplate": "/api/Rag/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "ai_service",
+          "Port": 8080
+        }
+      ],
+      "Priority": 300
+    },
+    {
+      "UpstreamPathTemplate": "/WorkoutPlan/{everything}",
+      "UpstreamHttpMethod": [ "GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS" ],
+      "DownstreamPathTemplate": "/api/WorkoutPlan/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "ai_service",
+          "Port": 8080
+        }
+      ],
+      "Priority": 300
+    },
+    {
+      "UpstreamPathTemplate": "/System/{everything}",
+      "UpstreamHttpMethod": [ "GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS" ],
+      "DownstreamPathTemplate": "/api/System/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "ai_service",
+          "Port": 8080
+        }
+      ],
+      "Priority": 200
+    },
+    {
+      "UpstreamPathTemplate": "/Maintenance/{everything}",
+      "UpstreamHttpMethod": [ "GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS" ],
+      "DownstreamPathTemplate": "/api/Maintenance/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "ai_service",
+          "Port": 8080
+        }
+      ],
+      "Priority": 300
+    },
+    {
+      "UpstreamPathTemplate": "/{everything}",
+      "UpstreamHttpMethod": [ "GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS" ],
+      "DownstreamPathTemplate": "/api/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "ai_service",
+          "Port": 8080
+        }
+      ],
+      "Priority": 0
+    },
+    {
       "UpstreamPathTemplate": "/auth/health",
       "UpstreamHttpMethod": [ "GET" ],
       "DownstreamPathTemplate": "/health",
@@ -11,7 +154,7 @@
           "Port": 8080
         }
       ],
-      "Priority": 100
+      "Priority": 500
     },
     {
       "UpstreamPathTemplate": "/auth/swagger/{everything}",
@@ -24,7 +167,7 @@
           "Port": 8080
         }
       ],
-      "Priority": 100
+      "Priority": 500
     },
     {
       "UpstreamPathTemplate": "/signin-google",
@@ -37,7 +180,7 @@
           "Port": 8080
         }
       ],
-      "Priority": 100
+      "Priority": 500
     },
     {
       "UpstreamPathTemplate": "/auth/swagger",
@@ -50,7 +193,20 @@
           "Port": 8080
         }
       ],
-      "Priority": 100
+      "Priority": 500
+    },
+    {
+      "UpstreamPathTemplate": "/auth/Auth/{everything}",
+      "UpstreamHttpMethod": [ "GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS" ],
+      "DownstreamPathTemplate": "/api/Auth/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "auth_service",
+          "Port": 8080
+        }
+      ],
+      "Priority": 500
     },
     {
       "UpstreamPathTemplate": "/auth/{everything}",

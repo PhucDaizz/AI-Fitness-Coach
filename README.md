@@ -5,6 +5,116 @@
 
 ---
 
+## Docker Setup Notes
+
+### 1. Run with Docker
+
+```bash
+docker compose up -d --build
+```
+
+After all containers are running, use the API Gateway as the single backend entrypoint:
+
+```text
+http://localhost:7000
+```
+
+For the frontend, create `frontend/.env` from `frontend/.env.example`:
+
+```env
+VITE_AUTH_API_URL=http://localhost:7000
+VITE_WORKOUT_API_URL=http://localhost:7000
+VITE_SIGNALR_CHAT_URL=http://localhost:7000/hubs/chat
+VITE_PROGRESS_API_URL=http://localhost:7000
+```
+
+### 2. Swagger URLs
+
+Gateway Swagger URLs:
+
+| Service | URL |
+|---------|-----|
+| Auth Service | http://localhost:7000/auth/swagger/index.html |
+| AI Service | http://localhost:7000/ai/swagger/index.html |
+| Node Service | http://localhost:7000/node/docs/ |
+
+Direct service Swagger URLs:
+
+| Service | URL |
+|---------|-----|
+| Auth Service | http://localhost:7001/swagger/index.html |
+| AI Service | http://localhost:7002/swagger/index.html |
+| Node Service | http://localhost:7003/api/v1/docs |
+
+### 3. Import Qdrant collections from snapshots
+
+To avoid spending time embedding all exercises and meals again, restore the prepared Qdrant snapshots after Docker is running.
+
+Required Qdrant collection names:
+
+- `exercises`
+- `meals`
+
+Put snapshot files in:
+
+```text
+qdrant-snapshots/
+```
+
+This folder is mounted into the Qdrant container as:
+
+```text
+/qdrant/snapshots
+```
+
+Open Qdrant Dashboard:
+
+```text
+http://localhost:6333/dashboard
+```
+
+Recover/import the snapshot into the correct collection name: `exercises` and `meals`.
+
+You can also recover by API. Example, if the snapshot files are named `exercises.snapshot` and `meals.snapshot`:
+
+```bash
+curl -X PUT "http://localhost:6333/collections/exercises/snapshots/recover" \
+  -H "Content-Type: application/json" \
+  -d "{\"location\":\"file:///qdrant/snapshots/exercises.snapshot\"}"
+
+curl -X PUT "http://localhost:6333/collections/meals/snapshots/recover" \
+  -H "Content-Type: application/json" \
+  -d "{\"location\":\"file:///qdrant/snapshots/meals.snapshot\"}"
+```
+
+If your snapshot filenames are different, replace the filenames in the commands.
+
+### 4. Mark embeddings as completed in MySQL
+
+Because the Qdrant collections were imported manually, you must also update the embedding status in MySQL. Otherwise the app may still think the records are `pending`.
+
+Run:
+
+```sql
+USE `AI.Fitness.Coach.Service`;
+
+UPDATE exercises
+SET EmbedStatus = 'embedded'
+WHERE EmbedStatus <> 'embedded';
+
+UPDATE meals
+SET embed_status = 'embedded'
+WHERE embed_status <> 'embedded';
+```
+
+Notes:
+
+- Only run these SQL updates after the Qdrant snapshot restore succeeds.
+- Qdrant collection names must be exactly `exercises` and `meals`.
+- If you do not import snapshots, keep the records as `pending` so the app can embed them normally.
+
+---
+
 ## 👥 Team Members
 
 | Thành viên 1 — Node.js BE | Thành viên 2 — .NET AI |
