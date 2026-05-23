@@ -54,6 +54,8 @@ services:
     - "27017:27017"
     volumes:
     - mongodb_data:/data/db
+    environment:
+      - TZ=Asia/Ho_Chi_Minh
     networks:
     - fitnesscoach-network
     healthcheck:
@@ -152,6 +154,11 @@ services:
       - .env.ai
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
+      - TZ=Asia/Ho_Chi_Minh
+    sysctls:
+      net.ipv4.tcp_keepalive_time: 60
+      net.ipv4.tcp_keepalive_intvl: 10
+      net.ipv4.tcp_keepalive_probes: 6
     networks:
       - fitnesscoach-network
 
@@ -173,6 +180,7 @@ services:
     environment:
       - NODE_ENV=development
       - MONGODB_URI=mongodb://mongodb:27017/ai-fitness-coach
+      - TZ=Asia/Ho_Chi_Minh
     networks:
       - fitnesscoach-network
 

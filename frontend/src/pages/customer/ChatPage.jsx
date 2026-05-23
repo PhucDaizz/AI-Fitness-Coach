@@ -47,6 +47,10 @@ const ChatPage = () => {
   const isNearBottomRef = useRef(true); // Track if user is at the bottom of the chat
   const streamingContentRef = useRef(''); // Holds latest streamed content to avoid stale closures
 
+  // Performance Tracking Refs
+  const perfStartTimeRef = useRef(0);
+  const isFirstTokenReceivedRef = useRef(false);
+
   // Fetch session history
   const fetchSessions = useCallback(async () => {
     try {
@@ -161,6 +165,12 @@ const ChatPage = () => {
         return;
       }
 
+      if (!isFirstTokenReceivedRef.current && perfStartTimeRef.current > 0) {
+        const ttft = Date.now() - perfStartTimeRef.current;
+        console.log(`%c[Performance] Time to First Token (TTFT): ${ttft} ms`, 'color: #00ff00; font-weight: bold; font-size: 14px;');
+        isFirstTokenReceivedRef.current = true;
+      }
+
       setIsThinking(false);
       setIsStreaming(true);
       setActiveStreamingId(messageId);
@@ -176,6 +186,12 @@ const ChatPage = () => {
     (messageId) => {
       // Read final content from ref — guaranteed to be the latest, no stale closure
       const finalContent = streamingContentRef.current;
+
+      if (perfStartTimeRef.current > 0) {
+        const totalResponseTime = (Date.now() - perfStartTimeRef.current) / 1000;
+        console.log(`%c[Performance] Total Response Time: ${totalResponseTime.toFixed(2)} seconds`, 'color: #00bfff; font-weight: bold; font-size: 14px;');
+        perfStartTimeRef.current = 0;
+      }
 
       // 1. Clear streaming state FIRST to hide the streaming bubble
       setIsStreaming(false);
@@ -247,6 +263,10 @@ const ChatPage = () => {
 
   const handleSendMessage = async (text) => {
     if (!text.trim()) return;
+
+    // Start performance tracking
+    perfStartTimeRef.current = Date.now();
+    isFirstTokenReceivedRef.current = false;
 
     let sessionId = currentSessionId;
     if (!sessionId) {

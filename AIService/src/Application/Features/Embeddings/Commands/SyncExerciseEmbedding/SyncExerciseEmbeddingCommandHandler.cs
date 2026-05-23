@@ -5,6 +5,7 @@ using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.VectorData;
+using System.Diagnostics;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -31,6 +32,8 @@ namespace AIService.Application.Features.Embeddings.Commands.SyncExerciseEmbeddi
 
         public async Task<bool> Handle(SyncExerciseEmbeddingCommand request, CancellationToken cancellationToken)
         {
+            var stopwatch = Stopwatch.StartNew();
+
             var exercise = await _context.Exercises
                 .Include(e => e.Category)
                 .Include(e => e.Equipments)
@@ -61,11 +64,13 @@ namespace AIService.Application.Features.Embeddings.Commands.SyncExerciseEmbeddi
 
                 var primaryMuscleNames = exercise.ExerciseMuscles
                     .Where(m => m.IsPrimary)
-                    .Select(m => m.MuscleGroup.NameEN).ToList();
+                    .Select(m => m.MuscleGroup.NameEN)
+                    .ToList();
 
                 var secondaryMuscleNames = exercise.ExerciseMuscles
                     .Where(m => !m.IsPrimary)
-                    .Select(m => m.MuscleGroup.NameEN).ToList();
+                    .Select(m => m.MuscleGroup.NameEN)
+                    .ToList();
 
                 var equipmentNames = exercise.Equipments.Select(e => e.Name).ToList();
 
@@ -95,12 +100,36 @@ namespace AIService.Application.Features.Embeddings.Commands.SyncExerciseEmbeddi
                 exercise.UpdateEmbedStatus(EmbedStatus.embedded);
                 await _context.SaveChangesAsync(cancellationToken);
 
-                _logger.LogInformation($"[SyncEmbedding] Hoàn tất nhúng lại Bài tập: {exercise.Name}");
+                stopwatch.Stop();
+
+                _logger.LogInformation(
+                    "[Performance] Task={TaskName}, ItemId={ItemId}, Success={Success}, DurationMs={DurationMs}, DurationSeconds={DurationSeconds}",
+                    "Embedding bài tập",
+                    exercise.Id,
+                    true,
+                    stopwatch.ElapsedMilliseconds,
+                    stopwatch.Elapsed.TotalSeconds
+                );
+
+                _logger.LogInformation("[SyncEmbedding] Hoàn tất nhúng lại Bài tập: {Name}", exercise.Name);
+
                 return true;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"[SyncEmbedding] Lỗi khi xử lý Bài tập {exercise.Name}");
+                stopwatch.Stop();
+
+                _logger.LogError(
+                    ex,
+                    "[Performance] Task={TaskName}, ItemId={ItemId}, Success={Success}, DurationMs={DurationMs}, DurationSeconds={DurationSeconds}",
+                    "Embedding bài tập",
+                    exercise.Id,
+                    false,
+                    stopwatch.ElapsedMilliseconds,
+                    stopwatch.Elapsed.TotalSeconds
+                );
+
+                _logger.LogError(ex, "[SyncEmbedding] Lỗi khi xử lý Bài tập {Name}", exercise.Name);
                 throw;
             }
         }

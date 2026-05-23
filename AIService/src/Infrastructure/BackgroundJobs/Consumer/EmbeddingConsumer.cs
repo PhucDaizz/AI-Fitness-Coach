@@ -52,16 +52,23 @@ namespace AIService.Infrastructure.BackgroundJobs.Consumer
             using var scope = _scopeFactory.CreateScope();
             var mediator = scope.ServiceProvider.GetRequiredService<IMediator>();
 
+            var sw = System.Diagnostics.Stopwatch.StartNew();
             try
             {
                 await mediator.Publish(message, token);
 
-                _logger.LogInformation("Successfully processed message {MessageType} : {MessageData}",
-                    typeof(TMessage).Name, System.Text.Json.JsonSerializer.Serialize(message));
+                sw.Stop();
+
+                _logger.LogInformation(
+                    "[RabbitMQ-Benchmark] Tác vụ: {MessageType} | Thời gian xử lý: {Ms} ms | Data: {MessageData}",
+                    typeof(TMessage).Name,
+                    sw.ElapsedMilliseconds, 
+                    System.Text.Json.JsonSerializer.Serialize(message));
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error handling message {MessageType}", typeof(TMessage).Name);
+                sw.Stop();
+                _logger.LogError(ex, "[RabbitMQ-Benchmark] LỖI xử lý {MessageType} sau {Ms} ms", typeof(TMessage).Name, sw.ElapsedMilliseconds);
             }
         }
 

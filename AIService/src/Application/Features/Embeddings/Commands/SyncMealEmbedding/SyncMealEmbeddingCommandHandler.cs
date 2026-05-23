@@ -5,6 +5,7 @@ using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.VectorData;
+using System.Diagnostics;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -31,12 +32,27 @@ namespace AIService.Application.Features.Embeddings.Commands.SyncMealEmbedding
 
         public async Task<bool> Handle(SyncMealEmbeddingCommand request, CancellationToken cancellationToken)
         {
+            var stopwatch = Stopwatch.StartNew();
+
             var meal = await _context.Meals
                 .FirstOrDefaultAsync(m => m.Id == request.MealId, cancellationToken);
 
             if (meal == null)
             {
+                stopwatch.Stop();
+
                 _logger.LogWarning("[SyncEmbedding] Món ăn không tồn tại: {Id}", request.MealId);
+
+                _logger.LogWarning(
+                    "[Performance] Task={TaskName}, ItemId={ItemId}, Success={Success}, DurationMs={DurationMs}, DurationSeconds={DurationSeconds}, Note={Note}",
+                    "Embedding món ăn",
+                    request.MealId,
+                    false,
+                    stopwatch.ElapsedMilliseconds,
+                    Math.Round(stopwatch.Elapsed.TotalSeconds, 2),
+                    "Món ăn không tồn tại"
+                );
+
                 return false;
             }
 
@@ -50,7 +66,20 @@ namespace AIService.Application.Features.Embeddings.Commands.SyncMealEmbedding
 
                 if (vectorArray == null || vectorArray.Length == 0)
                 {
+                    stopwatch.Stop();
+
                     _logger.LogWarning("[SyncEmbedding] Vector rỗng cho món: {Name}", meal.Name);
+
+                    _logger.LogWarning(
+                        "[Performance] Task={TaskName}, ItemId={ItemId}, Success={Success}, DurationMs={DurationMs}, DurationSeconds={DurationSeconds}, Note={Note}",
+                        "Embedding món ăn",
+                        meal.Id,
+                        false,
+                        stopwatch.ElapsedMilliseconds,
+                        Math.Round(stopwatch.Elapsed.TotalSeconds, 2),
+                        "Vector rỗng"
+                    );
+
                     return false;
                 }
 
@@ -70,7 +99,7 @@ namespace AIService.Application.Features.Embeddings.Commands.SyncMealEmbedding
                     DietTags = meal.DietTags ?? new List<string>(),
                     HasImage = !string.IsNullOrEmpty(meal.ImageUrl),
                     ImageUrl = meal.ImageUrl ?? "",
-                    EmbedVersion = 1, 
+                    EmbedVersion = 1,
                     EmbeddedAt = DateTimeOffset.UtcNow.ToUnixTimeSeconds()
                 };
 
@@ -79,12 +108,40 @@ namespace AIService.Application.Features.Embeddings.Commands.SyncMealEmbedding
                 meal.UpdateEmbedStatus(EmbedStatus.embedded);
                 await _context.SaveChangesAsync(cancellationToken);
 
-                _logger.LogInformation($"[SyncEmbedding] Hoàn tất nhúng lại Món ăn: {meal.Name}");
+                stopwatch.Stop();
+
+                _logger.LogInformation(
+                    "[Performance] Task={TaskName}, ItemId={ItemId}, ItemName={ItemName}, Success={Success}, DurationMs={DurationMs}, DurationSeconds={DurationSeconds}, Note={Note}",
+                    "Embedding món ăn",
+                    meal.Id,
+                    meal.Name,
+                    true,
+                    stopwatch.ElapsedMilliseconds,
+                    Math.Round(stopwatch.Elapsed.TotalSeconds, 2),
+                    "Không lỗi"
+                );
+
+                _logger.LogInformation("[SyncEmbedding] Hoàn tất nhúng lại Món ăn: {Name}", meal.Name);
+
                 return true;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"[SyncEmbedding] Lỗi khi xử lý Món ăn {meal.Name}");
+                stopwatch.Stop();
+
+                _logger.LogError(
+                    ex,
+                    "[Performance] Task={TaskName}, ItemId={ItemId}, ItemName={ItemName}, Success={Success}, DurationMs={DurationMs}, DurationSeconds={DurationSeconds}, Note={Note}",
+                    "Embedding món ăn",
+                    meal.Id,
+                    meal.Name,
+                    false,
+                    stopwatch.ElapsedMilliseconds,
+                    Math.Round(stopwatch.Elapsed.TotalSeconds, 2),
+                    "Có lỗi"
+                );
+
+                _logger.LogError(ex, "[SyncEmbedding] Lỗi khi xử lý Món ăn {Name}", meal.Name);
                 throw;
             }
         }

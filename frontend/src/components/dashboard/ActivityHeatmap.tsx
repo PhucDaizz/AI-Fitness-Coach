@@ -36,8 +36,10 @@ const generateGrid = (weeks = 52): string[][] => {
     for (let d = 0; d < 7; d++) {
       const date = new Date(weekMonday);
       date.setDate(weekMonday.getDate() + d);
+      // Format as YYYY-MM-DD using local time to avoid timezone offset issues
+      const localDateStr = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
       // Ô trống cho ngày trong tương lai
-      week.push(date <= today ? date.toISOString().split('T')[0] : '');
+      week.push(date <= today ? localDateStr : '');
     }
     grid.push(week);
   }
@@ -93,7 +95,7 @@ const ActivityHeatmap: React.FC<ActivityHeatmapProps> = ({ data, loading = false
     grid.forEach((week, wi) => {
       const firstDate = week.find((d) => d !== '');
       if (!firstDate) return;
-      const month = new Date(firstDate).getMonth();
+      const month = parseInt(firstDate.split('-')[1], 10) - 1; // 0-indexed month
       if (month !== lastMonth) {
         labels.push({ weekIdx: wi, label: MONTH_NAMES[month] });
         lastMonth = month;

@@ -133,7 +133,7 @@ namespace AIService.Application.Features.Workout.Commands.GeneratePlan
             }
 
             var planIds = request.TotalWeeks == 1
-                ? await SaveWeeklyAsync(weekPayloads.ToArray(), cancellationToken)
+                ? await SaveWeeklyAsync(weekPayloads.ToArray(), request, cancellationToken)
                 : await SaveMonthlyAsync(weekPayloads.ToArray(), request, profile, cancellationToken);
 
             var summary = $"Đã tạo {blueprint.Weeks.Count} tuần tập luyện " +
@@ -148,12 +148,31 @@ namespace AIService.Application.Features.Workout.Commands.GeneratePlan
 
         private async Task<List<string>> SaveWeeklyAsync(
             WorkoutPlanPayloadDto[] weekPayloads,
+            GenerateWorkoutPlanCommand request,
             CancellationToken cancellationToken)
         {
             var payload = weekPayloads[0];
             payload.PlanType = "weekly";
+            payload.StartsAt = request.StartsAt;
 
-            WorkoutDateHelper.NormalizeDays(payload);
+            var weekStart = DateTime.ParseExact(
+                request.StartsAt, "yyyy-MM-dd",
+                CultureInfo.InvariantCulture);
+
+            int globalOrder = 1;
+
+            foreach (var day in payload.Days.OrderBy(d => d.OrderIndex))
+            {
+                day.DayOfWeek = DayOfWeekConstants.Normalize(day.DayOfWeek);
+                day.OrderIndex = globalOrder++;
+
+                day.ScheduledDate = WorkoutDateHelper.ResolveDayDate(weekStart, day.DayOfWeek).ToString("yyyy-MM-dd");
+
+                for (int i = 0; i < day.Exercises.Count; i++)
+                {
+                    day.Exercises[i].OrderIndex = i + 1;
+                }
+            }
 
             var planId = await _integrationService.CreatePlanToNodeAsync(
                 payload, cancellationToken);
