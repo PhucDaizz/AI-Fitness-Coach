@@ -36,9 +36,7 @@ namespace AIService.Infrastructure.AI.Orchestrators
                 Do NOT explain. Output ONLY valid JSON.
                 """);
 
-            var equipmentInfo = profile.Environment == "gym" ? "Full gym access"
-                : profile.Equipment.Any() ? $"Home equipment available: {string.Join(", ", profile.Equipment)}"
-                : "Home workout — bodyweight only";
+            var equipmentInfo = BuildEquipmentInfo(profile);
 
             var injuryInfo = !string.IsNullOrWhiteSpace(profile.Injuries)
                 ? $"INJURIES (must avoid stress on these): {profile.Injuries}"
@@ -60,6 +58,11 @@ namespace AIService.Infrastructure.AI.Orchestrators
         
                 === RULES ===
                 - Only schedule on available days: {{string.Join(", ", profile.AvailableDays)}}
+                - Environment and equipment rules:
+                    - If Location is outdoor and Equipment is empty, do NOT assume pull-up bars, parallel bars, gym machines, dumbbells, barbells, benches or mats.
+                    - If Location is outdoor and Goal is weight_loss or endurance, prioritize walking, jogging, running intervals, cardio conditioning and simple standing bodyweight exercises.
+                    - If Location is home and Equipment is empty, use bodyweight exercises only.
+                    - If Location is gym, full gym equipment is available.
                 - Progressive overload across weeks: each week harder than previous
                 - Week 1: foundation — learn movement patterns, moderate volume
                 - Week 2: build — increase volume or weight slightly  
@@ -130,6 +133,32 @@ namespace AIService.Infrastructure.AI.Orchestrators
                 blueprint.Weeks.Sum(w => w.Days.Count));
 
             return blueprint;
+        }
+
+        private static string BuildEquipmentInfo(UserProfileDto profile)
+        {
+            var environment = profile.Environment?.Trim().ToLowerInvariant();
+
+            return environment switch
+            {
+                "gym" =>
+                    "Full gym access. User can use machines, cable, dumbbells, barbells, benches, cardio machines and common gym equipment.",
+
+                "home" when profile.Equipment.Any() =>
+                    $"Home workout. Available equipment: {string.Join(", ", profile.Equipment)}. Do not use equipment outside this list.",
+
+                "home" =>
+                    "Home workout. No equipment available. Use bodyweight exercises only.",
+
+                "outdoor" when profile.Equipment.Any() =>
+                    $"Outdoor workout. Available equipment: {string.Join(", ", profile.Equipment)}. Do not assume gym machines or fixed bars unless listed.",
+
+                "outdoor" =>
+                    "Outdoor workout. No equipment available. Prioritize walking, jogging, running intervals, mobility and simple bodyweight exercises. Do not assume pull-up bars, parallel bars, machines, dumbbells, barbells, benches or mats.",
+
+                _ =>
+                    "No equipment specified. Use safe bodyweight exercises only."
+            };
         }
     }
 }

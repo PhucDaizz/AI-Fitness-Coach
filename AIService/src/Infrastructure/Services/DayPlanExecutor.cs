@@ -106,6 +106,37 @@ namespace AIService.Infrastructure.Services
 
         // ── Helpers ───────────────────────────────────────────────
 
+        private static string BuildExerciseSearchQuery(string query, UserProfileDto profile)
+        {
+            var environment = profile.Environment?.Trim().ToLowerInvariant() ?? "gym";
+            var level = profile.FitnessLevel?.Trim().ToLowerInvariant() ?? "intermediate";
+            var goal = profile.FitnessGoal?.Trim().ToLowerInvariant() ?? "";
+            var equipment = profile.Equipment.Any()
+                ? string.Join(" ", profile.Equipment)
+                : "no equipment";
+
+            return environment switch
+            {
+                "gym" =>
+                    $"{query} gym full equipment {level} {goal}",
+
+                "home" when profile.Equipment.Any() =>
+                    $"{query} home {equipment} {level} {goal}",
+
+                "home" =>
+                    $"{query} home bodyweight no equipment {level} {goal}",
+
+                "outdoor" when profile.Equipment.Any() =>
+                    $"{query} outdoor {equipment} {level} {goal}",
+
+                "outdoor" =>
+                    $"{query} outdoor no equipment bodyweight walking jogging running interval cardio mobility {level} {goal}",
+
+                _ =>
+                    $"{query} bodyweight no equipment {level} {goal}"
+            };
+        }
+
         private async Task<(string? PlanId, CalendarDayDto? NextDay, UserProfileDto? Profile)> LoadContextAsync(CancellationToken ct)
         {
             var planIdTask = _integrationService.GetActivePlanIdAsync(ct);
@@ -147,9 +178,7 @@ namespace AIService.Infrastructure.Services
             var location = profile?.Environment ?? "gym";
             var level = profile?.FitnessLevel ?? "intermediate";
 
-            var enrichedQuery = location == "home"
-                ? $"{query} home bodyweight {level}"
-                : $"{query} gym {level}";
+            var enrichedQuery = BuildExerciseSearchQuery(query, profile);
 
             var result = await _exercisePlugin.SearchExercisesAsync(enrichedQuery, ct);
 
@@ -211,8 +240,13 @@ namespace AIService.Infrastructure.Services
                 3. NEVER invent or guess IDs not present in the list.
                 4. Respect user's SessionMinutes ({{profile.SessionMinutes}} min) — do not overload.
                 5. Respect injuries: {{(string.IsNullOrEmpty(profile.Injuries) ? "None" : profile.Injuries)}}.
-                6. muscleFocus must be in Vietnamese.
-                7. Adjust sets/reps/rest based on fitness level '{{profile.FitnessLevel}}':
+                6. Environment and equipment rules:
+                    - If Environment is outdoor and Equipment is empty, do NOT select exercises requiring pull-up bars, parallel bars, gym machines, dumbbells, barbells, benches or mats.
+                    - If Environment is outdoor and Goal is weight_loss or endurance, prioritize walking, jogging, running intervals, cardio conditioning and simple standing bodyweight exercises.
+                    - If Environment is home and Equipment is empty, use bodyweight exercises only.
+                    - If Environment is gym, full gym equipment is available.
+                7. muscleFocus must be in Vietnamese.
+                8. Adjust sets/reps/rest based on fitness level '{{profile.FitnessLevel}}':
                    - beginner     → 2-3 sets, 12-15 reps, 60s rest
                    - intermediate → 3-4 sets, 8-12 reps, 75s rest
                    - advanced     → 4-5 sets, 5-8 reps, 90s rest

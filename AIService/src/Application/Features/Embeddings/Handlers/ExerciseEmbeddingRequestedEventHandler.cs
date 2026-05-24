@@ -67,7 +67,24 @@ namespace AIService.Application.Features.Embeddings.Handlers
                     .Where(m => !m.IsPrimary)
                     .Select(m => m.MuscleGroup.NameEN).ToList();
 
-                var equipmentNames = exercise.Equipments.Select(e => e.Name).ToList();
+                var rawEquipmentNames = exercise.Equipments
+                    .Select(e => e.Name)
+                    .Where(name => !string.IsNullOrWhiteSpace(name))
+                    .Select(name => name.Trim())
+                    .Distinct(StringComparer.OrdinalIgnoreCase)
+                    .ToList();
+
+                var realEquipmentNames = rawEquipmentNames
+                    .Where(name =>
+                        !name.Equals("Bodyweight", StringComparison.OrdinalIgnoreCase) &&
+                        !name.Equals("Không dụng cụ", StringComparison.OrdinalIgnoreCase))
+                    .ToList();
+
+                var isBodyweight = rawEquipmentNames.Any(name =>
+                        name.Equals("Bodyweight", StringComparison.OrdinalIgnoreCase) ||
+                        name.Equals("Không dụng cụ", StringComparison.OrdinalIgnoreCase))
+                    || !realEquipmentNames.Any();
+
 
                 var record = new ExerciseVectorRecord
                 {
@@ -79,8 +96,8 @@ namespace AIService.Application.Features.Embeddings.Handlers
                     CategoryVN = exercise.Category?.NameVN ?? "",
                     PrimaryMuscles = primaryMuscleNames,
                     SecondaryMuscles = secondaryMuscleNames,
-                    Equipments = equipmentNames,
-                    IsBodyweight = !equipmentNames.Any(),
+                    Equipments = realEquipmentNames,
+                    IsBodyweight = isBodyweight,
                     LocationTypes = exercise.LocationType ?? new List<string>(),
                     HasImage = !string.IsNullOrEmpty(exercise.ImageUrl),
                     ImageUrl = exercise.ImageUrl ?? "",
@@ -117,7 +134,24 @@ namespace AIService.Application.Features.Embeddings.Handlers
                 .Select(m => m.MuscleGroup.NameEN)
                 .ToList();
 
-            var equipments = exercise.Equipments.Select(e => e.Name).ToList();
+            var rawEquipments = exercise.Equipments
+                .Select(e => e.Name)
+                .Where(name => !string.IsNullOrWhiteSpace(name))
+                .Select(name => name.Trim())
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToList();
+
+            var realEquipments = rawEquipments
+                .Where(name =>
+                    !name.Equals("Bodyweight", StringComparison.OrdinalIgnoreCase) &&
+                    !name.Equals("Không dụng cụ", StringComparison.OrdinalIgnoreCase))
+                .ToList();
+
+            var isBodyweight = rawEquipments.Any(name =>
+                name.Equals("Bodyweight", StringComparison.OrdinalIgnoreCase) ||
+                name.Equals("Không dụng cụ", StringComparison.OrdinalIgnoreCase))
+                || !realEquipments.Any();
+
             var locations = exercise.LocationType ?? new List<string>();
 
             var sb = new StringBuilder();
@@ -142,17 +176,36 @@ namespace AIService.Application.Features.Embeddings.Handlers
                 sb.AppendLine($"Secondary muscles involved: {string.Join(", ", secondaryMuscles)}.");
 
             // --- Thiet bi ---
-            sb.AppendLine(equipments.Any()
-                ? $"Equipment required: {string.Join(", ", equipments)}."
-                : "Equipment required: None (bodyweight exercise).");
+            if (realEquipments.Any())
+            {
+                sb.AppendLine($"Equipment required: {string.Join(", ", realEquipments)}.");
+            }
+            else if (isBodyweight)
+            {
+                sb.AppendLine("Equipment required: None. This is a bodyweight exercise.");
+            }
+            else
+            {
+                sb.AppendLine("Equipment required: None.");
+            }
 
             // --- Dia diem ---
             if (locations.Any())
             {
-                var locationText = locations.Count == 1
-                    ? $"This exercise is suitable for {locations[0]}."
-                    : $"This exercise can be performed at: {string.Join(", ", locations)}.";
-                sb.AppendLine(locationText);
+                var cleanLocations = locations
+                    .Where(x => !string.IsNullOrWhiteSpace(x))
+                    .Select(x => x.Trim())
+                    .Distinct(StringComparer.OrdinalIgnoreCase)
+                    .ToList();
+
+                if (cleanLocations.Count == 1)
+                {
+                    sb.AppendLine($"This exercise is suitable for {cleanLocations[0]}.");
+                }
+                else if (cleanLocations.Count > 1)
+                {
+                    sb.AppendLine($"This exercise can be performed at: {string.Join(", ", cleanLocations)}.");
+                }
             }
 
             // --- Mo ta ---
