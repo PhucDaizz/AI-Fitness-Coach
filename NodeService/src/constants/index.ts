@@ -39,8 +39,10 @@ export type Role = (typeof ROLES)[keyof typeof ROLES];
 export const FITNESS_GOAL = {
   WEIGHT_LOSS: 'weight_loss',
   MUSCLE_GAIN: 'muscle_gain',
+  STRENGTH: 'strength',           
   ENDURANCE: 'endurance',
   FLEXIBILITY: 'flexibility',
+  GENERAL_FITNESS: 'general_fitness', 
   MAINTENANCE: 'maintenance',
 } as const;
 

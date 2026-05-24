@@ -102,7 +102,7 @@
           "Port": 8080
         }
       ],
-      "Timeout": 600,
+      "Timeout": 900,
       "Priority": 300
     },
     {

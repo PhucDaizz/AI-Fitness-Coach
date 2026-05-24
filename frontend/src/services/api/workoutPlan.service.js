@@ -33,7 +33,7 @@ export const deleteWorkoutPlan = async (planId) => {
 export const generateWorkoutPlan = async (data, signal) => {
   return await handleResponse(
     workoutApi.post('WorkoutPlan/generate', data, {
-      timeout: 480000,
+      timeout: 900000,
       signal,
     }),
   );
