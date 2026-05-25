@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 
 import { FITNESS_GOALS, FITNESS_LEVELS, GENDERS } from '../../config/onboarding.constant';
 import { cn } from '../../lib/utils';
@@ -60,12 +61,23 @@ const InputField: React.FC<InputFieldProps> = ({ label, icon, error, children })
   </div>
 );
 
+const bmiCategoryKeys: Record<string, string> = {
+  'Thiếu cân': 'underweight',
+  'Bình thường': 'normal',
+  'Thừa cân': 'overweight',
+  'Béo phì': 'obese',
+};
+
 // ── Main Component ─────────────────────────────────────────────────────────
 const Step1Personal: React.FC<Step1PersonalProps> = ({ data, onChange, errors = {} }) => {
+  const { t } = useTranslation();
   // Dùng fitness.utils để tính BMI live — hiển thị ngay khi user nhập đủ weight + height
   const canShowBMI = data.weightKg >= 20 && data.heightCm >= 50;
   const bmi = canShowBMI ? calcBMI(data.weightKg, data.heightCm) : null;
   const bmiCategory = bmi !== null ? getBMICategory(bmi) : null;
+  const bmiCategoryText = bmiCategory
+    ? t(`onboarding.step1.bmi_categories.${bmiCategoryKeys[bmiCategory] || 'normal'}`)
+    : '';
 
   // Dùng fitness.utils để tính tuổi live
   const age = data.dateOfBirth ? calcAge(data.dateOfBirth) : null;
@@ -80,17 +92,22 @@ const Step1Personal: React.FC<Step1PersonalProps> = ({ data, onChange, errors = 
       {/* Page title */}
       <div className="mb-8">
         <h1 className="text-[40px] md:text-[48px] font-black uppercase tracking-tight leading-none">
-          BUILD YOUR <span className="text-primary italic">PROFILE</span>
+          {t('onboarding.step1.title')}{' '}
+          <span className="text-primary italic">{t('onboarding.step1.title_italic')}</span>
         </h1>
         <p className="text-on-surface-variant text-sm mt-2 font-medium max-w-lg">
-          Precision starts with data. Define your current state to calibrate your AI coach.
+          {t('onboarding.step1.subtitle')}
         </p>
       </div>
 
       {/* ── Section 1: Physical data ───────────────────────────────── */}
-      <SectionLabel>Physical Data</SectionLabel>
+      <SectionLabel>{t('onboarding.step1.physical_data')}</SectionLabel>
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-3">
-        <InputField label="Date of Birth" icon="calendar_month" error={errors.dateOfBirth}>
+        <InputField
+          label={t('onboarding.step1.dob')}
+          icon="calendar_month"
+          error={errors.dateOfBirth}
+        >
           <input
             type="date"
             value={data.dateOfBirth}
@@ -100,7 +117,7 @@ const Step1Personal: React.FC<Step1PersonalProps> = ({ data, onChange, errors = 
           />
         </InputField>
 
-        <InputField label="Weight (KG)" icon="monitor_weight" error={errors.weightKg}>
+        <InputField label={t('onboarding.step1.weight')} icon="monitor_weight" error={errors.weightKg}>
           <input
             type="number"
             value={data.weightKg || ''}
@@ -113,7 +130,7 @@ const Step1Personal: React.FC<Step1PersonalProps> = ({ data, onChange, errors = 
           />
         </InputField>
 
-        <InputField label="Height (CM)" icon="height" error={errors.heightCm}>
+        <InputField label={t('onboarding.step1.height')} icon="height" error={errors.heightCm}>
           <input
             type="number"
             value={data.heightCm || ''}
@@ -138,7 +155,7 @@ const Step1Personal: React.FC<Step1PersonalProps> = ({ data, onChange, errors = 
               <span className={cn('text-[15px] font-black', getBMIColor(bmi))}>
                 {formatNumber(bmi, { minimumFractionDigits: 1, maximumFractionDigits: 1 })}
               </span>
-              <span className="text-[10px] text-on-surface-variant">— {bmiCategory}</span>
+              <span className="text-[10px] text-on-surface-variant">— {bmiCategoryText}</span>
             </div>
           )}
           {bmi !== null && age !== null && (
@@ -147,7 +164,7 @@ const Step1Personal: React.FC<Step1PersonalProps> = ({ data, onChange, errors = 
           {age !== null && age > 0 && (
             <div className="flex items-center gap-2">
               <span className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant">
-                Age
+                {t('onboarding.step1.age')}
               </span>
               <span className="text-[15px] font-black text-on-surface">{age}</span>
             </div>
@@ -157,7 +174,7 @@ const Step1Personal: React.FC<Step1PersonalProps> = ({ data, onChange, errors = 
       {!bmi && !age && <div className="mb-7" />}
 
       {/* ── Section 2: Gender ──────────────────────────────────────── */}
-      <SectionLabel>Biological Profile</SectionLabel>
+      <SectionLabel>{t('onboarding.step1.biological_profile')}</SectionLabel>
       <div className="flex gap-2 mb-7">
         {GENDERS.map((g) => (
           <button
@@ -173,13 +190,13 @@ const Step1Personal: React.FC<Step1PersonalProps> = ({ data, onChange, errors = 
               data.gender === g.value ? { boxShadow: '0 0 12px rgba(177,255,36,0.25)' } : undefined
             }
           >
-            {g.label}
+            {t(`onboarding.step1.genders.${g.value}`)}
           </button>
         ))}
       </div>
 
       {/* ── Section 3: Fitness Level ───────────────────────────────── */}
-      <SectionLabel>Current Experience</SectionLabel>
+      <SectionLabel>{t('onboarding.step1.current_experience')}</SectionLabel>
       <div className="grid grid-cols-3 gap-2.5 mb-7">
         {FITNESS_LEVELS.map((lvl) => {
           const selected = data.fitnessLevel === lvl.value;
@@ -216,16 +233,18 @@ const Step1Personal: React.FC<Step1PersonalProps> = ({ data, onChange, errors = 
                   selected ? 'text-primary' : 'text-on-surface-variant',
                 )}
               >
-                {lvl.label}
+                {t(`onboarding.step1.levels.${lvl.value}`)}
               </p>
-              <p className="text-[11px] text-on-surface-variant/60 font-medium">{lvl.sub}</p>
+              <p className="text-[11px] text-on-surface-variant/60 font-medium">
+                {t(`onboarding.step1.levels.${lvl.value}_sub`)}
+              </p>
             </button>
           );
         })}
       </div>
 
       {/* ── Section 4: Fitness Goal ────────────────────────────────── */}
-      <SectionLabel>Primary Objective</SectionLabel>
+      <SectionLabel>{t('onboarding.step1.primary_objective')}</SectionLabel>
       <div className="grid grid-cols-2 sm:grid-cols-5 gap-2.5">
         {FITNESS_GOALS.map((goal) => {
           const selected = data.fitnessGoal === goal.value;
@@ -245,7 +264,7 @@ const Step1Personal: React.FC<Step1PersonalProps> = ({ data, onChange, errors = 
                   selected ? 'text-primary' : 'text-on-surface-variant',
                 )}
               >
-                {goal.label}
+                {t(`onboarding.step1.goals.${goal.value}`)}
               </p>
             </button>
           );

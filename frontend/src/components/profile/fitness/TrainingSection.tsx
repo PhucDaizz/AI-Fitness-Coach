@@ -70,9 +70,23 @@ const TrainingSetupSection: React.FC<TrainingSetupSectionProps> = ({ data, error
     onChange('equipment', next);
   };
 
+  const [restDayWarning, setRestDayWarning] = useState(false);
+
+  useEffect(() => {
+    if (data.availableDays.length >= 7) {
+      setRestDayWarning(true);
+    }
+  }, [data.availableDays]);
+
   const toggleDay = (day: string) => {
     const current = data.availableDays;
-    const next = current.includes(day) ? current.filter((d) => d !== day) : [...current, day];
+    const active = current.includes(day);
+    if (!active && current.length >= 6) {
+      setRestDayWarning(true);
+      return;
+    }
+    setRestDayWarning(false);
+    const next = active ? current.filter((d) => d !== day) : [...current, day];
     onChange('availableDays', next);
   };
 
@@ -231,6 +245,36 @@ const TrainingSetupSection: React.FC<TrainingSetupSectionProps> = ({ data, error
             </button>
           );
         })}
+      </div>
+
+      {/* Recommendation and recovery notice based on fitnessLevel */}
+      <div className="mb-6 p-4 bg-surface-container border border-outline-variant/10 rounded-xl flex flex-col gap-2.5">
+        <div className="flex items-start gap-2.5 text-on-surface-variant text-[12px] leading-relaxed">
+          <span className="material-symbols-outlined text-primary text-lg mt-0.5 select-none">info</span>
+          <div>
+            <p className="font-bold text-white uppercase tracking-wider text-[10px] mb-0.5">
+              {t('fitness_profile.training.level_recommendation_title')}
+            </p>
+            <p>
+              {data.fitnessLevel === 'beginner' && t('fitness_profile.training.recommendation_beginner')}
+              {data.fitnessLevel === 'intermediate' && t('fitness_profile.training.recommendation_intermediate')}
+              {data.fitnessLevel === 'advanced' && t('fitness_profile.training.recommendation_advanced')}
+            </p>
+          </div>
+        </div>
+        {restDayWarning && (
+          <div className="flex items-start gap-2.5 text-error text-[12px] leading-relaxed animate-fade-in font-medium pt-2 border-t border-white/5">
+            <span className="material-symbols-outlined text-error text-lg mt-0.5 select-none">warning</span>
+            <div>
+              <p className="font-bold uppercase tracking-wider text-[10px] mb-0.5">
+                {t('fitness_profile.training.warning_title')}
+              </p>
+              <p>
+                {t('fitness_profile.training.rest_day_required')}
+              </p>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Section 4: Session Duration */}

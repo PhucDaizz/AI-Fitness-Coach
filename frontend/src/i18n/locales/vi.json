@@ -492,6 +492,99 @@
     "terms_of_service": "Điều khoản dịch vụ",
     "technical_support": "Hỗ trợ kỹ thuật"
   },
+  "onboarding": {
+    "step1": {
+      "title": "THIẾT LẬP",
+      "title_italic": "HỒ SƠ",
+      "subtitle": "Độ chính xác bắt đầu từ dữ liệu. Định nghĩa trạng thái hiện tại của bạn để hiệu chỉnh huấn luyện viên AI.",
+      "physical_data": "Chỉ số thể chất",
+      "dob": "Ngày sinh",
+      "weight": "Cân nặng (KG)",
+      "height": "Chiều cao (CM)",
+      "age": "Tuổi",
+      "biological_profile": "Hồ sơ sinh học",
+      "current_experience": "Kinh nghiệm hiện tại",
+      "primary_objective": "Mục tiêu chính",
+      "genders": {
+        "male": "Nam",
+        "female": "Nữ",
+        "other": "Khác"
+      },
+      "levels": {
+        "beginner": "Người mới",
+        "beginner_sub": "< 6 tháng tập luyện",
+        "intermediate": "Trung cấp",
+        "intermediate_sub": "6–24 tháng tập luyện",
+        "advanced": "Nâng cao",
+        "advanced_sub": "> 2 năm tập luyện"
+      },
+      "goals": {
+        "weight_loss": "Giảm mỡ",
+        "muscle_gain": "Tăng cơ",
+        "strength": "Sức mạnh",
+        "endurance": "Sức bền",
+        "flexibility": "Linh hoạt",
+        "general_fitness": "Sức khỏe chung",
+        "maintenance": "Duy trì"
+      },
+      "bmi_categories": {
+        "underweight": "Thiếu cân",
+        "normal": "Bình thường",
+        "overweight": "Thừa cân",
+        "obese": "Béo phì"
+      }
+    },
+    "step2": {
+      "title": "KHÔNG GIAN",
+      "title_italic": "TẬP LUYỆN & DỤNG CỤ",
+      "select_space": "Chọn không gian của bạn",
+      "access_gear": "Dụng cụ hỗ trợ",
+      "gear_question": "Bạn có thể tiếp cận những dụng cụ nào?",
+      "outdoor_msg": "Tập luyện ngoài trời chỉ sử dụng trọng lượng cơ thể — không cần dụng cụ.",
+      "ai_insights": "Gợi ý từ AI Coach",
+      "insight_gym": "Phòng gym đầy đủ giúp mở khóa các chương trình tạ đòn — tiềm năng tăng sức mạnh cao nhất.",
+      "insight_outdoor": "Tập trung tập ngoài trời: calisthenics, HIIT, và chạy bộ ngắt quãng.",
+      "insight_home": "Đang điều chỉnh kế hoạch cho việc Tập luyện tại Nhà...",
+      "environments": {
+        "gym": {
+          "label": "Phòng Gym đầy đủ",
+          "desc": "Cơ sở thương mại với đầy đủ dụng cụ (tạ đòn, máy tập, v.v.)."
+        },
+        "home": {
+          "label": "Tập tại nhà",
+          "desc": "Tập luyện tại nhà có hoặc không có dụng cụ."
+        },
+        "outdoor": {
+          "label": "Ngoài trời",
+          "desc": "Các bài tập bodyweight, chạy bộ hoặc tập tại công viên."
+        }
+      }
+    },
+    "step3": {
+      "title": "LỊCH TRÌNH",
+      "title_italic": "TẬP LUYỆN",
+      "operational_days": "Ngày tập luyện",
+      "intensity_period": "Thời lượng mỗi buổi",
+      "primary_window": "Khung giờ tập luyện chính",
+      "pulse_recommendation": "Khuyến nghị từ AI",
+      "pulse_recommendation_desc": "Dựa trên hồ sơ thể chất của bạn từ các bước trước, {{recommendation}}",
+      "live_pulse_sync": "Đồng bộ Thể trạng Thực tế",
+      "live_pulse_sync_desc": "Huấn luyện viên AI sẽ tự động điều chỉnh lịch tập nếu thiết bị đeo phát hiện chỉ số mệt mỏi cao.",
+      "default_recommendation": "Chọn các ngày bạn có thể tập để nhận khuyến nghị cá nhân hóa từ AI.",
+      "minutes": "{{count}} phút",
+      "recommend_high": "Lịch tập {{count}} buổi/tuần mang lại khoảng thời gian phục hồi tối ưu cho việc phát triển cơ bắp.",
+      "recommend_medium": "Lịch tập 4 buổi phân chia trên/dưới giúp tối đa hóa sức mạnh và cân bằng phục hồi.",
+      "recommend_low": "Tập {{count}} buổi/tuần là lý tưởng cho người mới bắt đầu — tập trung vào chất lượng hơn số lượng.",
+      "level_recommendation_title": "Khuyến nghị tần suất",
+      "warning_title": "Cảnh báo phục hồi",
+      "windows": {
+        "morning": "SÁNG",
+        "midday": "TRƯA",
+        "afternoon": "CHIỀU",
+        "night": "TỐI"
+      }
+    }
+  },
   "fitness_profile": {
     "title": "Hồ sơ",
     "title_highlight": "Thể chất",
@@ -541,7 +634,13 @@
       "outdoor_msg": "Tập ngoài trời dùng bodyweight — không cần thiết bị.",
       "available_days": "Ngày rảnh trong tuần",
       "duration": "Thời lượng mỗi buổi",
-      "minutes": "{{count}} phút"
+      "minutes": "{{count}} phút",
+      "recommendation_beginner": "Khuyến nghị cho người mới bắt đầu: 2–3 buổi/tuần.",
+      "recommendation_intermediate": "Khuyến nghị cho trình độ trung cấp: 3–4 buổi/tuần.",
+      "recommendation_advanced": "Khuyến nghị cho trình độ nâng cao: 4–5 buổi/tuần.",
+      "rest_day_required": "Bạn phải có ít nhất 1 ngày nghỉ trong tuần để cơ thể phục hồi.",
+      "level_recommendation_title": "Khuyến nghị tần suất",
+      "warning_title": "Cảnh báo phục hồi"
     },
     "environments": {
       "gym": "Phòng Gym",

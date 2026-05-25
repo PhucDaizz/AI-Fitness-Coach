@@ -492,6 +492,99 @@
     "terms_of_service": "Terms of Service",
     "technical_support": "Technical Support"
   },
+  "onboarding": {
+    "step1": {
+      "title": "BUILD YOUR",
+      "title_italic": "PROFILE",
+      "subtitle": "Precision starts with data. Define your current state to calibrate your AI coach.",
+      "physical_data": "Physical Data",
+      "dob": "Date of Birth",
+      "weight": "Weight (KG)",
+      "height": "Height (CM)",
+      "age": "Age",
+      "biological_profile": "Biological Profile",
+      "current_experience": "Current Experience",
+      "primary_objective": "Primary Objective",
+      "genders": {
+        "male": "Male",
+        "female": "Female",
+        "other": "Other"
+      },
+      "levels": {
+        "beginner": "Beginner",
+        "beginner_sub": "< 6 Months training",
+        "intermediate": "Intermediate",
+        "intermediate_sub": "6–24 Months training",
+        "advanced": "Advanced",
+        "advanced_sub": "> 2 Years training"
+      },
+      "goals": {
+        "weight_loss": "Fat Loss",
+        "muscle_gain": "Muscle Gain",
+        "strength": "Strength & Power",
+        "endurance": "Endurance",
+        "flexibility": "Flexibility & Mobility",
+        "general_fitness": "General Health",
+        "maintenance": "Maintain"
+      },
+      "bmi_categories": {
+        "underweight": "Underweight",
+        "normal": "Normal",
+        "overweight": "Overweight",
+        "obese": "Obese"
+      }
+    },
+    "step2": {
+      "title": "WORKOUT",
+      "title_italic": "ENVIRONMENT & EQUIPMENT",
+      "select_space": "Select Your Space",
+      "access_gear": "Access to Gear",
+      "gear_question": "What equipment do you have access to?",
+      "outdoor_msg": "Outdoor training uses bodyweight only — no equipment needed.",
+      "ai_insights": "AI Coach Insights",
+      "insight_gym": "Full gym unlocks barbell programs — highest strength gains potential.",
+      "insight_outdoor": "Outdoor training focus: calisthenics, HIIT, and interval running.",
+      "insight_home": "Adapting your plan for Home Training...",
+      "environments": {
+        "gym": {
+          "label": "Full Gym",
+          "desc": "Commercial facility with all equipment (barbells, machines, etc.)."
+        },
+        "home": {
+          "label": "Home Gym",
+          "desc": "Training at home with or without equipment."
+        },
+        "outdoor": {
+          "label": "Outdoor",
+          "desc": "Bodyweight exercises, running, or outdoor park workouts."
+        }
+      }
+    },
+    "step3": {
+      "title": "SCHEDULE",
+      "title_italic": "ENGINE",
+      "operational_days": "Operational Days",
+      "intensity_period": "Intensity Period",
+      "primary_window": "Primary Training Window",
+      "pulse_recommendation": "Pulse Recommendation",
+      "pulse_recommendation_desc": "Based on your metabolism profile from Step 2, {{recommendation}}",
+      "live_pulse_sync": "Live Pulse Sync",
+      "live_pulse_sync_desc": "Your coach will automatically adjust session blocks if your wearable detects high fatigue scores.",
+      "default_recommendation": "Select your available days to get a personalised AI recommendation.",
+      "minutes": "{{count}} Minutes",
+      "recommend_high": "A {{count}}-day active split provides optimal recovery windows for muscle hypertrophy.",
+      "recommend_medium": "A 4-day upper/lower split maximises strength and recovery balance.",
+      "recommend_low": "{{count}} sessions/week is ideal for beginners — quality over quantity.",
+      "level_recommendation_title": "Frequency Recommendation",
+      "warning_title": "Recovery Warning",
+      "windows": {
+        "morning": "MORNING",
+        "midday": "MIDDAY",
+        "afternoon": "AFTERNOON",
+        "night": "NIGHT"
+      }
+    }
+  },
   "fitness_profile": {
     "title": "Fitness",
     "title_highlight": "Profile",
@@ -541,7 +634,13 @@
       "outdoor_msg": "Outdoor bodyweight training — no equipment needed.",
       "available_days": "Available Days",
       "duration": "Session Duration",
-      "minutes": "{{count}} mins"
+      "minutes": "{{count}} mins",
+      "recommendation_beginner": "Recommendation for beginners: 2–3 sessions/week.",
+      "recommendation_intermediate": "Recommendation for intermediates: 3–4 sessions/week.",
+      "recommendation_advanced": "Recommendation for advanced athletes: 4–5 sessions/week.",
+      "rest_day_required": "You must have at least 1 rest day per week for muscle recovery.",
+      "level_recommendation_title": "Frequency Recommendation",
+      "warning_title": "Recovery Warning"
     },
     "environments": {
       "gym": "Full Gym",

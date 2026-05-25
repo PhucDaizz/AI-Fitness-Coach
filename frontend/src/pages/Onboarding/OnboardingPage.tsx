@@ -62,7 +62,12 @@ const OnboardingPage: React.FC = () => {
           <Step2Equipment data={step2} onChange={updateStep2} errors={step2Errors} />
         )}
         {currentStep === 3 && (
-          <Step3Schedule data={step3} onChange={updateStep3} errors={step3Errors} />
+          <Step3Schedule
+            data={step3}
+            onChange={updateStep3}
+            errors={step3Errors}
+            fitnessLevel={step1.fitnessLevel}
+          />
         )}
         {currentStep === 4 && <Step4Injuries data={step4} onChange={updateStep4} />}
       </div>

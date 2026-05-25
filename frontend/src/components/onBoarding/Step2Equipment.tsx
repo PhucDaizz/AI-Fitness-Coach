@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 
 import { ENVIRONMENTS, EQUIPMENT_LIST } from '../../config/onboarding.constant';
 import { cn } from '../../lib/utils';
@@ -26,6 +27,9 @@ const SectionLabel: React.FC<{ children: React.ReactNode }> = ({ children }) => 
 
 // ── Main Component ─────────────────────────────────────────────────────────
 const Step2Equipment: React.FC<Step2EquipmentProps> = ({ data, onChange, errors = {} }) => {
+  const { t, i18n } = useTranslation();
+  const isVi = i18n.language === 'vi';
+
   const toggleEquipment = (value: string) => {
     const current = data.equipment;
     const next = current.includes(value) ? current.filter((v) => v !== value) : [...current, value];
@@ -44,15 +48,15 @@ const Step2Equipment: React.FC<Step2EquipmentProps> = ({ data, onChange, errors 
       {/* Page title */}
       <div className="mb-10">
         <h1 className="text-[36px] md:text-[48px] font-black uppercase tracking-tight leading-[1.05]">
-          WORKOUT{' '}
-          <span className="block">
-            ENVIRONMENT <span className="text-primary italic">&amp; EQUIPMENT</span>
+          {t('onboarding.step2.title')}{' '}
+          <span className="block text-primary italic">
+            {t('onboarding.step2.title_italic')}
           </span>
         </h1>
       </div>
 
       {/* ── Section 1: Environment ───────────────────────────────────── */}
-      <SectionLabel>Select Your Space</SectionLabel>
+      <SectionLabel>{t('onboarding.step2.select_space')}</SectionLabel>
       {errors.environment && (
         <p className="text-[11px] text-error font-semibold mb-3">{errors.environment}</p>
       )}
@@ -106,9 +110,11 @@ const Step2Equipment: React.FC<Step2EquipmentProps> = ({ data, onChange, errors 
                     selected ? 'text-on-surface' : 'text-on-surface',
                   )}
                 >
-                  {env.label}
+                  {t(`onboarding.step2.environments.${env.value}.label`)}
                 </p>
-                <p className="text-[12px] text-on-surface-variant leading-relaxed">{env.desc}</p>
+                <p className="text-[12px] text-on-surface-variant leading-relaxed">
+                  {t(`onboarding.step2.environments.${env.value}.desc`)}
+                </p>
               </div>
             </button>
           );
@@ -118,9 +124,9 @@ const Step2Equipment: React.FC<Step2EquipmentProps> = ({ data, onChange, errors 
       {/* ── Section 2: Equipment ─────────────────────────────────────── */}
       {showEquipment && (
         <>
-          <SectionLabel>Access to Gear</SectionLabel>
+          <SectionLabel>{t('onboarding.step2.access_gear')}</SectionLabel>
           <p className="text-[18px] font-bold text-on-surface mb-5">
-            What equipment do you have access to?
+            {t('onboarding.step2.gear_question')}
           </p>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 mb-10">
@@ -142,10 +148,10 @@ const Step2Equipment: React.FC<Step2EquipmentProps> = ({ data, onChange, errors 
                         selected ? 'text-on-surface' : 'text-on-surface',
                       )}
                     >
-                      {item.label}
+                      {isVi ? item.labelVi : item.label}
                     </p>
                     <p className="text-[10px] uppercase tracking-widest text-on-surface-variant mt-0.5">
-                      {item.labelVi}
+                      {isVi ? item.label : item.labelVi}
                     </p>
                   </div>
 
@@ -184,7 +190,7 @@ const Step2Equipment: React.FC<Step2EquipmentProps> = ({ data, onChange, errors 
             park
           </span>
           <p className="text-[13px] text-on-surface-variant font-medium">
-            Outdoor training uses bodyweight only — no equipment needed.
+            {t('onboarding.step2.outdoor_msg')}
           </p>
         </div>
       )}
@@ -207,14 +213,14 @@ const Step2Equipment: React.FC<Step2EquipmentProps> = ({ data, onChange, errors 
           </span>
           <div>
             <p className="text-[9px] font-black uppercase tracking-[0.2em] text-primary mb-0.5">
-              AI Coach Insights
+              {t('onboarding.step2.ai_insights')}
             </p>
             <p className="text-[12px] text-on-surface-variant font-medium">
               {data.environment === 'gym'
-                ? 'Full gym unlocks barbell programs — highest strength gains potential.'
+                ? t('onboarding.step2.insight_gym')
                 : data.environment === 'outdoor'
-                  ? 'Outdoor training focus: calisthenics, HIIT, and interval running.'
-                  : 'Adapting your plan for Home Training...'}
+                  ? t('onboarding.step2.insight_outdoor')
+                  : t('onboarding.step2.insight_home')}
             </p>
           </div>
         </div>

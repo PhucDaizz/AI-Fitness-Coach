@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 import { DAYS, SESSION_OPTIONS, TRAINING_WINDOWS } from '../../config/onboarding.constant';
 import { cn } from '../../lib/utils';
@@ -14,23 +15,43 @@ interface Step3ScheduleProps {
   data: Step3Data;
   onChange: (data: Partial<Step3Data>) => void;
   errors?: Partial<Record<keyof Step3Data, string>>;
+  fitnessLevel?: 'beginner' | 'intermediate' | 'advanced';
 }
 
 // ── Helper ─────────────────────────────────────────────────────────────────
-function getPulseRecommendation(days: string[]): string {
+function getPulseRecommendation(days: string[], t: any): string {
   const n = days.length;
-  if (n >= 5)
-    return `A ${n}-day active split provides optimal recovery windows for muscle hypertrophy.`;
-  if (n === 4) return 'A 4-day upper/lower split maximises strength and recovery balance.';
-  if (n <= 3) return `${n} sessions/week is ideal for beginners — quality over quantity.`;
-  return 'Select your available days to get a personalised AI recommendation.';
+  if (n === 0) return t('onboarding.step3.default_recommendation');
+  if (n >= 5) return t('onboarding.step3.recommend_high', { count: n });
+  if (n === 4) return t('onboarding.step3.recommend_medium');
+  return t('onboarding.step3.recommend_low', { count: n });
 }
 
 // ── Main Component ─────────────────────────────────────────────────────────
-const Step3Schedule: React.FC<Step3ScheduleProps> = ({ data, onChange, errors = {} }) => {
+const Step3Schedule: React.FC<Step3ScheduleProps> = ({
+  data,
+  onChange,
+  errors = {},
+  fitnessLevel,
+}) => {
+  const { t } = useTranslation();
+  const [restDayWarning, setRestDayWarning] = useState(false);
+
+  useEffect(() => {
+    if (data.availableDays.length >= 7) {
+      setRestDayWarning(true);
+    }
+  }, [data.availableDays]);
+
   const toggleDay = (day: string) => {
     const current = data.availableDays;
-    const next = current.includes(day) ? current.filter((d) => d !== day) : [...current, day];
+    const active = current.includes(day);
+    if (!active && current.length >= 6) {
+      setRestDayWarning(true);
+      return;
+    }
+    setRestDayWarning(false);
+    const next = active ? current.filter((d) => d !== day) : [...current, day];
     onChange({ availableDays: next });
   };
 
@@ -44,7 +65,8 @@ const Step3Schedule: React.FC<Step3ScheduleProps> = ({ data, onChange, errors = 
       {/* Page title */}
       <div className="mb-8">
         <h1 className="text-[40px] md:text-[52px] font-black uppercase tracking-tight leading-[0.95]">
-          SCHEDULE <span className="block text-primary italic">ENGINE</span>
+          {t('onboarding.step3.title')}{' '}
+          <span className="block text-primary italic">{t('onboarding.step3.title_italic')}</span>
         </h1>
       </div>
 
@@ -54,7 +76,9 @@ const Step3Schedule: React.FC<Step3ScheduleProps> = ({ data, onChange, errors = 
         <div className="bg-surface-container border border-white/8 rounded-xl p-6">
           <div className="flex items-center gap-3 mb-5">
             <span className="block w-1 h-5 rounded-full bg-secondary" />
-            <h2 className="text-[15px] font-bold text-on-surface">Operational Days</h2>
+            <h2 className="text-[15px] font-bold text-on-surface">
+              {t('onboarding.step3.operational_days')}
+            </h2>
           </div>
 
           {errors.availableDays && (
@@ -72,7 +96,7 @@ const Step3Schedule: React.FC<Step3ScheduleProps> = ({ data, onChange, errors = 
                   className="flex flex-col items-center gap-1.5"
                 >
                   <span className="text-[9px] font-black uppercase tracking-widest text-on-surface-variant">
-                    {day.label}
+                    {t(`fitness_profile.days.short.${day.value}`)}
                   </span>
                   <span
                     className={cn(
@@ -101,8 +125,42 @@ const Step3Schedule: React.FC<Step3ScheduleProps> = ({ data, onChange, errors = 
             })}
           </div>
 
+          {/* Recovery Warning */}
+          {restDayWarning && (
+            <div className="mb-4 p-3 bg-error-container/20 border border-error/50 rounded-xl flex items-start gap-3">
+              <span className="material-symbols-outlined text-error mt-0.5" style={{ fontSize: 16 }}>
+                warning
+              </span>
+              <div>
+                <h4 className="text-[11px] font-bold uppercase tracking-widest text-error mb-0.5">
+                  {t('onboarding.step3.warning_title')}
+                </h4>
+                <p className="text-[11px] text-on-surface-variant leading-relaxed">
+                  {t('fitness_profile.training.rest_day_required')}
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* Level Recommendation Advice */}
+          {fitnessLevel && (
+            <div className="mb-4 p-3 bg-surface-container-highest border border-white/5 rounded-xl flex items-start gap-3">
+              <span className="material-symbols-outlined text-primary mt-0.5" style={{ fontSize: 16 }}>
+                lightbulb
+              </span>
+              <div>
+                <h4 className="text-[11px] font-bold uppercase tracking-widest text-primary mb-0.5">
+                  {t('onboarding.step3.level_recommendation_title')}
+                </h4>
+                <p className="text-[11px] text-on-surface-variant leading-relaxed">
+                  {t(`fitness_profile.training.recommendation_${fitnessLevel}`)}
+                </p>
+              </div>
+            </div>
+          )}
+
           {/* Pulse Recommendation */}
-          <div className="bg-surface-container-highest border border-white/5 rounded-xl p-4 flex items-start gap-3">
+          {/* <div className="bg-surface-container-highest border border-white/5 rounded-xl p-4 flex items-start gap-3">
             <span className="w-8 h-8 rounded-full bg-secondary/15 border border-secondary/30 flex items-center justify-center flex-shrink-0 mt-0.5">
               <span className="material-symbols-outlined text-secondary" style={{ fontSize: 16 }}>
                 bolt
@@ -110,14 +168,15 @@ const Step3Schedule: React.FC<Step3ScheduleProps> = ({ data, onChange, errors = 
             </span>
             <div>
               <p className="text-[9px] font-black uppercase tracking-[0.2em] text-on-surface-variant mb-1">
-                Pulse Recommendation
+                {t('onboarding.step3.pulse_recommendation')}
               </p>
               <p className="text-[12px] text-on-surface-variant leading-relaxed">
-                Based on your metabolism profile from Step 2,{' '}
-                {getPulseRecommendation(data.availableDays)}
+                {t('onboarding.step3.pulse_recommendation_desc', {
+                  recommendation: getPulseRecommendation(data.availableDays, t),
+                })}
               </p>
             </div>
-          </div>
+          </div> */}
         </div>
 
         {/* Right: Intensity Period */}
@@ -125,7 +184,9 @@ const Step3Schedule: React.FC<Step3ScheduleProps> = ({ data, onChange, errors = 
           <div className="bg-surface-container border border-white/8 rounded-xl p-6 flex-1">
             <div className="flex items-center gap-3 mb-5">
               <span className="block w-1 h-5 rounded-full bg-secondary" />
-              <h2 className="text-[15px] font-bold text-on-surface">Intensity Period</h2>
+              <h2 className="text-[15px] font-bold text-on-surface">
+                {t('onboarding.step3.intensity_period')}
+              </h2>
             </div>
 
             <div className="flex flex-col gap-2">
@@ -148,7 +209,7 @@ const Step3Schedule: React.FC<Step3ScheduleProps> = ({ data, onChange, errors = 
                         selected ? 'text-primary' : 'text-on-surface',
                       )}
                     >
-                      {opt.value} Minutes
+                      {t('onboarding.step3.minutes', { count: opt.value })}
                     </span>
                     <span
                       className={cn(
@@ -178,11 +239,10 @@ const Step3Schedule: React.FC<Step3ScheduleProps> = ({ data, onChange, errors = 
             <div className="absolute inset-0 bg-black/60" />
             <div className="relative z-10 p-4 h-full flex flex-col justify-center">
               <p className="text-[9px] font-black uppercase tracking-[0.2em] text-secondary mb-1">
-                Live Pulse Sync
+                {t('onboarding.step3.live_pulse_sync')}
               </p>
               <p className="text-[11px] text-on-surface-variant leading-relaxed">
-                Your coach will automatically adjust session blocks if your wearable detects high
-                fatigue scores.
+                {t('onboarding.step3.live_pulse_sync_desc')}
               </p>
             </div>
           </div>
@@ -193,7 +253,9 @@ const Step3Schedule: React.FC<Step3ScheduleProps> = ({ data, onChange, errors = 
       <div className="bg-surface-container border border-white/8 rounded-xl p-6">
         <div className="flex items-center gap-3 mb-5">
           <span className="block w-1 h-5 rounded-full bg-secondary" />
-          <h2 className="text-[15px] font-bold text-on-surface">Primary Training Window</h2>
+          <h2 className="text-[15px] font-bold text-on-surface">
+            {t('onboarding.step3.primary_window')}
+          </h2>
         </div>
 
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
@@ -211,7 +273,7 @@ const Step3Schedule: React.FC<Step3ScheduleProps> = ({ data, onChange, errors = 
                 )}
                 style={selected ? { boxShadow: '0 0 12px rgba(177,255,36,0.25)' } : undefined}
               >
-                {tw.label}
+                {t(`onboarding.step3.windows.${tw.value}`)}
               </button>
             );
           })}
@@ -222,3 +284,4 @@ const Step3Schedule: React.FC<Step3ScheduleProps> = ({ data, onChange, errors = 
 };
 
 export default Step3Schedule;
+
