@@ -545,6 +545,7 @@
       "insight_gym": "Full gym unlocks barbell programs — highest strength gains potential.",
       "insight_outdoor": "Outdoor training focus: calisthenics, HIIT, and interval running.",
       "insight_home": "Adapting your plan for Home Training...",
+      "gym_auto_msg": "Full gym — all equipment included automatically.",
       "environments": {
         "gym": {
           "label": "Full Gym",

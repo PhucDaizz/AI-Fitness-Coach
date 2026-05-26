@@ -28,15 +28,16 @@ const SectionLabel: React.FC<{ children: React.ReactNode }> = ({ children }) => 
 // ── Main Component ─────────────────────────────────────────────────────────
 const Step2Equipment: React.FC<Step2EquipmentProps> = ({ data, onChange, errors = {} }) => {
   const { t, i18n } = useTranslation();
-  const isVi = i18n.language === 'vi';
+
+  // Chỉ home mới cho user tự chọn
+  const showEquipmentPicker = data.environment === 'home';
+  const isGymEnvironment = data.environment === 'gym';
 
   const toggleEquipment = (value: string) => {
     const current = data.equipment;
     const next = current.includes(value) ? current.filter((v) => v !== value) : [...current, value];
     onChange({ equipment: next });
   };
-
-  const showEquipment = data.environment !== 'outdoor';
 
   return (
     <div className="relative">
@@ -49,9 +50,7 @@ const Step2Equipment: React.FC<Step2EquipmentProps> = ({ data, onChange, errors 
       <div className="mb-10">
         <h1 className="text-[36px] md:text-[48px] font-black uppercase tracking-tight leading-[1.05]">
           {t('onboarding.step2.title')}{' '}
-          <span className="block text-primary italic">
-            {t('onboarding.step2.title_italic')}
-          </span>
+          <span className="block text-primary italic">{t('onboarding.step2.title_italic')}</span>
         </h1>
       </div>
 
@@ -68,10 +67,10 @@ const Step2Equipment: React.FC<Step2EquipmentProps> = ({ data, onChange, errors 
             <button
               key={env.value}
               onClick={() => {
+                // Reset equipment về [] khi đổi environment bất kỳ
                 onChange({
                   environment: env.value,
-                  // Auto-clear equipment when switching to outdoor
-                  ...(env.value === 'outdoor' ? { equipment: [] } : {}),
+                  equipment: [],
                 });
               }}
               className={cn(
@@ -104,12 +103,7 @@ const Step2Equipment: React.FC<Step2EquipmentProps> = ({ data, onChange, errors 
               </span>
 
               <div>
-                <p
-                  className={cn(
-                    'text-[15px] font-bold mb-1.5',
-                    selected ? 'text-on-surface' : 'text-on-surface',
-                  )}
-                >
+                <p className="text-[15px] font-bold mb-1.5 text-on-surface">
                   {t(`onboarding.step2.environments.${env.value}.label`)}
                 </p>
                 <p className="text-[12px] text-on-surface-variant leading-relaxed">
@@ -122,7 +116,52 @@ const Step2Equipment: React.FC<Step2EquipmentProps> = ({ data, onChange, errors 
       </div>
 
       {/* ── Section 2: Equipment ─────────────────────────────────────── */}
-      {showEquipment && (
+
+      {/* Gym: tất cả auto-tick, read-only */}
+      {isGymEnvironment && (
+        <>
+          <SectionLabel>{t('onboarding.step2.access_gear')}</SectionLabel>
+          <div className="flex items-center gap-2 mb-5 px-4 py-3 bg-primary/5 border border-primary/20 rounded-xl">
+            <span className="material-symbols-outlined text-primary" style={{ fontSize: 18 }}>
+              auto_awesome
+            </span>
+            <p className="text-[13px] text-on-surface-variant font-medium">
+              {t('onboarding.step2.gym_auto_msg')}
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 mb-10">
+            {EQUIPMENT_LIST.map((item) => (
+              <div
+                key={item.value}
+                className="relative bg-surface-container border border-primary bg-primary/[0.04] rounded-xl px-5 py-3.5 flex items-center justify-between cursor-not-allowed opacity-70"
+              >
+                <div className="text-left">
+                  <p className="text-[13px] font-bold text-on-surface">
+                    {i18n.language === 'vi' ? item.labelVi : item.label}
+                  </p>
+                </div>
+
+                {/* Tick cố định, không interactive */}
+                <span className="w-7 h-7 rounded-full bg-primary border-primary border-2 flex items-center justify-center flex-shrink-0">
+                  <svg width="10" height="10" viewBox="0 0 12 12" fill="none">
+                    <polyline
+                      points="2,6 5,9 10,3"
+                      stroke="#1a2e00"
+                      strokeWidth="2.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </span>
+              </div>
+            ))}
+          </div>
+        </>
+      )}
+
+      {/* Home: user tự chọn equipment */}
+      {showEquipmentPicker && (
         <>
           <SectionLabel>{t('onboarding.step2.access_gear')}</SectionLabel>
           <p className="text-[18px] font-bold text-on-surface mb-5">
@@ -142,16 +181,8 @@ const Step2Equipment: React.FC<Step2EquipmentProps> = ({ data, onChange, errors 
                   )}
                 >
                   <div className="text-left">
-                    <p
-                      className={cn(
-                        'text-[13px] font-bold',
-                        selected ? 'text-on-surface' : 'text-on-surface',
-                      )}
-                    >
-                      {isVi ? item.labelVi : item.label}
-                    </p>
-                    <p className="text-[10px] uppercase tracking-widest text-on-surface-variant mt-0.5">
-                      {isVi ? item.label : item.labelVi}
+                    <p className="text-[13px] font-bold text-on-surface">
+                      {i18n.language === 'vi' ? item.labelVi : item.label}
                     </p>
                   </div>
 
@@ -183,8 +214,8 @@ const Step2Equipment: React.FC<Step2EquipmentProps> = ({ data, onChange, errors 
         </>
       )}
 
-      {/* Outdoor message */}
-      {!showEquipment && (
+      {/* Outdoor: không có equipment */}
+      {data.environment === 'outdoor' && (
         <div className="mb-10 flex items-center gap-3 p-4 bg-primary/5 border border-primary/20 rounded-xl">
           <span className="material-symbols-outlined text-primary" style={{ fontSize: 20 }}>
             park

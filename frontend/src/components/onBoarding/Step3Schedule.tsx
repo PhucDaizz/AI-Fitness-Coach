@@ -128,7 +128,10 @@ const Step3Schedule: React.FC<Step3ScheduleProps> = ({
           {/* Recovery Warning */}
           {restDayWarning && (
             <div className="mb-4 p-3 bg-error-container/20 border border-error/50 rounded-xl flex items-start gap-3">
-              <span className="material-symbols-outlined text-error mt-0.5" style={{ fontSize: 16 }}>
+              <span
+                className="material-symbols-outlined text-error mt-0.5"
+                style={{ fontSize: 16 }}
+              >
                 warning
               </span>
               <div>
@@ -145,7 +148,10 @@ const Step3Schedule: React.FC<Step3ScheduleProps> = ({
           {/* Level Recommendation Advice */}
           {fitnessLevel && (
             <div className="mb-4 p-3 bg-surface-container-highest border border-white/5 rounded-xl flex items-start gap-3">
-              <span className="material-symbols-outlined text-primary mt-0.5" style={{ fontSize: 16 }}>
+              <span
+                className="material-symbols-outlined text-primary mt-0.5"
+                style={{ fontSize: 16 }}
+              >
                 lightbulb
               </span>
               <div>
@@ -284,4 +290,3 @@ const Step3Schedule: React.FC<Step3ScheduleProps> = ({
 };
 
 export default Step3Schedule;
-
