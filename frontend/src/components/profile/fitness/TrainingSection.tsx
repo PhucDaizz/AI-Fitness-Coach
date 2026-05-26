@@ -42,6 +42,10 @@ const TrainingSetupSection: React.FC<TrainingSetupSectionProps> = ({ data, error
   const { t, i18n } = useTranslation();
   const [equipments, setEquipments] = useState<EquipmentItem[]>(EQUIPMENT_LIST);
 
+  // Chỉ home mới cho user tự chọn
+  const showEquipmentPicker = data.environment === 'home';
+  const isGymEnvironment = data.environment === 'gym';
+
   // Fetch dynamic equipment list from API
   useEffect(() => {
     const fetchEquipments = async () => {
@@ -49,8 +53,7 @@ const TrainingSetupSection: React.FC<TrainingSetupSectionProps> = ({ data, error
         const response: any = await getEquipments({ pageNumber: 1, pageSize: 100 });
         if (response?.items) {
           const mapped = response.items.map((item: any) => ({
-            // Use name as value to match backend expectations, but normalized for i18n keys if needed
-            value: item.name, 
+            value: item.name,
             label: item.name,
             labelVi: item.nameVN,
           }));
@@ -90,8 +93,6 @@ const TrainingSetupSection: React.FC<TrainingSetupSectionProps> = ({ data, error
     onChange('availableDays', next);
   };
 
-  const showEquipment = data.environment !== 'outdoor';
-
   return (
     <section>
       {/* Header */}
@@ -102,8 +103,12 @@ const TrainingSetupSection: React.FC<TrainingSetupSectionProps> = ({ data, error
           </span>
         </div>
         <div>
-          <h2 className="text-lg font-black uppercase tracking-tight text-white">{t('fitness_profile.training.title')}</h2>
-          <p className="text-[11px] text-on-surface-variant">{t('fitness_profile.training.subtitle')}</p>
+          <h2 className="text-lg font-black uppercase tracking-tight text-white">
+            {t('fitness_profile.training.title')}
+          </h2>
+          <p className="text-[11px] text-on-surface-variant">
+            {t('fitness_profile.training.subtitle')}
+          </p>
         </div>
       </div>
 
@@ -117,10 +122,9 @@ const TrainingSetupSection: React.FC<TrainingSetupSectionProps> = ({ data, error
               key={env.value}
               type="button"
               onClick={() => {
+                // Reset equipment về [] khi đổi environment bất kỳ
                 onChange('environment', env.value);
-                if (env.value === 'outdoor') {
-                  onChange('equipment', []);
-                }
+                onChange('equipment', []);
               }}
               className={cn(
                 'relative bg-surface-container border rounded-xl p-5 text-left transition-all hover:border-primary/30 flex flex-col gap-2.5',
@@ -131,23 +135,73 @@ const TrainingSetupSection: React.FC<TrainingSetupSectionProps> = ({ data, error
                 {env.icon}
               </span>
               <div>
-                <p className="text-[14px] font-bold text-on-surface mb-1">{t(`fitness_profile.environments.${env.value}`)}</p>
-                <p className="text-[11px] text-on-surface-variant leading-relaxed">{t(`fitness_profile.environments.${env.value}_desc`)}</p>
+                <p className="text-[14px] font-bold text-on-surface mb-1">
+                  {t(`fitness_profile.environments.${env.value}`)}
+                </p>
+                <p className="text-[11px] text-on-surface-variant leading-relaxed">
+                  {t(`fitness_profile.environments.${env.value}_desc`)}
+                </p>
               </div>
             </button>
           );
         })}
       </div>
 
-      {/* Section 2: Equipment */}
-      {showEquipment && (
+      {/* Section 2a: Gym — tất cả auto-tick, read-only */}
+      {isGymEnvironment && (
+        <>
+          <SectionLabel>{t('fitness_profile.training.equipment')}</SectionLabel>
+          <div className="flex items-center gap-2 mb-4 px-4 py-3 bg-primary/5 border border-primary/20 rounded-xl">
+            <span className="material-symbols-outlined text-primary" style={{ fontSize: 18 }}>
+              auto_awesome
+            </span>
+            <p className="text-[13px] text-on-surface-variant font-medium">
+              {t('fitness_profile.training.gym_auto_msg', {
+                defaultValue: 'Full gym — all equipment included automatically.',
+              })}
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mb-6">
+            {equipments.map((item) => {
+              const label = i18n.language === 'vi' ? item.labelVi : item.label;
+              return (
+                <div
+                  key={item.value}
+                  className="relative bg-surface-container border border-primary bg-primary/[0.04] rounded-xl px-4 py-3 flex items-center justify-between cursor-not-allowed opacity-70"
+                >
+                  <div className="text-left">
+                    <p className="text-[13px] font-bold text-on-surface">{label}</p>
+                  </div>
+
+                  {/* Tick cố định, không interactive */}
+                  <span className="w-6 h-6 rounded-full bg-primary border-primary border-2 flex items-center justify-center flex-shrink-0">
+                    <svg width="9" height="9" viewBox="0 0 12 12" fill="none">
+                      <polyline
+                        points="2,6 5,9 10,3"
+                        stroke="#1a2e00"
+                        strokeWidth="2.5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        </>
+      )}
+
+      {/* Section 2b: Home — user tự chọn equipment */}
+      {showEquipmentPicker && (
         <>
           <SectionLabel>{t('fitness_profile.training.equipment')}</SectionLabel>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mb-6">
             {equipments.map((item) => {
               const selected = data.equipment.includes(item.value);
               const label = i18n.language === 'vi' ? item.labelVi : item.label;
-              
+
               return (
                 <button
                   key={item.value}
@@ -188,8 +242,8 @@ const TrainingSetupSection: React.FC<TrainingSetupSectionProps> = ({ data, error
         </>
       )}
 
-      {/* Outdoor message */}
-      {!showEquipment && (
+      {/* Section 2c: Outdoor — không có equipment */}
+      {data.environment === 'outdoor' && (
         <div className="mb-6 flex items-center gap-3 p-4 bg-primary/5 border border-primary/20 rounded-xl">
           <span className="material-symbols-outlined text-primary" style={{ fontSize: 18 }}>
             park
@@ -250,28 +304,33 @@ const TrainingSetupSection: React.FC<TrainingSetupSectionProps> = ({ data, error
       {/* Recommendation and recovery notice based on fitnessLevel */}
       <div className="mb-6 p-4 bg-surface-container border border-outline-variant/10 rounded-xl flex flex-col gap-2.5">
         <div className="flex items-start gap-2.5 text-on-surface-variant text-[12px] leading-relaxed">
-          <span className="material-symbols-outlined text-primary text-lg mt-0.5 select-none">info</span>
+          <span className="material-symbols-outlined text-primary text-lg mt-0.5 select-none">
+            info
+          </span>
           <div>
             <p className="font-bold text-white uppercase tracking-wider text-[10px] mb-0.5">
               {t('fitness_profile.training.level_recommendation_title')}
             </p>
             <p>
-              {data.fitnessLevel === 'beginner' && t('fitness_profile.training.recommendation_beginner')}
-              {data.fitnessLevel === 'intermediate' && t('fitness_profile.training.recommendation_intermediate')}
-              {data.fitnessLevel === 'advanced' && t('fitness_profile.training.recommendation_advanced')}
+              {data.fitnessLevel === 'beginner' &&
+                t('fitness_profile.training.recommendation_beginner')}
+              {data.fitnessLevel === 'intermediate' &&
+                t('fitness_profile.training.recommendation_intermediate')}
+              {data.fitnessLevel === 'advanced' &&
+                t('fitness_profile.training.recommendation_advanced')}
             </p>
           </div>
         </div>
         {restDayWarning && (
           <div className="flex items-start gap-2.5 text-error text-[12px] leading-relaxed animate-fade-in font-medium pt-2 border-t border-white/5">
-            <span className="material-symbols-outlined text-error text-lg mt-0.5 select-none">warning</span>
+            <span className="material-symbols-outlined text-error text-lg mt-0.5 select-none">
+              warning
+            </span>
             <div>
               <p className="font-bold uppercase tracking-wider text-[10px] mb-0.5">
                 {t('fitness_profile.training.warning_title')}
               </p>
-              <p>
-                {t('fitness_profile.training.rest_day_required')}
-              </p>
+              <p>{t('fitness_profile.training.rest_day_required')}</p>
             </div>
           </div>
         )}
