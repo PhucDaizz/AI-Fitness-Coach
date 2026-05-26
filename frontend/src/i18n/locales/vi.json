@@ -199,6 +199,37 @@
     "title_highlight": "tập luyện",
     "subtitle": "Chọn một kế hoạch đang hoạt động hoặc xem lại lịch sử tập luyện của bạn.",
     "init_btn": "Khởi tạo lộ trình AI",
+    "generation": {
+      "generating_btn": "Đang tạo kế hoạch",
+      "job_label": "Job tạo kế hoạch",
+      "job_id": "Job",
+      "open_plan": "Mở kế hoạch",
+      "track": "Theo dõi",
+      "dismiss": "Ẩn",
+      "retry": "Thử lại",
+      "close_keep_running": "Đóng và tiếp tục chạy nền",
+      "status": {
+        "Pending": "Đang chờ",
+        "InProgress": "Đang xử lý",
+        "Completed": "Hoàn tất",
+        "Failed": "Thất bại"
+      },
+      "messages": {
+        "Pending": "Yêu cầu tạo kế hoạch đã được đưa vào hàng đợi.",
+        "InProgress": "AI đang tạo kế hoạch tập luyện cho bạn.",
+        "Completed": "Kế hoạch tập luyện đã sẵn sàng.",
+        "Failed": "Tạo kế hoạch tập luyện thất bại."
+      },
+      "notifications": {
+        "title": "Thông báo",
+        "clear": "Xoá",
+        "empty_title": "Chưa có cập nhật mới",
+        "empty": "Thông báo tạo kế hoạch sẽ xuất hiện tại đây.",
+        "plan_title": "Cập nhật kế hoạch tập",
+        "Completed": "Kế hoạch tập luyện đã sẵn sàng. Mở ngay để xem lịch tập.",
+        "Failed": "Tạo kế hoạch tập luyện thất bại. Vui lòng thử lại ở trang Kế hoạch."
+      }
+    },
     "filters": {
       "active": "Đang hoạt động",
       "completed": "Đã hoàn thành",

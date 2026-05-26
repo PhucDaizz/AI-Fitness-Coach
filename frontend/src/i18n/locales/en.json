@@ -199,6 +199,37 @@
     "title_highlight": "Protocols",
     "subtitle": "Select an active plan or review your training history.",
     "init_btn": "Initialize AI Protocol",
+    "generation": {
+      "generating_btn": "Plan is generating",
+      "job_label": "Workout plan job",
+      "job_id": "Job",
+      "open_plan": "Open plan",
+      "track": "Track",
+      "dismiss": "Dismiss",
+      "retry": "Retry",
+      "close_keep_running": "Close and keep running",
+      "status": {
+        "Pending": "Pending",
+        "InProgress": "In progress",
+        "Completed": "Completed",
+        "Failed": "Failed"
+      },
+      "messages": {
+        "Pending": "Your plan request has been queued.",
+        "InProgress": "AI is creating your workout plan.",
+        "Completed": "Your workout plan is ready.",
+        "Failed": "Workout plan generation failed."
+      },
+      "notifications": {
+        "title": "Notifications",
+        "clear": "Clear",
+        "empty_title": "No new updates",
+        "empty": "Plan generation updates will appear here.",
+        "plan_title": "Workout plan update",
+        "Completed": "Your workout plan is ready. Open it now to review the schedule.",
+        "Failed": "Workout plan generation failed. Please try again from the Plans page."
+      }
+    },
     "filters": {
       "active": "Active",
       "completed": "Completed",

@@ -16,6 +16,8 @@ class SignalRService {
       ReceiveMessage: [],
       ReceiveError: [],
       SessionTitleUpdated: [],
+      WorkoutPlanGenerationUpdated: [],
+      ConnectionReconnected: [],
       UpdateOnlineUsersCount: [],
     };
 
@@ -43,6 +45,10 @@ class SignalRService {
         .withAutomaticReconnect()
         .configureLogging(signalR.LogLevel.Information)
         .build();
+
+      this.connection.onreconnected(() => {
+        this.notifyListeners('ConnectionReconnected');
+      });
     }
 
     if (!this.handlersRegistered) {
@@ -66,6 +72,10 @@ class SignalRService {
 
       this.connection.on('SessionTitleUpdated', (sessionId, title) => {
         this.notifyListeners('SessionTitleUpdated', sessionId, title);
+      });
+
+      this.connection.on('WorkoutPlanGenerationUpdated', (job) => {
+        this.notifyListeners('WorkoutPlanGenerationUpdated', job);
       });
 
       this.connection.on('UpdateOnlineUsersCount', (count) => {

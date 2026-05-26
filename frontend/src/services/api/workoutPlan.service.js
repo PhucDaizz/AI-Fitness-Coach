@@ -16,6 +16,8 @@ const handleResponse = async (apiPromise) => {
       const apiResponse = err.response.data;
       const error = new Error(apiResponse.message || err.message);
       error.errors = apiResponse.errors || [];
+      error.status = err.response.status;
+      error.data = apiResponse.data;
       throw error;
     }
     throw err;
@@ -31,12 +33,27 @@ export const deleteWorkoutPlan = async (planId) => {
 };
 
 export const generateWorkoutPlan = async (data, signal) => {
-  return await handleResponse(
-    workoutApi.post('WorkoutPlan/generate', data, {
-      timeout: 900000,
-      signal,
-    }),
-  );
+  try {
+    return await handleResponse(
+      workoutApi.post('WorkoutPlan/generate', data, {
+        timeout: 900000,
+        signal,
+      }),
+    );
+  } catch (err) {
+    if (err.status === 409 && err.data) {
+      return err.data;
+    }
+    throw err;
+  }
+};
+
+export const getWorkoutPlanGenerationJob = async (jobId) => {
+  return await handleResponse(workoutApi.get(`WorkoutPlan/generate-jobs/${jobId}`));
+};
+
+export const getLatestWorkoutPlanGenerationJob = async () => {
+  return await handleResponse(workoutApi.get('WorkoutPlan/generate-jobs/latest'));
 };
 
 export const getWorkoutPlanDays = async (planId) => {

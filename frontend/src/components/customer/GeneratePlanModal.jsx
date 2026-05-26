@@ -4,7 +4,14 @@ import { useTranslation } from 'react-i18next';
 const FINAL_STATUS_MESSAGE_DELAY_MS = 270000;
 const STATUS_MESSAGE_TICK_MS = 1000;
 
-const GeneratePlanModal = ({ isOpen, onClose, onGenerate, onAbort, isGenerating }) => {
+const GeneratePlanModal = ({
+  isOpen,
+  onClose,
+  onGenerate,
+  onAbort,
+  isGenerating,
+  generationJob,
+}) => {
   const { t } = useTranslation();
   const [totalWeeks, setTotalWeeks] = useState(4);
   const [startsAt, setStartsAt] = useState(new Date().toISOString().split('T')[0]);
@@ -12,6 +19,12 @@ const GeneratePlanModal = ({ isOpen, onClose, onGenerate, onAbort, isGenerating 
   const [successData, setSuccessData] = useState(null);
 
   const statusMessages = t('workout_plans.modal.status_messages', { returnObjects: true }) || [];
+  const hasFailed = generationJob?.status === 'Failed';
+  const generationMessage = generationJob
+    ? t(`workout_plans.generation.messages.${generationJob.status}`, {
+        defaultValue: generationJob.message,
+      })
+    : null;
 
   React.useEffect(() => {
     if (!isGenerating || !statusMessages.length) {
@@ -37,15 +50,31 @@ const GeneratePlanModal = ({ isOpen, onClose, onGenerate, onAbort, isGenerating 
     return () => clearInterval(interval);
   }, [isGenerating, statusMessages.length]);
 
+  React.useEffect(() => {
+    if (generationJob?.status === 'Completed') {
+      setSuccessData({
+        planIds: generationJob.planIds,
+        summary: generationJob.summary || generationJob.message,
+      });
+    }
+
+    if (generationJob?.status === 'Failed') {
+      setSuccessData(null);
+    }
+  }, [generationJob]);
+
   const handleGenerate = async () => {
     const result = await onGenerate({ totalWeeks, startsAt });
-    if (result && result.planIds) {
-      setSuccessData(result);
+    if (result?.status === 'Completed') {
+      setSuccessData({
+        planIds: result.planIds,
+        summary: result.summary || result.message,
+      });
     }
   };
 
   const handleCancel = () => {
-    if (isGenerating && onAbort) {
+    if (!generationJob && isGenerating && onAbort) {
       onAbort();
     }
     onClose();
@@ -121,17 +150,33 @@ const GeneratePlanModal = ({ isOpen, onClose, onGenerate, onAbort, isGenerating 
                 />
               </div>
 
-              {isGenerating && (
+              {(isGenerating || generationJob) && (
                 <div className="bg-primary/5 border border-primary/10 rounded-2xl p-4 animate-pulse">
                   <div className="flex items-center gap-3">
-                    <div className="w-2 h-2 rounded-full bg-primary animate-ping"></div>
-                    <p className="text-[10px] font-black text-primary uppercase tracking-widest">
-                      {statusMessages[statusIndex]}
+                    <div
+                      className={`w-2 h-2 rounded-full ${
+                        hasFailed ? 'bg-red-400' : 'bg-primary animate-ping'
+                      }`}
+                    ></div>
+                    <p
+                      className={`text-[10px] font-black uppercase tracking-widest ${
+                        hasFailed ? 'text-red-300' : 'text-primary'
+                      }`}
+                    >
+                      {generationMessage || statusMessages[statusIndex]}
                     </p>
                   </div>
-                  <p className="text-[8px] text-on-surface-variant mt-2 font-bold uppercase tracking-tighter opacity-50">
-                    {t('workout_plans.modal.warning')}
-                  </p>
+                  {generationJob?.error ? (
+                    <p className="text-[8px] text-red-200 mt-2 font-bold uppercase tracking-tighter opacity-70">
+                      {generationJob.error}
+                    </p>
+                  ) : (
+                    <p className="text-[8px] text-on-surface-variant mt-2 font-bold uppercase tracking-tighter opacity-50">
+                      {generationJob?.jobId
+                        ? `${t('workout_plans.generation.job_id')} ${generationJob.jobId}`
+                        : t('workout_plans.modal.warning')}
+                    </p>
+                  )}
                 </div>
               )}
 
@@ -146,6 +191,11 @@ const GeneratePlanModal = ({ isOpen, onClose, onGenerate, onAbort, isGenerating 
                       <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin"></div>
                       {t('workout_plans.modal.generating')}
                     </>
+                  ) : generationJob?.status === 'Failed' ? (
+                    <>
+                      <span className="material-symbols-outlined text-sm">refresh</span>
+                      {t('workout_plans.generation.retry')}
+                    </>
                   ) : (
                     <>
                       <span className="material-symbols-outlined text-sm">bolt</span>
@@ -158,7 +208,7 @@ const GeneratePlanModal = ({ isOpen, onClose, onGenerate, onAbort, isGenerating 
                   className="w-full mt-3 py-3 text-[10px] font-black uppercase tracking-widest text-on-surface-variant hover:text-white transition-colors"
                 >
                   {isGenerating
-                    ? t('workout_plans.modal.abort_btn')
+                    ? t('workout_plans.generation.close_keep_running')
                     : t('workout_plans.modal.abort_btn_simple')}
                 </button>
               </div>
