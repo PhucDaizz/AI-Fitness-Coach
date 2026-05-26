@@ -545,6 +545,7 @@
       "insight_gym": "Phòng gym đầy đủ giúp mở khóa các chương trình tạ đòn — tiềm năng tăng sức mạnh cao nhất.",
       "insight_outdoor": "Tập trung tập ngoài trời: calisthenics, HIIT, và chạy bộ ngắt quãng.",
       "insight_home": "Đang điều chỉnh kế hoạch cho việc Tập luyện tại Nhà...",
+      "gym_auto_msg": "Phòng gym đầy đủ — tất cả thiết bị được bao gồm tự động.",
       "environments": {
         "gym": {
           "label": "Phòng Gym đầy đủ",

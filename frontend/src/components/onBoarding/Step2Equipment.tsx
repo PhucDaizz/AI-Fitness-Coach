@@ -27,19 +27,11 @@ const SectionLabel: React.FC<{ children: React.ReactNode }> = ({ children }) => 
 
 // ── Main Component ─────────────────────────────────────────────────────────
 const Step2Equipment: React.FC<Step2EquipmentProps> = ({ data, onChange, errors = {} }) => {
-<<<<<<< Updated upstream
   const { t, i18n } = useTranslation();
-  const isVi = i18n.language === 'vi';
-=======
-<<<<<<< HEAD
+
   // Chỉ home mới cho user tự chọn
   const showEquipmentPicker = data.environment === 'home';
   const isGymEnvironment = data.environment === 'gym';
-=======
-  const { t, i18n } = useTranslation();
-  const isVi = i18n.language === 'vi';
->>>>>>> b96ab7b2e0586c673f0f6db6494b099b6feec63c
->>>>>>> Stashed changes
 
   const toggleEquipment = (value: string) => {
     const current = data.equipment;
@@ -58,9 +50,7 @@ const Step2Equipment: React.FC<Step2EquipmentProps> = ({ data, onChange, errors 
       <div className="mb-10">
         <h1 className="text-[36px] md:text-[48px] font-black uppercase tracking-tight leading-[1.05]">
           {t('onboarding.step2.title')}{' '}
-          <span className="block text-primary italic">
-            {t('onboarding.step2.title_italic')}
-          </span>
+          <span className="block text-primary italic">{t('onboarding.step2.title_italic')}</span>
         </h1>
       </div>
 
@@ -113,29 +103,12 @@ const Step2Equipment: React.FC<Step2EquipmentProps> = ({ data, onChange, errors 
               </span>
 
               <div>
-<<<<<<< HEAD
-                <p className="text-[15px] font-bold mb-1.5 text-on-surface">{env.label}</p>
-                <p className="text-[12px] text-on-surface-variant leading-relaxed">{env.desc}</p>
-=======
-                <p
-                  className={cn(
-                    'text-[15px] font-bold mb-1.5',
-                    selected ? 'text-on-surface' : 'text-on-surface',
-                  )}
-                >
+                <p className="text-[15px] font-bold mb-1.5 text-on-surface">
                   {t(`onboarding.step2.environments.${env.value}.label`)}
-<<<<<<< Updated upstream
                 </p>
                 <p className="text-[12px] text-on-surface-variant leading-relaxed">
                   {t(`onboarding.step2.environments.${env.value}.desc`)}
                 </p>
-=======
-                </p>
-                <p className="text-[12px] text-on-surface-variant leading-relaxed">
-                  {t(`onboarding.step2.environments.${env.value}.desc`)}
-                </p>
->>>>>>> b96ab7b2e0586c673f0f6db6494b099b6feec63c
->>>>>>> Stashed changes
               </div>
             </button>
           );
@@ -147,15 +120,13 @@ const Step2Equipment: React.FC<Step2EquipmentProps> = ({ data, onChange, errors 
       {/* Gym: tất cả auto-tick, read-only */}
       {isGymEnvironment && (
         <>
-<<<<<<< Updated upstream
-=======
-          <SectionLabel>Access to Gear</SectionLabel>
+          <SectionLabel>{t('onboarding.step2.access_gear')}</SectionLabel>
           <div className="flex items-center gap-2 mb-5 px-4 py-3 bg-primary/5 border border-primary/20 rounded-xl">
             <span className="material-symbols-outlined text-primary" style={{ fontSize: 18 }}>
               auto_awesome
             </span>
             <p className="text-[13px] text-on-surface-variant font-medium">
-              Full gym — all equipment included automatically.
+              {t('onboarding.step2.gym_auto_msg')}
             </p>
           </div>
 
@@ -166,9 +137,8 @@ const Step2Equipment: React.FC<Step2EquipmentProps> = ({ data, onChange, errors 
                 className="relative bg-surface-container border border-primary bg-primary/[0.04] rounded-xl px-5 py-3.5 flex items-center justify-between cursor-not-allowed opacity-70"
               >
                 <div className="text-left">
-                  <p className="text-[13px] font-bold text-on-surface">{item.label}</p>
-                  <p className="text-[10px] uppercase tracking-widest text-on-surface-variant mt-0.5">
-                    {item.labelVi}
+                  <p className="text-[13px] font-bold text-on-surface">
+                    {i18n.language === 'vi' ? item.labelVi : item.label}
                   </p>
                 </div>
 
@@ -193,7 +163,6 @@ const Step2Equipment: React.FC<Step2EquipmentProps> = ({ data, onChange, errors 
       {/* Home: user tự chọn equipment */}
       {showEquipmentPicker && (
         <>
->>>>>>> Stashed changes
           <SectionLabel>{t('onboarding.step2.access_gear')}</SectionLabel>
           <p className="text-[18px] font-bold text-on-surface mb-5">
             {t('onboarding.step2.gear_question')}
@@ -212,20 +181,8 @@ const Step2Equipment: React.FC<Step2EquipmentProps> = ({ data, onChange, errors 
                   )}
                 >
                   <div className="text-left">
-<<<<<<< HEAD
-                    <p className="text-[13px] font-bold text-on-surface">{item.label}</p>
-=======
-                    <p
-                      className={cn(
-                        'text-[13px] font-bold',
-                        selected ? 'text-on-surface' : 'text-on-surface',
-                      )}
-                    >
-                      {isVi ? item.labelVi : item.label}
-                    </p>
->>>>>>> b96ab7b2e0586c673f0f6db6494b099b6feec63c
-                    <p className="text-[10px] uppercase tracking-widest text-on-surface-variant mt-0.5">
-                      {isVi ? item.label : item.labelVi}
+                    <p className="text-[13px] font-bold text-on-surface">
+                      {i18n.language === 'vi' ? item.labelVi : item.label}
                     </p>
                   </div>
 

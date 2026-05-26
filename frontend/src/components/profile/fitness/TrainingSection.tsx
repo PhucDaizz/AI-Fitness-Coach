@@ -77,6 +77,7 @@ const TrainingSetupSection: React.FC<TrainingSetupSectionProps> = ({ data, error
 
   useEffect(() => {
     if (data.availableDays.length >= 7) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setRestDayWarning(true);
     }
   }, [data.availableDays]);
