@@ -41,12 +41,15 @@ namespace AIService.Infrastructure.Services
 
             var settings = new PromptExecutionSettings
             {
-                FunctionChoiceBehavior = FunctionChoiceBehavior.None(), 
+                FunctionChoiceBehavior = FunctionChoiceBehavior.None(),
                 ExtensionData = new Dictionary<string, object>
                 {
-                    ["max_tokens"] = 20, 
-                    ["temperature"] = 0.7, 
-                    ["stop"] = new[] { "\n" } 
+                    ["thinking"] = new Dictionary<string, object>
+                    {
+                        ["type"] = "disabled"
+                    },
+                    ["max_tokens"] = 32,
+                    ["temperature"] = 0.0
                 }
             };
 

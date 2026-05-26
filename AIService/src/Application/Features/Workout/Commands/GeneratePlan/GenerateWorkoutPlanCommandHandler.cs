@@ -65,7 +65,7 @@ namespace AIService.Application.Features.Workout.Commands.GeneratePlan
 
             async Task<WorkoutPlanPayloadDto> ExecuteWeekWithRetryAsync(WeekBlueprint week)
             {
-                int maxRetries = 15;
+                int maxRetries = 40;
                 int delayMs = 1000;
 
                 for (int attempt = 1; attempt <= maxRetries; attempt++)
@@ -89,48 +89,14 @@ namespace AIService.Application.Features.Workout.Commands.GeneratePlan
                 throw new InvalidOperationException($"Không thể tạo lịch cho tuần {week.WeekNumber} sau {maxRetries} lần thử.");
             }
 
-            // ── CHẾ ĐỘ 1: TỪ 1 ĐẾN 2 TUẦN (CHẠY FULL SONG SONG CÓ RETRY ĐỘC LẬP) ──
-            if (request.TotalWeeks <= 2)
-            {
-                _logger.LogInformation("[GeneratePlan] Processing {W} weeks in PARALLEL (Fast Mode - Safe)", blueprint.Weeks.Count);
+            _logger.LogInformation("[GeneratePlan] Processing {W} weeks in PARALLEL", blueprint.Weeks.Count);
 
-                var allTasks = blueprint.Weeks.Select(week => ExecuteWeekWithRetryAsync(week));
+            var weekTasks = blueprint.Weeks
+                .Select(week => ExecuteWeekWithRetryAsync(week))
+                .ToArray();
 
-                var allResults = await Task.WhenAll(allTasks);
-                weekPayloads.AddRange(allResults);
-            }
-            // ── CHẾ ĐỘ 2: 3-4 TUẦN (HYBRID: 2 TUẦN ĐẦU SONG SONG, PHẦN CÒN LẠI TUẦN TỰ) ──
-            else
-            {
-                _logger.LogInformation("[GeneratePlan] Processing 3-4 weeks (Hybrid Mode: 2 Parallel, rest Sequential)");
-
-                var firstTwoWeeks = blueprint.Weeks.Take(2).ToList();
-                var parallelTasks = firstTwoWeeks.Select(week => ExecuteWeekWithRetryAsync(week));
-
-                var parallelResults = await Task.WhenAll(parallelTasks);
-                weekPayloads.AddRange(parallelResults);
-
-                _logger.LogInformation("[GeneratePlan] Đã xong 2 tuần đầu. Delay 2s để xả nhiệt Gemini API...");
-                await Task.Delay(2000, cancellationToken);
-
-                // Giai đoạn 2: Tuần 3 và Tuần 4 chạy tuần tự
-                var remainingWeeks = blueprint.Weeks.Skip(2).ToList();
-
-                for (int i = 0; i < remainingWeeks.Count; i++)
-                {
-                    var week = remainingWeeks[i];
-                    _logger.LogInformation("[GeneratePlan] Bắt đầu xử lý Tuần {W} (Sequential)...", week.WeekNumber);
-
-                    var weekResult = await ExecuteWeekWithRetryAsync(week);
-                    weekPayloads.Add(weekResult);
-
-                    if (i < remainingWeeks.Count - 1)
-                    {
-                        _logger.LogInformation("[GeneratePlan] Hoàn thành Tuần {W}. Delay 1.5s...", week.WeekNumber);
-                        await Task.Delay(1500, cancellationToken);
-                    }
-                }
-            }
+            var results = await Task.WhenAll(weekTasks);
+            weekPayloads.AddRange(results);
 
             var planIds = request.TotalWeeks == 1
                 ? await SaveWeeklyAsync(weekPayloads.ToArray(), request, cancellationToken)

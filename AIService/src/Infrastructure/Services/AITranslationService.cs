@@ -42,9 +42,12 @@ namespace AIService.Infrastructure.Services
                 FunctionChoiceBehavior = FunctionChoiceBehavior.None(),
                 ExtensionData = new Dictionary<string, object>
                 {
+                    ["thinking"] = new Dictionary<string, object>
+                    {
+                        ["type"] = "disabled"
+                    },
                     ["max_tokens"] = 300,
-                    ["temperature"] = 0.0,
-                    ["stop"] = new[] { "\n\n", "Note:", "Explanation:" } 
+                    ["temperature"] = 0.0
                 }
             };
 

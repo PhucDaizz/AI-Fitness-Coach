@@ -119,11 +119,29 @@ namespace AIService.Infrastructure
                     serviceId: "pt_plant",
                     httpClient: httpClient);
 
-                kernelBuilder.AddGoogleAIGeminiChatCompletion(
+                /*kernelBuilder.AddGoogleAIGeminiChatCompletion(
                     modelId: googleConfig.TranslatorModel,
                     apiKey: googleConfig.ApiKey,
                     serviceId: "fast_translator",
-                    httpClient: httpClient);
+                    httpClient: httpClient);*/
+
+                #endregion
+
+                #region DeepSeek
+
+                var deepSeekConfig = configuration.GetSection("DeepSeek").Get<DeepSeekSettings>()!;
+
+                var deepSeekHttpClient = new HttpClient
+                {
+                    Timeout = TimeSpan.FromMinutes(15)
+                };
+
+                kernelBuilder.AddOpenAIChatCompletion(
+                    modelId: deepSeekConfig.Model,
+                    apiKey: deepSeekConfig.ApiKey,
+                    endpoint: new Uri("https://api.deepseek.com"),
+                    httpClient: deepSeekHttpClient,
+                    serviceId: "fast_translator");
 
                 #endregion
 
