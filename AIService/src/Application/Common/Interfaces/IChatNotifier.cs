@@ -1,4 +1,6 @@
-﻿namespace AIService.Application.Common.Interfaces
+using AIService.Application.DTOs.Workout;
+
+namespace AIService.Application.Common.Interfaces
 {
     public interface IChatNotifier
     {
@@ -18,6 +20,8 @@
         Task SendErrorAsync(string userId, string errorMessage);
 
         Task SendTitleUpdatedAsync(string userId, Guid sessionId, string newTitle);
+
+        Task SendWorkoutPlanGenerationUpdatedAsync(string userId, WorkoutPlanGenerationJobDto job);
 
         Task BroadcastOnlineUsersCountAsync(long count);
     }

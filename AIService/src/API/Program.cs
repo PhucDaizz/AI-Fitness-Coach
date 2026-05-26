@@ -60,6 +60,7 @@ namespace AIService.API
 
             builder.Services.AddHostedService<EmbeddingConsumer>();
             builder.Services.AddHostedService<ChatConsumer>();
+            builder.Services.AddHostedService<WorkoutPlanGenerationConsumer>();
 
             builder.Services.AddCors(options =>
             {

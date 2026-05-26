@@ -1,4 +1,5 @@
 using AIService.Application.Common.Interfaces;
+using AIService.Application.DTOs.Workout;
 using AIService.Infrastructure.Hubs;
 using Microsoft.AspNetCore.SignalR;
 
@@ -36,6 +37,11 @@ namespace AIService.Infrastructure.Services
         public async Task SendTitleUpdatedAsync(string userId, Guid sessionId, string newTitle)
         {
             await _hubContext.Clients.User(userId).SessionTitleUpdated(sessionId, newTitle);
+        }
+
+        public async Task SendWorkoutPlanGenerationUpdatedAsync(string userId, WorkoutPlanGenerationJobDto job)
+        {
+            await _hubContext.Clients.User(userId).WorkoutPlanGenerationUpdated(job);
         }
 
         public async Task BroadcastOnlineUsersCountAsync(long count)

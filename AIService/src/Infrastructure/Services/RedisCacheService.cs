@@ -90,5 +90,45 @@ namespace AIService.Infrastructure.Services
             string key = $"chat_history:{sessionId}";
             await _database.KeyDeleteAsync(key);
         }
+
+        public async Task SetAsync<T>(string key, T value, TimeSpan? expiry = null)
+        {
+            string json = JsonSerializer.Serialize(value);
+            await _database.StringSetAsync(key, json);
+
+            if (expiry.HasValue)
+            {
+                await _database.KeyExpireAsync(key, expiry.Value);
+            }
+        }
+
+        public async Task<T?> GetAsync<T>(string key)
+        {
+            var value = await _database.StringGetAsync(key);
+            if (value.IsNullOrEmpty) return default;
+
+            return JsonSerializer.Deserialize<T>(value!);
+        }
+
+        public async Task SetStringAsync(string key, string value, TimeSpan? expiry = null)
+        {
+            await _database.StringSetAsync(key, value);
+
+            if (expiry.HasValue)
+            {
+                await _database.KeyExpireAsync(key, expiry.Value);
+            }
+        }
+
+        public async Task<string?> GetStringAsync(string key)
+        {
+            var value = await _database.StringGetAsync(key);
+            return value.IsNullOrEmpty ? null : value.ToString();
+        }
+
+        public async Task DeleteAsync(string key)
+        {
+            await _database.KeyDeleteAsync(key);
+        }
     }
 }

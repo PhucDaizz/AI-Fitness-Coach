@@ -1,5 +1,6 @@
-﻿using AIService.Application.Common.Behaviours;
+using AIService.Application.Common.Behaviours;
 using AIService.Application.Common.Interfaces;
+using AIService.Application.Features.Workout.Commands.GeneratePlan.Services;
 using AIService.Application.Features.Workout.Commands.Services;
 using FluentValidation;
 using MediatR;
@@ -19,6 +20,7 @@ namespace AIService.Application
             services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehaviour<,>));
 
             services.AddScoped<IHistoricalContextBuilder, HistoricalContextBuilder>();
+            services.AddScoped<IWorkoutPlanGenerationService, WorkoutPlanGenerationService>();
 
             return services;
         }

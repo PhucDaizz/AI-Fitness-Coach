@@ -1,4 +1,6 @@
-﻿namespace AIService.Infrastructure.HubInterfaces
+using AIService.Application.DTOs.Workout;
+
+namespace AIService.Infrastructure.HubInterfaces
 {
     public interface IChatClient
     {
@@ -18,6 +20,8 @@
         Task ReceiveError(string errorMessage);
 
         Task SessionTitleUpdated(Guid sessionId, string title);
+
+        Task WorkoutPlanGenerationUpdated(WorkoutPlanGenerationJobDto job);
 
         Task UpdateOnlineUsersCount(long count);
     }

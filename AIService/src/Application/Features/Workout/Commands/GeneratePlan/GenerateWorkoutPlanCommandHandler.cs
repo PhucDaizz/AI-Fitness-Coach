@@ -1,196 +1,104 @@
-﻿using AIService.Application.Common.Interfaces;
+using AIService.Application.Common.Interfaces;
 using AIService.Application.DTOs.Workout;
-using AIService.Application.Features.Workout.Commands.GeneratePlan.Helpers;
-using AIService.Application.Features.Workout.Commands.GeneratePlan.Models;
+using AIService.Application.Features.Workout.Commands.GeneratePlan.Events;
 using MediatR;
 using Microsoft.Extensions.Logging;
-using System.Globalization;
 
 namespace AIService.Application.Features.Workout.Commands.GeneratePlan
 {
     public sealed class GenerateWorkoutPlanCommandHandler
-        : IRequestHandler<GenerateWorkoutPlanCommand, GenerateWorkoutPlanResult>
+        : IRequestHandler<GenerateWorkoutPlanCommand, WorkoutPlanGenerationJobDto>
     {
+        private const string Exchange = "fitness-catalog.events";
+        private const string ExchangeType = "topic";
+        private const string RoutingKey = "workout.plan.generate.requested";
+        private static readonly TimeSpan JobExpiry = TimeSpan.FromHours(6);
+        private static readonly TimeSpan TokenExpiry = TimeSpan.FromMinutes(20);
+
         private readonly IWorkoutIntegrationService _integrationService;
-        private readonly IWorkoutPlanOrchestrator _orchestrator;
-        private readonly IWeekPlanExecutor _executor;
-        private readonly IHistoricalContextBuilder _historicalContextBuilder;
         private readonly ICurrentUserService _currentUserService;
+        private readonly IIntegrationEventService _integrationEventService;
+        private readonly ICacheService _cacheService;
         private readonly ILogger<GenerateWorkoutPlanCommandHandler> _logger;
 
         public GenerateWorkoutPlanCommandHandler(
-            IWorkoutIntegrationService integrationService, 
-            IWorkoutPlanOrchestrator orchestrator,
-            IWeekPlanExecutor executor,
-            IHistoricalContextBuilder historicalContextBuilder,
+            IWorkoutIntegrationService integrationService,
             ICurrentUserService currentUserService,
+            IIntegrationEventService integrationEventService,
+            ICacheService cacheService,
             ILogger<GenerateWorkoutPlanCommandHandler> logger)
         {
             _integrationService = integrationService;
-            _orchestrator = orchestrator;
-            _executor = executor;
-            _historicalContextBuilder = historicalContextBuilder;
             _currentUserService = currentUserService;
+            _integrationEventService = integrationEventService;
+            _cacheService = cacheService;
             _logger = logger;
         }
 
-        public async Task<GenerateWorkoutPlanResult> Handle(GenerateWorkoutPlanCommand request, CancellationToken cancellationToken)
+        public async Task<WorkoutPlanGenerationJobDto> Handle(GenerateWorkoutPlanCommand request, CancellationToken cancellationToken)
         {
-            var profileTask = _integrationService.GetProfileAsync(cancellationToken);
-            var historyTask = _historicalContextBuilder.BuildAsync(_currentUserService.UserId!, cancellationToken);
-
-            await Task.WhenAll(profileTask, historyTask);
-
-            var profile = await profileTask
-                ?? throw new UnauthorizedAccessException("Không thể lấy hồ sơ người dùng hoặc token không hợp lệ.");
-            var historicalContext = await historyTask;
-
             if (request.TotalWeeks is < 1 or > 4)
-                throw new ArgumentException("Chỉ được tạo kế hoạch từ 1 đến 4 tuần.");
+                throw new ArgumentException("Chi duoc tao ke hoach tu 1 den 4 tuan.");
+
+            if (string.IsNullOrWhiteSpace(request.AccessToken))
+                throw new UnauthorizedAccessException("Khong tim thay access token de tao ke hoach nen.");
+
+            var userId = _currentUserService.UserId
+                ?? throw new UnauthorizedAccessException("Khong the xac dinh nguoi dung hien tai.");
+
+            var latestJobId = await _cacheService.GetStringAsync(GetLatestJobKey(userId));
+            if (!string.IsNullOrWhiteSpace(latestJobId))
+            {
+                var latestJob = await _cacheService.GetAsync<WorkoutPlanGenerationJobDto>(GetJobKey(latestJobId));
+                if (latestJob is not null && IsRunning(latestJob.Status))
+                {
+                    return latestJob with { IsExisting = true };
+                }
+            }
+
+            var profile = await _integrationService.GetProfileAsync(cancellationToken)
+                ?? throw new UnauthorizedAccessException("Khong the lay ho so nguoi dung hoac token khong hop le.");
 
             if (!profile.AvailableDays.Any())
-                throw new ArgumentException("Hồ sơ cần cập nhật ít nhất 1 ngày rảnh để tập.");
+                throw new ArgumentException("Ho so can cap nhat it nhat 1 ngay ranh de tap.");
 
-            _logger.LogInformation(
-                "[GeneratePlan] Start. Weeks: {W}, Goal: {G}",
-                request.TotalWeeks, profile.FitnessGoal);
+            var jobId = Guid.NewGuid().ToString("N");
+            var pendingStatus = new WorkoutPlanGenerationJobDto(
+                jobId,
+                userId,
+                "Pending",
+                "Yeu cau tao ke hoach tap luyen da duoc dua vao hang doi.");
 
-            var blueprint = await _orchestrator.CreateBlueprintAsync(profile, request.TotalWeeks, historicalContext, cancellationToken);
+            await _cacheService.SetAsync(GetJobKey(jobId), pendingStatus, JobExpiry);
+            await _cacheService.SetStringAsync(GetTokenKey(jobId), request.AccessToken, TokenExpiry);
+            await _cacheService.SetStringAsync(GetLatestJobKey(userId), jobId, JobExpiry);
 
-            _logger.LogInformation(
-                "[GeneratePlan] Blueprint done. Processing {W} weeks in parallel",
-                blueprint.Weeks.Count);
-
-            var weekPayloads = new List<WorkoutPlanPayloadDto>();
-
-            async Task<WorkoutPlanPayloadDto> ExecuteWeekWithRetryAsync(WeekBlueprint week)
+            var integrationEvent = new WorkoutPlanGenerationRequestedEvent
             {
-                int maxRetries = 40;
-                int delayMs = 1000;
-
-                for (int attempt = 1; attempt <= maxRetries; attempt++)
-                {
-                    try
-                    {
-                        return await _executor.ExecuteWeekAsync(week, profile, request.StartsAt, cancellationToken);
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogWarning(ex, "[GeneratePlan] Lỗi Tuần {W} (Thử {A}/{M}). Chờ {D}ms...",
-                            week.WeekNumber, attempt, maxRetries, delayMs);
-
-                        if (attempt == maxRetries) throw; 
-
-                        await Task.Delay(delayMs, cancellationToken);
-                        delayMs *= 1; 
-                    }
-                }
-
-                throw new InvalidOperationException($"Không thể tạo lịch cho tuần {week.WeekNumber} sau {maxRetries} lần thử.");
-            }
-
-            _logger.LogInformation("[GeneratePlan] Processing {W} weeks in PARALLEL", blueprint.Weeks.Count);
-
-            var weekTasks = blueprint.Weeks
-                .Select(week => ExecuteWeekWithRetryAsync(week))
-                .ToArray();
-
-            var results = await Task.WhenAll(weekTasks);
-            weekPayloads.AddRange(results);
-
-            var planIds = request.TotalWeeks == 1
-                ? await SaveWeeklyAsync(weekPayloads.ToArray(), request, cancellationToken)
-                : await SaveMonthlyAsync(weekPayloads.ToArray(), request, profile, cancellationToken);
-
-            var summary = $"Đã tạo {blueprint.Weeks.Count} tuần tập luyện " +
-                          $"cho mục tiêu '{profile.FitnessGoal}'. " +
-                          $"Tổng {weekPayloads.Sum(w => w.Days.Count)} buổi tập.";
-
-            _logger.LogInformation("[GeneratePlan] Done. PlanIds: {Ids}",
-                string.Join(", ", planIds));
-
-            return new GenerateWorkoutPlanResult(planIds, summary);
-        }
-
-        private async Task<List<string>> SaveWeeklyAsync(
-            WorkoutPlanPayloadDto[] weekPayloads,
-            GenerateWorkoutPlanCommand request,
-            CancellationToken cancellationToken)
-        {
-            var payload = weekPayloads[0];
-            payload.PlanType = "weekly";
-            payload.StartsAt = request.StartsAt;
-
-            var weekStart = DateTime.ParseExact(
-                request.StartsAt, "yyyy-MM-dd",
-                CultureInfo.InvariantCulture);
-
-            int globalOrder = 1;
-
-            foreach (var day in payload.Days.OrderBy(d => d.OrderIndex))
-            {
-                day.DayOfWeek = DayOfWeekConstants.Normalize(day.DayOfWeek);
-                day.OrderIndex = globalOrder++;
-
-                day.ScheduledDate = WorkoutDateHelper.ResolveDayDate(weekStart, day.DayOfWeek).ToString("yyyy-MM-dd");
-
-                for (int i = 0; i < day.Exercises.Count; i++)
-                {
-                    day.Exercises[i].OrderIndex = i + 1;
-                }
-            }
-
-            var planId = await _integrationService.CreatePlanToNodeAsync(
-                payload, cancellationToken);
-
-            return new List<string> { planId ?? "" };
-        }
-
-        private async Task<List<string>> SaveMonthlyAsync(
-            WorkoutPlanPayloadDto[] weekPayloads,
-            GenerateWorkoutPlanCommand request,
-            UserProfileDto profile,
-            CancellationToken cancellationToken)
-        {
-            var allDays = new List<WorkoutDayDto>();
-            int globalOrder = 1;
-
-            foreach (var week in weekPayloads.OrderBy(w => w.WeekNumber))
-            {
-                var weekStart = DateTime.ParseExact(
-                request.StartsAt, "yyyy-MM-dd",
-                CultureInfo.InvariantCulture)
-                    .AddDays((week.WeekNumber - 1) * 7);
-
-                foreach (var day in week.Days.OrderBy(d => d.OrderIndex))
-                {
-                    day.DayOfWeek = DayOfWeekConstants.Normalize(day.DayOfWeek);
-                    day.OrderIndex = globalOrder++;
-                    day.ScheduledDate = WorkoutDateHelper.ResolveDayDate(weekStart, day.DayOfWeek)
-                        .ToString("yyyy-MM-dd");
-
-                    for (int i = 0; i < day.Exercises.Count; i++)
-                        day.Exercises[i].OrderIndex = i + 1;
-
-                    allDays.Add(day);
-                }
-            }
-
-            var monthlyPayload = new WorkoutPlanPayloadDto
-            {
-                Title = $"Kế hoạch {request.TotalWeeks} tuần - {profile.FitnessGoal}",
-                PlanType = "monthly",   
-                WeekNumber = request.TotalWeeks,           
-                AiModelUsed = weekPayloads[0].AiModelUsed,
-                StartsAt = request.StartsAt,
-                Days = allDays
+                JobId = jobId,
+                UserId = userId,
+                Profile = profile,
+                TotalWeeks = request.TotalWeeks,
+                StartsAt = request.StartsAt
             };
 
-            var planId = await _integrationService.CreatePlanToNodeAsync(
-                monthlyPayload, cancellationToken);
+            await _integrationEventService.PublishAsync(
+                integrationEvent,
+                Exchange,
+                ExchangeType,
+                RoutingKey,
+                cancellationToken);
 
-            return new List<string> { planId ?? "" };
+            _logger.LogInformation("[GeneratePlanJob] Queued job {JobId} for user {UserId}", jobId, userId);
+
+            return pendingStatus;
         }
 
+        private static string GetJobKey(string jobId) => $"workout_plan_generation:{jobId}";
+        private static string GetTokenKey(string jobId) => $"workout_plan_generation_token:{jobId}";
+        private static string GetLatestJobKey(string userId) => $"workout_plan_generation:user:{userId}:latest";
+        private static bool IsRunning(string status) =>
+            status.Equals("Pending", StringComparison.OrdinalIgnoreCase) ||
+            status.Equals("InProgress", StringComparison.OrdinalIgnoreCase);
     }
 }

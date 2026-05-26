@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+using AIService.Application.Common.Contexts;
+using Microsoft.AspNetCore.Http;
 using System.Net.Http.Headers;
 
 namespace AIService.Infrastructure.ExternalServices
@@ -14,12 +15,11 @@ namespace AIService.Infrastructure.ExternalServices
 
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
+            var token = AccessTokenHolder.Current;
             var httpContext = _httpContextAccessor.HttpContext;
 
-            if (httpContext != null)
+            if (string.IsNullOrEmpty(token) && httpContext != null)
             {
-                string token = null;
-
                 var authHeader = httpContext.Request.Headers["Authorization"].FirstOrDefault();
                 if (!string.IsNullOrEmpty(authHeader) && authHeader.StartsWith("Bearer "))
                 {
@@ -29,11 +29,11 @@ namespace AIService.Infrastructure.ExternalServices
                 {
                     token = queryToken;
                 }
+            }
 
-                if (!string.IsNullOrEmpty(token))
-                {
-                    request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
-                }
+            if (!string.IsNullOrEmpty(token))
+            {
+                request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
             }
 
             return await base.SendAsync(request, cancellationToken);
