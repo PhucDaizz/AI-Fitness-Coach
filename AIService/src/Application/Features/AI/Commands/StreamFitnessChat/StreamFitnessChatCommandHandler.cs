@@ -54,6 +54,7 @@ namespace AIService.Application.Features.AI.Commands.StreamFitnessChat
             CancellationToken cancellationToken)
         {
             AccessTokenHolder.Current = request.AccessToken;
+            AccessTokenHolder.CurrentUserId = request.UserId;
 
             try
             {
@@ -120,6 +121,7 @@ namespace AIService.Application.Features.AI.Commands.StreamFitnessChat
             finally
             {
                 AccessTokenHolder.Current = null;
+                AccessTokenHolder.CurrentUserId = null;
             }
         }
 

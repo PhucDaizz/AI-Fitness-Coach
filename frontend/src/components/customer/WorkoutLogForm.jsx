@@ -1,9 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { getWorkoutPlanDays, submitWorkoutLog, getWorkoutLogStatus } from '../../services/api/workoutPlan.service';
-import { getExerciseById } from '../../services/api/exercise.service';
 
-const WorkoutLogForm = ({ planId, dayId, scheduledDate }) => {
+import { getExerciseById } from '../../services/api/exercise.service';
+import {
+  getWorkoutLogStatus,
+  getWorkoutPlanDays,
+  submitWorkoutLog,
+} from '../../services/api/workoutPlan.service';
+
+const WorkoutLogForm = ({ planId, dayId, scheduledDate, onSubmitted }) => {
   const { t } = useTranslation();
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -17,7 +22,7 @@ const WorkoutLogForm = ({ planId, dayId, scheduledDate }) => {
     durationMinutes: 0,
     difficultyFeedback: 'ok',
     notes: '',
-    exercises: []
+    exercises: [],
   });
 
   useEffect(() => {
@@ -25,7 +30,7 @@ const WorkoutLogForm = ({ planId, dayId, scheduledDate }) => {
       try {
         setLoading(true);
         setError(null);
-        
+
         // 0. Check log status first
         const statusRes = await getWorkoutLogStatus(planId, dayId);
         if (statusRes.isLogged) {
@@ -36,24 +41,24 @@ const WorkoutLogForm = ({ planId, dayId, scheduledDate }) => {
 
         // 1. Fetch days for plan
         const days = await getWorkoutPlanDays(planId);
-        
+
         // 2. Find specific day
-        const day = days.find(d => d._id === dayId);
+        const day = days.find((d) => d._id === dayId);
         if (!day) {
           throw new Error('Day not found in this plan');
         }
         setDayData(day);
 
         // Initialize form data for exercises
-        const initialExercises = day.exercises.map(ex => ({
+        const initialExercises = day.exercises.map((ex) => ({
           exerciseId: ex.exerciseId,
           setsDone: ex.sets || 0,
           repsDone: '', // User will input comma separated like '12,10,8'
           weightKg: 0,
-          isCompleted: true
+          isCompleted: true,
         }));
-        
-        setFormData(prev => ({ ...prev, exercises: initialExercises }));
+
+        setFormData((prev) => ({ ...prev, exercises: initialExercises }));
 
         // 3. Fetch exercise details (names, media)
         const info = {};
@@ -65,7 +70,7 @@ const WorkoutLogForm = ({ planId, dayId, scheduledDate }) => {
             } catch (err) {
               console.error(`Failed to fetch exercise ${ex.exerciseId}`, err);
             }
-          })
+          }),
         );
         setExercisesInfo(info);
       } catch (err) {
@@ -80,7 +85,7 @@ const WorkoutLogForm = ({ planId, dayId, scheduledDate }) => {
   }, [planId, dayId]);
 
   const handleExerciseChange = (index, field, value) => {
-    setFormData(prev => {
+    setFormData((prev) => {
       const newExercises = [...prev.exercises];
       newExercises[index] = { ...newExercises[index], [field]: value };
       return { ...prev, exercises: newExercises };
@@ -92,7 +97,7 @@ const WorkoutLogForm = ({ planId, dayId, scheduledDate }) => {
     try {
       setSubmitting(true);
       setError(null);
-      
+
       const logData = {
         planId,
         dayId,
@@ -100,15 +105,16 @@ const WorkoutLogForm = ({ planId, dayId, scheduledDate }) => {
         durationMinutes: parseInt(formData.durationMinutes) || 0,
         difficultyFeedback: formData.difficultyFeedback,
         notes: formData.notes,
-        exercises: formData.exercises.map(ex => ({
+        exercises: formData.exercises.map((ex) => ({
           ...ex,
           setsDone: parseInt(ex.setsDone) || 0,
           weightKg: parseFloat(ex.weightKg) || 0,
-        }))
+        })),
       };
 
-      await submitWorkoutLog(logData);
+      const savedLog = await submitWorkoutLog(logData);
       setSubmitted(true);
+      onSubmitted?.(savedLog || logData);
     } catch (err) {
       console.error('Error submitting log:', err);
       setError(err.message || 'Failed to save workout log.');
@@ -143,16 +149,28 @@ const WorkoutLogForm = ({ planId, dayId, scheduledDate }) => {
         <div className="w-12 h-12 rounded-full bg-secondary/20 text-secondary flex items-center justify-center mx-auto mb-2">
           <span className="material-symbols-outlined text-2xl">verified</span>
         </div>
-        <h4 className="text-secondary font-black uppercase tracking-tighter text-lg italic">{t('workout_log.completed')}</h4>
+        <h4 className="text-secondary font-black uppercase tracking-tighter text-lg italic">
+          {t('workout_log.completed')}
+        </h4>
         <div className="bg-white/5 rounded-xl p-3 inline-block">
-           <p className="text-[10px] text-on-surface-variant font-bold uppercase tracking-widest">
-             {t('workout_log.logged_on')}: <span className="text-white">{info.loggedDate || scheduledDate}</span>
-           </p>
-           <p className="text-[10px] text-on-surface-variant font-bold uppercase tracking-widest mt-1">
-             {t('workout_log.duration')}: <span className="text-white">{info.durationMinutes} {t('workout_log.mins')}</span> • {t('workout_log.difficulty')}: <span className="text-white uppercase">{t(`workout_log.${info.difficultyFeedback || 'ok'}`)}</span>
-           </p>
+          <p className="text-[10px] text-on-surface-variant font-bold uppercase tracking-widest">
+            {t('workout_log.logged_on')}:{' '}
+            <span className="text-white">{info.loggedDate || scheduledDate}</span>
+          </p>
+          <p className="text-[10px] text-on-surface-variant font-bold uppercase tracking-widest mt-1">
+            {t('workout_log.duration')}:{' '}
+            <span className="text-white">
+              {info.durationMinutes} {t('workout_log.mins')}
+            </span>{' '}
+            • {t('workout_log.difficulty')}:{' '}
+            <span className="text-white uppercase">
+              {t(`workout_log.${info.difficultyFeedback || 'ok'}`)}
+            </span>
+          </p>
         </div>
-        <p className="text-[10px] text-on-surface-variant font-medium opacity-70">{t('workout_log.archived')}</p>
+        <p className="text-[10px] text-on-surface-variant font-medium opacity-70">
+          {t('workout_log.archived')}
+        </p>
       </div>
     );
   }
@@ -167,31 +185,35 @@ const WorkoutLogForm = ({ planId, dayId, scheduledDate }) => {
           </h3>
           {dayData && (
             <p className="text-[9px] text-on-surface-variant mt-0.5">
-              <strong className="text-on-surface">{dayData.dayOfWeek}</strong> • {dayData.muscleFocus}
+              <strong className="text-on-surface">{dayData.dayOfWeek}</strong> •{' '}
+              {dayData.muscleFocus}
             </p>
           )}
         </div>
       </div>
 
       <form onSubmit={handleSubmit} className="p-3 space-y-4">
-        
         {/* General Info */}
         <div className="grid grid-cols-2 gap-3">
           <div className="space-y-1">
-            <label className="text-[9px] font-bold uppercase tracking-wider text-on-surface-variant">{t('workout_log.duration')} ({t('workout_log.mins')})</label>
-            <input 
-              type="number" 
+            <label className="text-[9px] font-bold uppercase tracking-wider text-on-surface-variant">
+              {t('workout_log.duration')} ({t('workout_log.mins')})
+            </label>
+            <input
+              type="number"
               value={formData.durationMinutes}
-              onChange={(e) => setFormData({...formData, durationMinutes: e.target.value})}
+              onChange={(e) => setFormData({ ...formData, durationMinutes: e.target.value })}
               className="w-full bg-surface-container-high border border-white/10 rounded-md p-1.5 text-xs text-on-surface focus:outline-none focus:border-primary/50"
               placeholder="e.g. 45"
             />
           </div>
           <div className="space-y-1">
-            <label className="text-[9px] font-bold uppercase tracking-wider text-on-surface-variant">{t('workout_log.difficulty')}</label>
-            <select 
+            <label className="text-[9px] font-bold uppercase tracking-wider text-on-surface-variant">
+              {t('workout_log.difficulty')}
+            </label>
+            <select
               value={formData.difficultyFeedback}
-              onChange={(e) => setFormData({...formData, difficultyFeedback: e.target.value})}
+              onChange={(e) => setFormData({ ...formData, difficultyFeedback: e.target.value })}
               className="w-full bg-surface-container-high border border-white/10 rounded-md p-1.5 text-xs text-on-surface focus:outline-none focus:border-primary/50"
             >
               <option value="easy">{t('workout_log.easy')}</option>
@@ -203,32 +225,45 @@ const WorkoutLogForm = ({ planId, dayId, scheduledDate }) => {
 
         {/* Exercises List */}
         <div className="space-y-2">
-          
           {formData.exercises.map((ex, index) => {
             const info = exercisesInfo[ex.exerciseId];
-            const planEx = dayData.exercises.find(e => e.exerciseId === ex.exerciseId);
+            const planEx = dayData.exercises.find((e) => e.exerciseId === ex.exerciseId);
 
             return (
-              <div key={index} className="p-2 bg-surface-container-low rounded-lg border border-white/5 space-y-2">
-                
+              <div
+                key={index}
+                className="p-2 bg-surface-container-low rounded-lg border border-white/5 space-y-2"
+              >
                 {/* Header */}
                 <div className="flex items-center justify-between gap-2">
                   <div className="flex items-center gap-2 overflow-hidden">
                     {info?.mediaUrl ? (
-                      <img src={info.mediaUrl} alt={info.name} className="w-6 h-6 object-cover rounded bg-white/5" />
+                      <img
+                        src={info.mediaUrl}
+                        alt={info.name}
+                        className="w-6 h-6 object-cover rounded bg-white/5"
+                      />
                     ) : (
                       <div className="w-6 h-6 rounded bg-white/5 flex items-center justify-center shrink-0">
-                        <span className="material-symbols-outlined text-[12px] text-on-surface-variant/50">image</span>
+                        <span className="material-symbols-outlined text-[12px] text-on-surface-variant/50">
+                          image
+                        </span>
                       </div>
                     )}
                     <div className="min-w-0">
-                      <p className="text-xs font-bold text-on-surface truncate">{info?.name || 'Loading...'}</p>
-                      <p className="text-[9px] text-primary truncate">{t('workout_log.target')}: {planEx?.sets}x{planEx?.reps}</p>
+                      <p className="text-xs font-bold text-on-surface truncate">
+                        {info?.name || 'Loading...'}
+                      </p>
+                      <p className="text-[9px] text-primary truncate">
+                        {t('workout_log.target')}: {planEx?.sets}x{planEx?.reps}
+                      </p>
                     </div>
                   </div>
                   <label className="flex items-center gap-1 cursor-pointer shrink-0">
-                    <span className="text-[10px] text-on-surface-variant">{t('workout_log.done')}</span>
-                    <input 
+                    <span className="text-[10px] text-on-surface-variant">
+                      {t('workout_log.done')}
+                    </span>
+                    <input
                       type="checkbox"
                       checked={ex.isCompleted}
                       onChange={(e) => handleExerciseChange(index, 'isCompleted', e.target.checked)}
@@ -241,18 +276,22 @@ const WorkoutLogForm = ({ planId, dayId, scheduledDate }) => {
                 {ex.isCompleted && (
                   <div className="flex gap-2 items-center pl-8">
                     <div className="flex items-center gap-1">
-                      <label className="text-[9px] text-on-surface-variant w-6">{t('workout_log.sets')}</label>
-                      <input 
-                        type="number" 
+                      <label className="text-[9px] text-on-surface-variant w-6">
+                        {t('workout_log.sets')}
+                      </label>
+                      <input
+                        type="number"
                         value={ex.setsDone}
                         onChange={(e) => handleExerciseChange(index, 'setsDone', e.target.value)}
                         className="w-10 bg-surface-container border border-white/5 rounded px-1 py-0.5 text-[10px] text-on-surface text-center"
                       />
                     </div>
                     <div className="flex items-center gap-1 flex-grow">
-                      <label className="text-[9px] text-on-surface-variant shrink-0">{t('workout_log.reps')}</label>
-                      <input 
-                        type="text" 
+                      <label className="text-[9px] text-on-surface-variant shrink-0">
+                        {t('workout_log.reps')}
+                      </label>
+                      <input
+                        type="text"
                         value={ex.repsDone}
                         onChange={(e) => handleExerciseChange(index, 'repsDone', e.target.value)}
                         placeholder="e.g. 10,8,8"
@@ -260,9 +299,11 @@ const WorkoutLogForm = ({ planId, dayId, scheduledDate }) => {
                       />
                     </div>
                     <div className="flex items-center gap-1">
-                      <label className="text-[9px] text-on-surface-variant shrink-0">{t('workout_log.weight')}</label>
-                      <input 
-                        type="number" 
+                      <label className="text-[9px] text-on-surface-variant shrink-0">
+                        {t('workout_log.weight')}
+                      </label>
+                      <input
+                        type="number"
                         value={ex.weightKg}
                         onChange={(e) => handleExerciseChange(index, 'weightKg', e.target.value)}
                         className="w-12 bg-surface-container border border-white/5 rounded px-1 py-0.5 text-[10px] text-on-surface text-center"
@@ -277,23 +318,27 @@ const WorkoutLogForm = ({ planId, dayId, scheduledDate }) => {
 
         {/* Notes */}
         <div className="space-y-1">
-          <label className="text-[9px] font-bold uppercase tracking-wider text-on-surface-variant">{t('workout_log.notes')}</label>
-          <textarea 
+          <label className="text-[9px] font-bold uppercase tracking-wider text-on-surface-variant">
+            {t('workout_log.notes')}
+          </label>
+          <textarea
             value={formData.notes}
-            onChange={(e) => setFormData({...formData, notes: e.target.value})}
+            onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
             className="w-full bg-surface-container-high border border-white/10 rounded-md p-2 text-xs text-on-surface focus:outline-none focus:border-primary/50 resize-y min-h-[40px]"
             placeholder={t('workout_log.how_feel')}
           ></textarea>
         </div>
 
-        <button 
-          type="submit" 
+        <button
+          type="submit"
           disabled={submitting}
           className="w-full py-2 rounded-lg font-bold uppercase tracking-wider text-[10px] transition-all active:scale-95 disabled:opacity-50 disabled:active:scale-100 flex items-center justify-center gap-1.5 bg-primary text-on-primary hover:bg-primary/90"
         >
           {submitting ? (
             <>
-              <span className="material-symbols-outlined animate-spin text-[14px]">progress_activity</span>
+              <span className="material-symbols-outlined animate-spin text-[14px]">
+                progress_activity
+              </span>
               {t('workout_log.saving')}
             </>
           ) : (

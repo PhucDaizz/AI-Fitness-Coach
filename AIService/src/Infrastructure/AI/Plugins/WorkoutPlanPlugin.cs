@@ -1,10 +1,12 @@
-﻿using AIService.Application.Common.Interfaces;
+using AIService.Application.Common.Contexts;
 using AIService.Application.DTOs.Workout;
+using AIService.Application.Features.Workout.Commands.GeneratePlan;
+using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using System.ComponentModel;
-using System.Text.Json;
+using System.Globalization;
 
 namespace AIService.Infrastructure.AI.Plugins
 {
@@ -17,91 +19,81 @@ namespace AIService.Infrastructure.AI.Plugins
             _sp = sp;
         }
 
-        [KernelFunction("create_workout_plan")]
+        [KernelFunction("generate_workout_plan")]
         [Description("""
-            Create a personalized workout plan for the user and save it to the system.
-            Use when user asks to: create a workout plan, generate a training schedule,
-            make a weekly/monthly gym plan, design a workout routine.
-            The plan must include specific exercises from the database.
+            Start creating a personalized workout plan for the current user.
+            Use this when the user asks to create, generate, build, or set up a workout plan,
+            training schedule, weekly plan, monthly plan, gym routine, or home workout routine.
+            This function queues the official workout-plan generation pipeline and returns a job status.
             """)]
-        public async Task<string> CreateWorkoutPlanAsync(
-            [Description("Title of the workout plan in Vietnamese")]
-            string title,
+        public async Task<string> GenerateWorkoutPlanAsync(
+            [Description("Number of weeks to generate. Must be between 1 and 4. If the user does not specify, use 4.")]
+            int totalWeeks = 4,
 
-            [Description("Plan type: 'weekly' or 'monthly'")]
-            string planType,
-
-            [Description("Week number: 1 to 4")]
-            int weekNumber,
-
-            [Description("Start date in format yyyy-MM-dd, e.g. 2026-04-24")]
-            string startsAt,
-
-            [Description("""
-                JSON array of workout days. Each day must follow this structure:
-                [
-                  {
-                    "dayOfWeek": "Monday",
-                    "muscleFocus": "Ngực - Tay trước",
-                    "orderIndex": 1,
-                    "exercises": [
-                      {
-                        "exerciseId": "<uuid from search_exercises>",
-                        "sets": 3,
-                        "reps": "12-15",
-                        "restSeconds": 60,
-                        "notes": "optional note",
-                        "orderIndex": 1
-                      }
-                    ]
-                  }
-                ]
-                dayOfWeek values: Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday
-                IMPORTANT: exerciseId must be real UUIDs from search_exercises results.
-                """)]
-            string daysJson,
+            [Description("Start date in yyyy-MM-dd format. If the user does not specify, leave empty and today will be used.")]
+            string? startsAt = null,
 
             CancellationToken cancellationToken = default)
         {
             await using var scope = _sp.CreateAsyncScope();
-            var logger = scope.ServiceProvider.GetRequiredService<ILogger<WorkoutPlanPlugin>>();
-            var workoutIntegration = scope.ServiceProvider.GetRequiredService<IWorkoutIntegrationService>();
 
-            List<WorkoutDayDto> days;
+            var logger = scope.ServiceProvider.GetRequiredService<ILogger<WorkoutPlanPlugin>>();
+            var mediator = scope.ServiceProvider.GetRequiredService<IMediator>();
+
+            var normalizedWeeks = Math.Clamp(totalWeeks, 1, 4);
+            var normalizedStartsAt = NormalizeStartDate(startsAt);
+            var accessToken = AccessTokenHolder.Current ?? string.Empty;
+            var userId = AccessTokenHolder.CurrentUserId;
+
             try
             {
-                days = JsonSerializer.Deserialize<List<WorkoutDayDto>>(daysJson,
-                    new JsonSerializerOptions { PropertyNameCaseInsensitive = true }) ?? new List<WorkoutDayDto>();
+                var job = await mediator.Send(
+                    new GenerateWorkoutPlanCommand(normalizedWeeks, normalizedStartsAt, accessToken, userId),
+                    cancellationToken);
+
+                return BuildResponse(job, normalizedWeeks, normalizedStartsAt);
             }
-            catch (JsonException ex)
+            catch (Exception ex)
             {
-                logger.LogError(ex, "Failed to parse daysJson from AI");
-                return "Error: Workout days JSON format is invalid. Please try again.";
+                logger.LogError(ex,
+                    "[WorkoutPlanPlugin] Failed to enqueue workout plan generation. Weeks: {Weeks}, StartsAt: {StartsAt}",
+                    normalizedWeeks,
+                    normalizedStartsAt);
+
+                return "Không thể bắt đầu tạo kế hoạch tập luyện lúc này. Vui lòng kiểm tra hồ sơ tập luyện của bạn và thử lại.";
             }
+        }
 
-            if (!days.Any())
+        private static string NormalizeStartDate(string? startsAt)
+        {
+            if (DateTime.TryParseExact(
+                    startsAt,
+                    "yyyy-MM-dd",
+                    CultureInfo.InvariantCulture,
+                    DateTimeStyles.None,
+                    out var parsed))
             {
-                return "Error: Plan data is empty or missing 'days'.";
-            }
-
-            var payload = new WorkoutPlanPayloadDto
-            {
-                Title = title,
-                PlanType = planType,
-                WeekNumber = weekNumber,
-                StartsAt = startsAt,
-                Days = days,
-                AiModelUsed = "AI-Model"
-            };
-
-            var planId = await workoutIntegration.CreatePlanToNodeAsync(payload, cancellationToken);
-
-            if (planId != null)
-            {
-                return $"SUCCESS|planId:{planId}|days:{payload.Days.Count}|title:{payload.Title}";
+                return parsed.ToString("yyyy-MM-dd");
             }
 
-            return "Error: Could not save the workout plan to the external service.";
+            return DateTime.Today.ToString("yyyy-MM-dd");
+        }
+
+        private static string BuildResponse(
+            WorkoutPlanGenerationJobDto job,
+            int totalWeeks,
+            string startsAt)
+        {
+            if (job.IsExisting)
+            {
+                return
+                    $"Bạn đang có một yêu cầu tạo kế hoạch tập luyện đang chạy. " +
+                    $"Mã theo dõi: {job.JobId}. Trạng thái hiện tại: {job.Status}.";
+            }
+
+            return
+                $"Mình đã bắt đầu tạo kế hoạch tập luyện {totalWeeks} tuần cho bạn, bắt đầu từ {startsAt}. " +
+                $"Mã theo dõi: {job.JobId}. Quá trình này có thể mất vài phút, hệ thống sẽ cập nhật khi hoàn tất.";
         }
     }
 }

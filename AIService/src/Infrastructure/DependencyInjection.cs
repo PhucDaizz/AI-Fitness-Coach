@@ -67,7 +67,7 @@ namespace AIService.Infrastructure
             services.AddScoped<NutritionPlugin>();
             services.AddScoped<FitnessCalculatorPlugin>();
             services.AddScoped<WorkoutManagerPlugin>();
-            //services.AddScoped<WorkoutPlanPlugin>();   -- Thời gian xử lý phức tạp, không phù hợp làm plugin, sẽ gọi trực tiếp trong Orchestrator
+            services.AddScoped<WorkoutPlanPlugin>();
 
             // CẤU HÌNH SEMANTIC KERNEL & AI PROVIDER
             var kernelBuilder = services.AddKernel();
@@ -77,7 +77,7 @@ namespace AIService.Infrastructure
             kernelBuilder.Plugins.AddFromType<NutritionPlugin>("nutrition");
             kernelBuilder.Plugins.AddFromType<FitnessCalculatorPlugin>("calculator");
             kernelBuilder.Plugins.AddFromType<WorkoutManagerPlugin>("workout_manager");
-            //kernelBuilder.Plugins.AddFromType<WorkoutPlanPlugin>("workout_plan");   -- Thời gian xử lý phức tạp, không phù hợp làm plugin, sẽ gọi trực tiếp trong Orchestrator
+            kernelBuilder.Plugins.AddFromType<WorkoutPlanPlugin>("workout_plan");
 
             kernelBuilder.Services.AddSingleton<IFunctionInvocationFilter, ToolUsageTrackingFilter>();
 

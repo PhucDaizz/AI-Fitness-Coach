@@ -43,7 +43,7 @@ namespace AIService.Application.Features.Workout.Commands.GeneratePlan
             if (string.IsNullOrWhiteSpace(request.AccessToken))
                 throw new UnauthorizedAccessException("Khong tim thay access token de tao ke hoach nen.");
 
-            var userId = _currentUserService.UserId
+            var userId = request.UserId ?? _currentUserService.UserId
                 ?? throw new UnauthorizedAccessException("Khong the xac dinh nguoi dung hien tai.");
 
             var latestJobId = await _cacheService.GetStringAsync(GetLatestJobKey(userId));
