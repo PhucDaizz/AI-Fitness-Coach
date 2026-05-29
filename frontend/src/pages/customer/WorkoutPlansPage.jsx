@@ -10,6 +10,7 @@ import {
   getLatestWorkoutPlanGenerationJob,
   getWorkoutPlans,
   renameWorkoutPlan,
+  updateWorkoutPlanStatus,
 } from '../../services/api/workoutPlan.service';
 
 const RUNNING_JOB_STATUSES = ['Pending', 'InProgress'];
@@ -23,6 +24,7 @@ const WorkoutPlansPage = () => {
   const [editingPlanId, setEditingPlanId] = useState(null);
   const [editingTitle, setEditingTitle] = useState('');
   const [renamingPlanId, setRenamingPlanId] = useState(null);
+  const [updatingStatusPlanId, setUpdatingStatusPlanId] = useState(null);
 
   // Generation state
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -175,6 +177,58 @@ const WorkoutPlansPage = () => {
       alert(err.message || t('workout_plans.rename.error'));
     } finally {
       setRenamingPlanId(null);
+    }
+  };
+
+  const getStatusActions = (planStatus) => {
+    switch (planStatus) {
+      case 'completed':
+      case 'archived':
+        return [{ status: 'active', icon: 'play_circle' }];
+      default:
+        return [];
+    }
+  };
+
+  const handleUpdateStatus = async (planId, nextStatus) => {
+    try {
+      setUpdatingStatusPlanId(planId);
+
+      if (nextStatus === 'active') {
+        const activePlans = await getWorkoutPlans({ page: 1, limit: 1, status: 'active' });
+        const currentActive = activePlans?.[0];
+
+        if (currentActive && currentActive._id !== planId) {
+          await updateWorkoutPlanStatus(currentActive._id, 'archived');
+        }
+      }
+
+      const updatedPlan = await updateWorkoutPlanStatus(planId, nextStatus);
+
+      setPlans((prev) =>
+        prev
+          .map((plan) => {
+            if (plan._id === planId) {
+              return { ...plan, status: updatedPlan?.status || nextStatus };
+            }
+
+            if (nextStatus === 'active' && plan.status === 'active') {
+              return { ...plan, status: 'archived' };
+            }
+
+            return plan;
+          })
+          .filter((plan) => status === 'all' || plan.status === status),
+      );
+
+      if (nextStatus === 'active') {
+        setStatus('active');
+      }
+    } catch (err) {
+      console.error('Failed to update workout plan status', err);
+      alert(err.message || t('workout_plans.status_actions.error'));
+    } finally {
+      setUpdatingStatusPlanId(null);
     }
   };
 
@@ -408,15 +462,32 @@ const WorkoutPlansPage = () => {
                   </div>
                 </div>
 
-                <Link
-                  to={`/plans/${plan._id}`}
-                  className="flex items-center justify-center w-full md:w-auto px-10 py-4 bg-white/5 border border-white/10 rounded-full text-[10px] font-black uppercase tracking-[0.2em] text-white hover:bg-primary hover:text-black hover:border-primary transition-all shadow-xl group/btn"
-                >
-                  {t('workout_plans.card.load_btn')}
-                  <span className="material-symbols-outlined ml-2 text-sm group-hover/btn:translate-x-1 transition-transform">
-                    arrow_forward
-                  </span>
-                </Link>
+                <div className="flex flex-col sm:flex-row md:flex-col xl:flex-row gap-2 w-full md:w-auto">
+                  {getStatusActions(plan.status).map((action) => (
+                    <button
+                      key={action.status}
+                      type="button"
+                      onClick={() => handleUpdateStatus(plan._id, action.status)}
+                      disabled={updatingStatusPlanId === plan._id}
+                      className="flex items-center justify-center w-full md:w-auto px-6 py-4 bg-white/5 border border-white/10 rounded-full text-[10px] font-black uppercase tracking-[0.2em] text-white hover:border-primary/40 hover:text-primary transition-all disabled:opacity-50"
+                    >
+                      <span className="material-symbols-outlined mr-2 text-sm">
+                        {updatingStatusPlanId === plan._id ? 'progress_activity' : action.icon}
+                      </span>
+                      {t(`workout_plans.status_actions.${action.status}`)}
+                    </button>
+                  ))}
+
+                  <Link
+                    to={`/plans/${plan._id}`}
+                    className="flex items-center justify-center w-full md:w-auto px-10 py-4 bg-white/5 border border-white/10 rounded-full text-[10px] font-black uppercase tracking-[0.2em] text-white hover:bg-primary hover:text-black hover:border-primary transition-all shadow-xl group/btn"
+                  >
+                    {t('workout_plans.card.load_btn')}
+                    <span className="material-symbols-outlined ml-2 text-sm group-hover/btn:translate-x-1 transition-transform">
+                      arrow_forward
+                    </span>
+                  </Link>
+                </div>
               </div>
             </div>
           ))}

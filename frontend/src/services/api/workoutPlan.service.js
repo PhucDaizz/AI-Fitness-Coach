@@ -36,6 +36,10 @@ export const renameWorkoutPlan = async (planId, title) => {
   return await handleResponse(progressApi.patch(`v1/workout-plans/${planId}/title`, { title }));
 };
 
+export const updateWorkoutPlanStatus = async (planId, status) => {
+  return await handleResponse(progressApi.patch(`v1/workout-plans/${planId}/status`, { status }));
+};
+
 export const generateWorkoutPlan = async (data, signal) => {
   try {
     return await handleResponse(

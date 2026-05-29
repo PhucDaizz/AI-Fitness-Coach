@@ -246,6 +246,11 @@
       "required": "Tên kế hoạch không được để trống.",
       "error": "Đổi tên kế hoạch thất bại. Vui lòng thử lại."
     },
+    "status_actions": {
+      "active": "Kích hoạt",
+      "completed": "Đánh dấu hoàn thành",
+      "error": "Cập nhật trạng thái kế hoạch thất bại. Vui lòng thử lại."
+    },
     "card": {
       "weeks": "Tuần",
       "starts": "Bắt đầu",

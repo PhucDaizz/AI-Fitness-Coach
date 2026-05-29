@@ -246,6 +246,11 @@
       "required": "Plan name cannot be empty.",
       "error": "Failed to rename plan. Please try again."
     },
+    "status_actions": {
+      "active": "Activate",
+      "completed": "Mark completed",
+      "error": "Failed to update plan status. Please try again."
+    },
     "card": {
       "weeks": "Weeks",
       "starts": "Starts",
