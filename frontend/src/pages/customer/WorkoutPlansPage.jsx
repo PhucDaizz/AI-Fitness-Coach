@@ -182,7 +182,6 @@ const WorkoutPlansPage = () => {
 
   const getStatusActions = (planStatus) => {
     switch (planStatus) {
-      case 'completed':
       case 'archived':
         return [{ status: 'active', icon: 'play_circle' }];
       default:
