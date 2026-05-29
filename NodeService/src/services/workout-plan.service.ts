@@ -10,6 +10,7 @@ import { HTTP_STATUS } from '../constants';
 import {
   CreateWorkoutPlanDto,
   UpdatePlanStatusDto,
+  RenameWorkoutPlanDto,
   ListWorkoutPlansQuery,
   CompleteDayDto,
   ReplaceDayDto,
@@ -205,6 +206,26 @@ export class WorkoutPlanService {
 
     if (!updated) {
       throw new AppError('Cập nhật thất bại', HTTP_STATUS.INTERNAL_SERVER_ERROR);
+    }
+
+    return updated;
+  }
+
+  /**
+   * PATCH /workout-plans/:id/title
+   * Đổi tên workout plan tổng, không ảnh hưởng các tuần/ngày/bài tập.
+   */
+  async renamePlan(
+    userId: string,
+    planId: string,
+    dto: RenameWorkoutPlanDto,
+  ): Promise<WorkoutPlanLean> {
+    await this._assertPlanOwner(userId, planId);
+
+    const updated = await workoutPlanRepository.updateTitle(planId, dto.title);
+
+    if (!updated) {
+      throw new AppError('Cập nhật tên kế hoạch thất bại', HTTP_STATUS.INTERNAL_SERVER_ERROR);
     }
 
     return updated;

@@ -9,6 +9,7 @@ import {
   generateWorkoutPlan,
   getLatestWorkoutPlanGenerationJob,
   getWorkoutPlans,
+  renameWorkoutPlan,
 } from '../../services/api/workoutPlan.service';
 
 const RUNNING_JOB_STATUSES = ['Pending', 'InProgress'];
@@ -19,6 +20,9 @@ const WorkoutPlansPage = () => {
   const [plans, setPlans] = useState([]);
   const [loading, setLoading] = useState(true);
   const [status, setStatus] = useState('active'); // active, completed, archived, all
+  const [editingPlanId, setEditingPlanId] = useState(null);
+  const [editingTitle, setEditingTitle] = useState('');
+  const [renamingPlanId, setRenamingPlanId] = useState(null);
 
   // Generation state
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -28,7 +32,7 @@ const WorkoutPlansPage = () => {
   const fetchPlans = useCallback(async () => {
     try {
       setLoading(true);
-      const params = { page: 1, limit: 10 };
+      const params = { page: 1, limit: 30 };
       if (status !== 'all') {
         params.status = status;
       }
@@ -137,6 +141,40 @@ const WorkoutPlansPage = () => {
   const handleAbortGeneration = () => {
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
+    }
+  };
+
+  const startRename = (plan) => {
+    setEditingPlanId(plan._id);
+    setEditingTitle(plan.title || '');
+  };
+
+  const cancelRename = () => {
+    setEditingPlanId(null);
+    setEditingTitle('');
+  };
+
+  const handleRenamePlan = async (planId) => {
+    const nextTitle = editingTitle.trim();
+    if (!nextTitle) {
+      alert(t('workout_plans.rename.required'));
+      return;
+    }
+
+    try {
+      setRenamingPlanId(planId);
+      const updatedPlan = await renameWorkoutPlan(planId, nextTitle);
+      setPlans((prev) =>
+        prev.map((plan) =>
+          plan._id === planId ? { ...plan, title: updatedPlan?.title || nextTitle } : plan,
+        ),
+      );
+      cancelRename();
+    } catch (err) {
+      console.error('Failed to rename workout plan', err);
+      alert(err.message || t('workout_plans.rename.error'));
+    } finally {
+      setRenamingPlanId(null);
     }
   };
 
@@ -301,9 +339,62 @@ const WorkoutPlansPage = () => {
                       {plan.planType} • {plan.weekNumber} {t('workout_plans.card.weeks')}
                     </span>
                   </div>
-                  <h3 className="text-2xl font-black text-white group-hover:text-primary transition-colors tracking-tight uppercase italic">
-                    {plan.title}
-                  </h3>
+                  {editingPlanId === plan._id ? (
+                    <div className="flex flex-col sm:flex-row gap-2 sm:items-center">
+                      <input
+                        value={editingTitle}
+                        onChange={(e) => setEditingTitle(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            handleRenamePlan(plan._id);
+                          }
+                          if (e.key === 'Escape') {
+                            cancelRename();
+                          }
+                        }}
+                        disabled={renamingPlanId === plan._id}
+                        maxLength={120}
+                        autoFocus
+                        className="w-full sm:max-w-md bg-white/5 border border-primary/30 rounded-2xl px-4 py-3 text-sm font-black text-white uppercase italic tracking-tight focus:outline-none focus:border-primary disabled:opacity-50"
+                      />
+                      <div className="flex gap-2">
+                        <button
+                          type="button"
+                          onClick={() => handleRenamePlan(plan._id)}
+                          disabled={renamingPlanId === plan._id}
+                          className="w-10 h-10 rounded-full bg-primary text-black flex items-center justify-center hover:scale-105 transition-all disabled:opacity-50"
+                          title={t('workout_plans.rename.save')}
+                        >
+                          <span className="material-symbols-outlined text-sm">
+                            {renamingPlanId === plan._id ? 'progress_activity' : 'check'}
+                          </span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={cancelRename}
+                          disabled={renamingPlanId === plan._id}
+                          className="w-10 h-10 rounded-full bg-white/5 border border-white/10 text-on-surface-variant flex items-center justify-center hover:text-white transition-colors disabled:opacity-50"
+                          title={t('workout_plans.rename.cancel')}
+                        >
+                          <span className="material-symbols-outlined text-sm">close</span>
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex items-start gap-3">
+                      <h3 className="text-2xl font-black text-white group-hover:text-primary transition-colors tracking-tight uppercase italic">
+                        {plan.title}
+                      </h3>
+                      <button
+                        type="button"
+                        onClick={() => startRename(plan)}
+                        className="mt-1 w-8 h-8 rounded-full bg-white/5 border border-white/10 text-on-surface-variant flex items-center justify-center hover:text-primary hover:border-primary/30 transition-all"
+                        title={t('workout_plans.rename.edit')}
+                      >
+                        <span className="material-symbols-outlined text-sm">edit</span>
+                      </button>
+                    </div>
+                  )}
                   <div className="flex items-center gap-4 text-[10px] font-bold text-on-surface-variant opacity-60">
                     <span className="flex items-center gap-1.5">
                       <span className="material-symbols-outlined text-sm">calendar_today</span>

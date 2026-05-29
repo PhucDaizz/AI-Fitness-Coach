@@ -32,6 +32,10 @@ export const deleteWorkoutPlan = async (planId) => {
   return await handleResponse(progressApi.delete(`v1/workout-plans/${planId}`));
 };
 
+export const renameWorkoutPlan = async (planId, title) => {
+  return await handleResponse(progressApi.patch(`v1/workout-plans/${planId}/title`, { title }));
+};
+
 export const generateWorkoutPlan = async (data, signal) => {
   try {
     return await handleResponse(

@@ -56,6 +56,16 @@ export const updatePlanStatusSchema = z.object({
   }),
 });
 
+// ─── PATCH /workout-plans/:id/title ─────────────────────────────────────────────
+
+export const renameWorkoutPlanSchema = z.object({
+  title: z
+    .string()
+    .trim()
+    .min(1, 'title không được để trống')
+    .max(120, 'title tối đa 120 ký tự'),
+});
+
 // ─── Query params GET /workout-plans ────────────────────────────────────────────
 
 export const listWorkoutPlansQuerySchema = z.object({
@@ -92,6 +102,7 @@ export const replaceDaySchema = z.object({
 
 export type CreateWorkoutPlanDto = z.infer<typeof createWorkoutPlanSchema>;
 export type UpdatePlanStatusDto = z.infer<typeof updatePlanStatusSchema>;
+export type RenameWorkoutPlanDto = z.infer<typeof renameWorkoutPlanSchema>;
 export type ListWorkoutPlansQuery = z.infer<typeof listWorkoutPlansQuerySchema>;
 export type CompleteDayDto = z.infer<typeof completeDaySchema>;
 export type ReplaceDayDto = z.infer<typeof replaceDaySchema>;

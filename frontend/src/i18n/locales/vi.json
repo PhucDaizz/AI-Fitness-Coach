@@ -239,6 +239,13 @@
     "loading": "Đang truy cập cơ sở dữ liệu...",
     "empty": "Không tìm thấy lộ trình nào cho trạng thái này.",
     "empty_action": "Khởi tạo kế hoạch mới qua AI Coach",
+    "rename": {
+      "edit": "Đổi tên kế hoạch",
+      "save": "Lưu tên mới",
+      "cancel": "Hủy đổi tên",
+      "required": "Tên kế hoạch không được để trống.",
+      "error": "Đổi tên kế hoạch thất bại. Vui lòng thử lại."
+    },
     "card": {
       "weeks": "Tuần",
       "starts": "Bắt đầu",

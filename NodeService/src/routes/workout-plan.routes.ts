@@ -5,6 +5,7 @@ import {
   getWorkoutPlanDays,
   getWorkoutPlanCalendar,
   updateWorkoutPlanStatus,
+  renameWorkoutPlan,
   completeWorkoutDay,
   deleteWorkoutPlan,
   replaceWorkoutDay,
@@ -32,6 +33,7 @@ router.get('/:id/calendar', getWorkoutPlanCalendar);
 
 // PATCH /workout-plans/:id/status — update status
 router.patch('/:id/status', updateWorkoutPlanStatus);
+router.patch('/:id/title', renameWorkoutPlan);
 
 // POST /workout-plans/:id/reschedule    — dời / hoán đổi lịch tập
 router.post('/:id/reschedule', rescheduleWorkoutDay);

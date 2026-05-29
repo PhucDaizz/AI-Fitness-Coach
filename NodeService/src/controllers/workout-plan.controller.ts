@@ -3,6 +3,7 @@ import { workoutPlanService } from "../services/workout-plan.service";
 import {
   createWorkoutPlanSchema,
   updatePlanStatusSchema,
+  renameWorkoutPlanSchema,
   listWorkoutPlansQuerySchema,
   completeDaySchema,
   replaceDaySchema,
@@ -482,6 +483,22 @@ export async function replaceWorkoutDay(
       dto,
     );
     sendSuccess(res, data, 'Thay thế ngày tập thành công');
+  } catch (error) {
+    next(error);
+  }
+}
+
+export async function renameWorkoutPlan(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): Promise<void> {
+  try {
+    const userId = (req as AuthRequest).user.sub;
+    const { id } = req.params as { id: string };
+    const dto = renameWorkoutPlanSchema.parse(req.body);
+    const data = await workoutPlanService.renamePlan(userId, id, dto);
+    sendSuccess(res, data, 'Đổi tên workout plan thành công');
   } catch (error) {
     next(error);
   }

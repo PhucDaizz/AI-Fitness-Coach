@@ -106,6 +106,20 @@ export class WorkoutPlanRepository {
 
   // ─── Day ───────────────────────────────────────────────────────────────────────
 
+  async updateTitle(
+    planId: string,
+    title: string,
+    session?: ClientSession,
+  ): Promise<WorkoutPlanLean | null> {
+    return WorkoutPlanModel
+      .findByIdAndUpdate(
+        planId,
+        { $set: { title } },
+        { new: true, ...(session ? { session } : {}) },
+      )
+      .lean<WorkoutPlanLean>();
+  }
+
   async findDaysByPlanId(
     planId: string,
     session?: ClientSession,

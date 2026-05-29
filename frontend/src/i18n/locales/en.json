@@ -239,6 +239,13 @@
     "loading": "Accessing neural database...",
     "empty": "No protocols found for this status.",
     "empty_action": "Initialize New Plan via AI Coach",
+    "rename": {
+      "edit": "Rename plan",
+      "save": "Save new name",
+      "cancel": "Cancel rename",
+      "required": "Plan name cannot be empty.",
+      "error": "Failed to rename plan. Please try again."
+    },
     "card": {
       "weeks": "Weeks",
       "starts": "Starts",
