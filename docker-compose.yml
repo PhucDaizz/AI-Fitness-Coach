@@ -205,6 +205,25 @@ services:
     networks:
       - fitnesscoach-network
 
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        VITE_AUTH_API_URL: http://localhost:7000
+        VITE_WORKOUT_API_URL: http://localhost:7000
+        VITE_SIGNALR_CHAT_URL: http://localhost:7000/hubs/chat
+        VITE_PROGRESS_API_URL: http://localhost:7000
+    container_name: fitnesscoach_frontend
+    restart: on-failure
+    depends_on:
+      api_gateway:
+        condition: service_started
+    ports:
+      - "5173:80"
+    networks:
+      - fitnesscoach-network
+
   
 networks:
   fitnesscoach-network:
