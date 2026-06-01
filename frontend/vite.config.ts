@@ -10,4 +10,11 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
     },
   },
+  server: {
+    allowedHosts: [
+      'flavor-toll-refused-pioneer.trycloudflare.com',
+      '.trycloudflare.com', 
+    ],
+    host: '0.0.0.0', 
+  },
 });

@@ -9,6 +9,7 @@ const CustomerTopBar = ({ title = 'KINETIC AI' }) => {
   const { t } = useTranslation();
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
   const [planNotification, setPlanNotification] = useState(null);
+  const brandPath = localStorage.getItem('token') ? '/chat' : '/';
 
   const navItems = [
     { label: 'Coach', path: '/chat', icon: 'chat_bubble' },
@@ -45,7 +46,7 @@ const CustomerTopBar = ({ title = 'KINETIC AI' }) => {
         {/* Left: Brand */}
         <div className="flex items-center gap-4 lg:min-w-[200px]">
           <Link
-            to="/"
+            to={brandPath}
             className="text-2xl font-black italic text-[#b1ff24] tracking-tighter hover:opacity-80 transition-opacity"
           >
             {title}
@@ -139,7 +140,7 @@ const CustomerTopBar = ({ title = 'KINETIC AI' }) => {
             )}
           </div>
           <Link
-            to="/settings"
+            to="/profile"
             className="text-[#adaaaa] hover:text-[#b1ff24] transition-colors active:scale-95 transition-transform duration-200"
           >
             <span className="material-symbols-outlined fill-1">settings</span>

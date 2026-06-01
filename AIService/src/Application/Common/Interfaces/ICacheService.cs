@@ -9,6 +9,7 @@
         Task IncrementOnlineUserAsync(string userId);
         Task<long> DecrementOnlineUserAsync(string userId);
         Task RemoveOnlineUserAsync(string userId);
+        Task ResetOnlineUsersAsync();
         Task<long> GetOnlineUsersCountAsync();
         Task DeleteChatHistoryAsync(Guid sessionId);
         Task SetAsync<T>(string key, T value, TimeSpan? expiry = null);

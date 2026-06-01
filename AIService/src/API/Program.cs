@@ -80,6 +80,9 @@ namespace AIService.API
                 var services = scope.ServiceProvider;
                 try
                 {
+                    var cacheService = services.GetRequiredService<ICacheService>();
+                    await cacheService.ResetOnlineUsersAsync();
+
                     var context = services.GetRequiredService<ApplicationDbContext>();
                     if (context.Database.GetPendingMigrations().Any())
                     {
