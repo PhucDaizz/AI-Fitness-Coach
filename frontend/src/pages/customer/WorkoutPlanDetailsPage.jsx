@@ -200,7 +200,7 @@ const WorkoutPlanDetailsPage = () => {
     try {
       setIsDeleting(true);
       await deleteWorkoutPlan(planId);
-      navigate('/plans');
+      navigate('/plans?status=all', { replace: true });
     } catch (err) {
       console.error('Failed to delete plan', err);
       alert(err.message || 'Failed to delete plan');

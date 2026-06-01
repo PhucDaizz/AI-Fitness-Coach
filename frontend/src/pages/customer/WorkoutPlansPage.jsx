@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 
 import GeneratePlanModal from '../../components/customer/GeneratePlanModal';
 import CustomerLayout from '../../components/layout/CustomerLayout';
@@ -15,12 +15,32 @@ import {
 
 const RUNNING_JOB_STATUSES = ['Pending', 'InProgress'];
 const isRunningJob = (job) => job && RUNNING_JOB_STATUSES.includes(job.status);
+const PLAN_STATUSES = ['active', 'completed', 'archived', 'all'];
+const normalizePlans = (data) => {
+  if (Array.isArray(data)) {
+    return data;
+  }
+
+  if (Array.isArray(data?.plans)) {
+    return data.plans;
+  }
+
+  if (Array.isArray(data?.items)) {
+    return data.items;
+  }
+
+  return [];
+};
 
 const WorkoutPlansPage = () => {
   const { t } = useTranslation();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const statusParam = searchParams.get('status');
   const [plans, setPlans] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [status, setStatus] = useState('active'); // active, completed, archived, all
+  const [status, setStatus] = useState(
+    PLAN_STATUSES.includes(statusParam) ? statusParam : 'active',
+  );
   const [editingPlanId, setEditingPlanId] = useState(null);
   const [editingTitle, setEditingTitle] = useState('');
   const [renamingPlanId, setRenamingPlanId] = useState(null);
@@ -39,7 +59,7 @@ const WorkoutPlansPage = () => {
         params.status = status;
       }
       const data = await getWorkoutPlans(params);
-      setPlans(data || []);
+      setPlans(normalizePlans(data));
     } catch (err) {
       console.error('Failed to fetch plans', err);
     } finally {
@@ -47,13 +67,20 @@ const WorkoutPlansPage = () => {
     }
   }, [status]);
 
+  const changeStatus = useCallback(
+    (nextStatus) => {
+      setStatus(nextStatus);
+      setSearchParams(nextStatus === 'active' ? {} : { status: nextStatus });
+    },
+    [setSearchParams],
+  );
+
   const restoreLatestGenerationJob = useCallback(async () => {
     try {
       const latestJob = await getLatestWorkoutPlanGenerationJob();
       if (latestJob) {
         setGenerationJob(latestJob);
         if (latestJob.status === 'Completed') {
-          setStatus('active');
           fetchPlans();
         }
       }
@@ -69,7 +96,6 @@ const WorkoutPlansPage = () => {
       WorkoutPlanGenerationUpdated: (job) => {
         setGenerationJob(job);
         if (job?.status === 'Completed') {
-          setStatus('active');
           fetchPlans();
         }
       },
@@ -79,6 +105,13 @@ const WorkoutPlansPage = () => {
     }),
     [fetchPlans, restoreLatestGenerationJob],
   );
+
+  useEffect(() => {
+    const nextStatus = PLAN_STATUSES.includes(statusParam) ? statusParam : 'active';
+    if (nextStatus !== status) {
+      setStatus(nextStatus);
+    }
+  }, [status, statusParam]);
 
   useChatSignalR(signalRHandlers);
 
@@ -122,7 +155,7 @@ const WorkoutPlansPage = () => {
       }
 
       if (result?.status === 'Completed') {
-        setStatus('active');
+        changeStatus('active');
         fetchPlans();
       }
 
@@ -221,7 +254,7 @@ const WorkoutPlansPage = () => {
       );
 
       if (nextStatus === 'active') {
-        setStatus('active');
+        changeStatus('active');
       }
     } catch (err) {
       console.error('Failed to update workout plan status', err);
@@ -335,10 +368,10 @@ const WorkoutPlansPage = () => {
 
       {/* Status Filters */}
       <div className="flex gap-2 mb-8 overflow-x-auto no-scrollbar pb-2">
-        {['active', 'completed', 'archived', 'all'].map((s) => (
+        {PLAN_STATUSES.map((s) => (
           <button
             key={s}
-            onClick={() => setStatus(s)}
+            onClick={() => changeStatus(s)}
             className={`px-6 py-2.5 rounded-full border text-[10px] font-black uppercase tracking-[0.2em] transition-all whitespace-nowrap ${
               status === s
                 ? 'bg-primary text-black border-primary shadow-[0_0_20px_rgba(177,255,36,0.3)]'
