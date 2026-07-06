@@ -143,6 +143,13 @@ namespace AIService.Infrastructure
                     httpClient: deepSeekHttpClient,
                     serviceId: "fast_translator");
 
+                kernelBuilder.AddOpenAIChatCompletion(
+                    modelId: deepSeekConfig.Model,
+                    apiKey: deepSeekConfig.ApiKey,
+                    endpoint: new Uri("https://api.deepseek.com"),
+                    httpClient: deepSeekHttpClient,
+                    serviceId: "pt_brain");
+
                 #endregion
 
 
@@ -153,12 +160,12 @@ namespace AIService.Infrastructure
                 openRouterClient.DefaultRequestHeaders.Add("HTTP-Referer", "http://localhost:5000");
                 openRouterClient.DefaultRequestHeaders.Add("X-Title", "AI Fitness System");
 
-                kernelBuilder.AddOpenAIChatCompletion(
+                /*kernelBuilder.AddOpenAIChatCompletion(
                     modelId: openRouterConfig.Model,
                     apiKey: openRouterConfig.ApiKey,
                     endpoint: new Uri("https://openrouter.ai/api/v1"),
                     httpClient: openRouterClient,
-                    serviceId: "pt_brain");
+                    serviceId: "pt_brain");*/
 
                 /*kernelBuilder.AddOpenAIChatCompletion(
                     modelId: openRouterConfig.TranslatorModel,

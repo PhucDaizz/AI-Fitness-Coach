@@ -6,6 +6,11 @@ namespace AIService.Infrastructure.Services.Helpers
 {
     public static class ExecutorPromptBuilder
     {
+        /// <summary>
+        /// Tạo ra đoạn prompt cảnh báo an toàn về chấn thương
+        /// </summary>
+        /// <param name="profile"></param>
+        /// <returns></returns>
         public static string BuildSafetyBlock(UserProfileDto profile)
         {
             if (string.IsNullOrWhiteSpace(profile.Injuries))
@@ -22,6 +27,11 @@ namespace AIService.Infrastructure.Services.Helpers
                 """;
         }
 
+        /// <summary>
+        ///  Tạo ra đoạn prompt giới hạn hoặc liệt kê thiết bị tập luyện mà AI được phép sử dụng.
+        /// </summary>
+        /// <param name="profile"></param>
+        /// <returns></returns>
         public static string BuildEquipmentBlock(UserProfileDto profile)
         {
             var env = profile.Environment?.ToLower() ?? "gym";
@@ -91,6 +101,13 @@ namespace AIService.Infrastructure.Services.Helpers
             """;
         }
 
+
+        /// <summary>
+        /// Cung cấp chỉ số cường độ tập luyện (Sets, Reps, thời gian nghỉ) dựa trên tuần tập và trình độ của người dùng.
+        /// </summary>
+        /// <param name="week"></param>
+        /// <param name="profile"></param>
+        /// <returns></returns>
         public static string BuildIntensityBlock(WeekBlueprint week, UserProfileDto profile)
         {
             var weekIntensity = week.WeekNumber switch
@@ -132,6 +149,11 @@ namespace AIService.Infrastructure.Services.Helpers
                 """;
         }
 
+        /// <summary>
+        /// Quy định chính xác số lượng bài tập mà phải tạo ra cho một buổi tập, dựa trên thời gian người dùng có.
+        /// </summary>
+        /// <param name="sessionMinutes"></param>
+        /// <returns></returns>
         public static string GetExerciseCount(int sessionMinutes) =>
             sessionMinutes switch
             {
@@ -142,6 +164,12 @@ namespace AIService.Infrastructure.Services.Helpers
                 _ => "6 to 8 exercises"
             };
 
+        /// <summary>
+        /// Đóng gói và trình bày lại danh sách các bài tập đã được AI chọn cho các ngày trong tuần dưới dạng văn bản có cấu trúc.
+        /// </summary>
+        /// <param name="days"></param>
+        /// <param name="dayExercises"></param>
+        /// <returns></returns>
         public static string BuildExerciseContext(
             List<DayBlueprint> days,
             string[] dayExercises)

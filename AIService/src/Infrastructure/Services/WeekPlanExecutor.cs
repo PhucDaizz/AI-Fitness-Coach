@@ -140,7 +140,7 @@ namespace AIService.Infrastructure.Services
             {
                 case "home":
                     query.Append(profile.Equipment.Any()
-                        ? $" home {string.Join(" ", profile.Equipment.Take(3))}"
+                        ? $" home {string.Join(" ", profile.Equipment)}"
                         : " home bodyweight no equipment");
                     break;
                 case "outdoor":
